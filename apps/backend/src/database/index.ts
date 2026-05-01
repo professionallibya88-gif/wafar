@@ -16,6 +16,12 @@ export const sequelize = new Sequelize(
     dialectOptions: {
       statement_timeout: 30000,
       query_timeout: 30000,
+      ...(process.env.DB_SSL === 'true' && {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      }),
     },
     pool: {
       max: 25,
