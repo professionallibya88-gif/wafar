@@ -5,7 +5,7 @@
   "main": "src/server.ts",
   "scripts": {
     "dev": "nodemon --exec tsx src/server.ts",
-    "start": "tsx src/server.ts",
+    "start": "node dist/server.js",
     "build": "tsc",
     "python": "cd python-service && python app.py",
     "dev:all": "concurrently \"npm run dev\" \"npm run python\"",
