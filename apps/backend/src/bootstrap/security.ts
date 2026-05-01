@@ -61,10 +61,14 @@ const applySecurity = (app: Application) => {
   app.use(hpp());
 
   // CORS
+  const defaultOrigins = ['https://waffer.com', 'https://wafar-frontend.vercel.app'];
+  const envOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
+  const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
+
   const corsOptions = {
     origin:
       process.env.NODE_ENV === 'production'
-        ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://waffer.com']
+        ? allowedOrigins
         : '*',
     credentials: true,
   };
