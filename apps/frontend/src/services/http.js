@@ -2,7 +2,7 @@ import axios from "axios";
 import { authStorage } from "./storage";
 import { normalizeRedirectPath } from "@/utils/authRedirect";
 
-const API_URL = "/api";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 /**
  * عميل HTTP موحد يستخدم في جميع طلبات الواجهة الأمامية
