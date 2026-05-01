@@ -28,7 +28,7 @@ export const getAdminTickets = asyncHandler(async (req: AuthenticatedRequest, re
 export const getTicketDetails = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const isAdmin = !!req.admin;
   const userId = isAdmin ? req.admin!.id : req.user!.id;
-  const ticket = await supportTicketService.getTicketDetails(req.params.id, userId, isAdmin);
+  const ticket = await supportTicketService.getTicketDetails(req.params.id as string, userId, isAdmin);
   return success(res, { data: ticket });
 });
 
@@ -40,14 +40,14 @@ export const createTicket = asyncHandler(async (req: AuthenticatedRequest, res: 
 
 export const addReplyUser = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { content } = req.body;
-  const message = await supportTicketService.addReply(req.params.id, req.user!.id, 'user', content);
+  const message = await supportTicketService.addReply(req.params.id as string, req.user!.id, 'user', content);
   return created(res, { data: message, message: 'تم إرسال الرد بنجاح' });
 });
 
 export const addReplyAdmin = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { content } = req.body;
   const message = await supportTicketService.addReply(
-    req.params.id,
+    req.params.id as string,
     req.admin!.id,
     'admin',
     content
@@ -57,6 +57,6 @@ export const addReplyAdmin = asyncHandler(async (req: AuthenticatedRequest, res:
 
 export const updateTicketStatus = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { status } = req.body;
-  const ticket = await supportTicketService.updateTicketStatus(req.params.id, status);
+  const ticket = await supportTicketService.updateTicketStatus(req.params.id as string, status);
   return success(res, { data: ticket, message: 'تم تحديث حالة التذكرة بنجاح' });
 });

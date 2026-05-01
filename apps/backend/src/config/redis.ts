@@ -23,7 +23,7 @@ const createRedisClient = async (): Promise<RedisClient> => {
   const client = createClient({
     url,
     socket: {
-      reconnectStrategy: (retries) => {
+      reconnectStrategy: (retries: number) => {
         if (retries > 10) {
           logger.error('فشل الاتصال بـ Redis بعد 10 محاولات');
           return new Error('فشل الاتصال بـ Redis');

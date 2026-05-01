@@ -33,3 +33,21 @@ export const parsePagination = (
   const offset = (page - 1) * limit;
   return { page, limit, offset };
 };
+
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export const buildPaginationMeta = (
+  total: number,
+  page: number,
+  limit: number
+): PaginationMeta => ({
+  total,
+  page,
+  limit,
+  totalPages: Math.ceil(total / limit),
+});

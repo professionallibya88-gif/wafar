@@ -40,6 +40,9 @@ export class SupportChannelService {
     }
 
     const updatedChannel = await supportChannelRepository.updateById(id, data);
+    if (!updatedChannel) {
+      throw new NotFoundError('قناة الدعم غير موجودة');
+    }
     return updatedChannel.toJSON() as SupportChannelAttributes;
   }
 
@@ -60,6 +63,9 @@ export class SupportChannelService {
 
     const newStatus = !channel.is_active;
     const updatedChannel = await supportChannelRepository.updateById(id, { is_active: newStatus });
+    if (!updatedChannel) {
+      throw new NotFoundError('قناة الدعم غير موجودة');
+    }
     return updatedChannel.toJSON() as SupportChannelAttributes;
   }
 }
