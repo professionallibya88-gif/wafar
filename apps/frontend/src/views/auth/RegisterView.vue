@@ -40,6 +40,7 @@
             v-model="fullName"
             type="text"
             required
+            minlength="3"
             class="w-full pr-12 pl-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:bg-white dark:focus:bg-neutral-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all duration-200 placeholder:text-neutral-400 text-left dark:text-white text-base"
             placeholder="أدخل اسمك الرباعي"
           />
@@ -247,12 +248,12 @@ const handleRegister = async () => {
     return;
   }
 
-  const success = await authStore.register(
-    fullName.value,
-    normalizedPhone,
-    password.value,
-    confirmPassword.value,
-  );
+  const success = await authStore.register({
+    full_name: fullName.value,
+    phone: normalizedPhone,
+    password: password.value,
+    confirmPassword: confirmPassword.value,
+  });
   if (success) {
     router.push(getPostAuthRedirect(authStore, route.query.redirect));
   }

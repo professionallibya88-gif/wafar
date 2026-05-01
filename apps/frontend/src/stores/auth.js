@@ -117,6 +117,7 @@ export const useAuthStore = defineStore("auth", {
       try {
         const payload = {
           ...userData,
+          full_name: userData.fullName || userData.full_name,
           phone: normalizePhoneNumber(userData.phone),
         };
         const res = await authAPI.register(payload);
