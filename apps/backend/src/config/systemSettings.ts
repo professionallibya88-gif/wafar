@@ -1,0 +1,297 @@
+type SettingsMap = Record<string, string>;
+
+interface SystemSettingSeed {
+  key: string;
+  value: string;
+  category: string;
+  description: string;
+}
+
+type SettingsByCategory = {
+  general: SettingsMap;
+  pdf_processing: SettingsMap;
+  ai_providers: SettingsMap;
+  email: SettingsMap;
+  security: SettingsMap;
+  rate_limiting: SettingsMap;
+  storage: SettingsMap;
+  system: SettingsMap;
+  feature_flags: SettingsMap;
+  widget: SettingsMap;
+};
+
+export const DEFAULT_SYSTEM_SETTINGS: SettingsByCategory = {
+  general: {
+    site_name: 'منصة قطع غيار السيارات',
+    site_description: 'منصة متخصصة في قطع غيار السيارات',
+    site_slogan: 'الخيار الأول لقطع الغيار',
+    timezone: 'Africa/Tripoli',
+    admin_email: '',
+    support_phone: '',
+    site_logo: '',
+    site_favicon: '',
+    maintenance_mode: 'false',
+    site_font_family: 'tajawal',
+    landing_hero_title: 'اكتشف منصة وفر لقطع الغيار',
+    landing_hero_description:
+      'المنصة الذكية الأولى في ليبيا للبحث المتقدم ومقارنة أسعار قطع غيار السيارات. قم بإنشاء حسابك الآن لتجربة بحث لا مثيل لها.',
+  },
+  pdf_processing: {
+    default_pdf_method: 'python_pypdf',
+    gemini_api_key: '',
+    python_table_engine_default: 'auto',
+    pdf_fallback_chain: 'python_pypdf,node_pdf,ocr',
+    pdf_enable_auto_fallback: 'true',
+    pdf_enable_ai_metadata: 'true',
+    pdf_enable_ai_enrichment: 'false',
+    max_file_size: '50',
+    extraction_quality: 'medium',
+    ocr_enabled: 'false',
+    ocr_language: 'ara',
+    generate_thumbnails: 'false',
+    processing_timeout: '300',
+    retry_attempts: '3',
+  },
+  ai_providers: {
+    ai_enabled: 'false',
+    ai_preferred_provider: 'google',
+    ai_fallback_enabled: 'true',
+    ai_vision_enabled: 'true',
+    ai_max_tokens_default: '4096',
+    ai_temperature_default: '0.1',
+    ai_timeout_seconds: '60',
+    ai_cost_tracking_enabled: 'true',
+    ai_circuit_breaker_threshold: '5',
+    ai_circuit_breaker_cooldown_seconds: '120',
+  },
+  email: {
+    smtp_enabled: 'false',
+    smtp_host: '',
+    smtp_port: '587',
+    smtp_encryption: 'tls',
+    smtp_user: '',
+    smtp_password: '',
+    smtp_from: '',
+    smtp_from_name: '',
+  },
+  security: {
+    two_factor_auth: 'false',
+    ip_whitelist_enabled: 'false',
+    ip_whitelist: '',
+    session_timeout: '30',
+    max_concurrent_sessions: '3',
+    min_password_length: '8',
+    require_special_chars: 'true',
+    require_numbers: 'true',
+    require_uppercase: 'true',
+    max_login_attempts: '5',
+    lockout_duration: '15',
+  },
+  rate_limiting: {
+    rate_limiting_enabled: 'false',
+    auth_rate_limit_points: '10',
+    auth_rate_limit_duration: '900',
+    auth_rate_limit_block_duration: '900',
+    api_rate_limit_points: '1000',
+    api_rate_limit_duration: '900',
+    upload_rate_limit_points: '20',
+    upload_rate_limit_duration: '3600',
+    search_rate_limit_points: '30',
+    search_rate_limit_duration: '60',
+  },
+  storage: {
+    storage_type: 'local',
+    s3_bucket: '',
+    s3_region: '',
+    s3_access_key: '',
+    s3_secret_key: '',
+    local_storage_path: './uploads',
+    azure_account_name: '',
+    azure_account_key: '',
+    azure_container_name: '',
+    azure_connection_string: '',
+  },
+  system: {
+    maintenance_mode: 'false',
+    maintenance_message: '',
+    timezone: 'Africa/Tripoli',
+    log_level: 'info',
+    log_retention_days: '30',
+    cache_ttl: '60',
+    cache_enabled: 'true',
+    auto_backup_enabled: 'false',
+    backup_schedule: 'daily',
+    backup_retention_count: '7',
+    debug_mode: 'false',
+    enable_logging: 'true',
+  },
+  feature_flags: {
+    feature_search: 'true',
+    feature_catalogs: 'true',
+    feature_upload: 'true',
+    feature_files: 'true',
+    feature_compare: 'true',
+    feature_subscriptions: 'true',
+    feature_payments: 'true',
+    feature_history: 'true',
+    feature_notifications: 'true',
+    feature_admin_dashboard: 'true',
+    feature_admin_monitoring: 'true',
+    feature_admin_advanced_monitoring: 'true',
+    feature_admin_activity_logs: 'true',
+    feature_email_smtp: 'true',
+    feature_rate_limiting: 'true',
+    feature_mvp_mode: 'false',
+  },
+  widget: {
+    widget_bg_color: '#2563eb',
+    widget_icon_color: '#ffffff',
+    widget_shape: 'circle',
+  },
+};
+
+export const SETTING_DESCRIPTIONS: Record<keyof SettingsByCategory, Record<string, string>> = {
+  general: {
+    site_name: 'اسم الموقع',
+    site_description: 'وصف الموقع',
+    site_slogan: 'الشعار اللفظي للموقع',
+    timezone: 'المنطقة الزمنية',
+    admin_email: 'البريد الإلكتروني للإدارة',
+    support_phone: 'رقم الهاتف للدعم',
+    site_logo: 'شعار الموقع',
+    site_favicon: 'أيقونة الموقع (Favicon)',
+    maintenance_mode: 'وضع الصيانة',
+    site_font_family: 'نوع خط الموقع',
+    landing_hero_title: 'عنوان الصفحة الرئيسية (للزوار)',
+    landing_hero_description: 'وصف الصفحة الرئيسية (للزوار)',
+  },
+  pdf_processing: {
+    default_pdf_method: 'طريقة المعالجة الافتراضية',
+    gemini_api_key: 'مفتاح Gemini AI',
+    python_table_engine_default: 'محرك استخراج الجداول في خدمة Python',
+    pdf_fallback_chain: 'سلسلة البدائل لمحركات المعالجة',
+    pdf_enable_auto_fallback: 'تفعيل التبديل التلقائي بين المحركات',
+    pdf_enable_ai_metadata: 'تفعيل الذكاء لاكتشاف البيانات الوصفية',
+    pdf_enable_ai_enrichment: 'تفعيل تحسين النتائج بالذكاء الاصطناعي',
+    max_file_size: 'الحد الأقصى لحجم الملف',
+    extraction_quality: 'جودة الاستخراج',
+    ocr_enabled: 'تفعيل OCR',
+    ocr_language: 'لغة OCR',
+    generate_thumbnails: 'حفظ الصفحات المصغرة',
+    processing_timeout: 'مهلة المعالجة',
+    retry_attempts: 'عدد مرات إعادة المحاولة',
+  },
+  ai_providers: {
+    ai_enabled: 'تفعيل مزودي الذكاء الاصطناعي',
+    ai_preferred_provider: 'المزود المفضل الافتراضي',
+    ai_fallback_enabled: 'تفعيل التبديل التلقائي للمزود',
+    ai_vision_enabled: 'تفعيل معالجة الصور البصرية',
+    ai_max_tokens_default: 'الحد الأقصى للرموز الافتراضي',
+    ai_temperature_default: 'درجة الإبداع الافتراضية',
+    ai_timeout_seconds: 'مهلة الاتصال بالمزود (ثانية)',
+    ai_cost_tracking_enabled: 'تتبع التكاليف',
+    ai_circuit_breaker_threshold: 'عتبة فصل الدائرة (محاولات)',
+    ai_circuit_breaker_cooldown_seconds: 'مدة تبريد الدائرة (ثانية)',
+  },
+  email: {
+    smtp_enabled: 'تفعيل SMTP',
+    smtp_host: 'خادم SMTP',
+    smtp_port: 'منفذ SMTP',
+    smtp_encryption: 'التشفير',
+    smtp_user: 'اسم المستخدم',
+    smtp_password: 'كلمة المرور',
+    smtp_from: 'عنوان المرسل',
+    smtp_from_name: 'اسم المرسل',
+  },
+  security: {
+    two_factor_auth: 'المصادقة الثنائية',
+    ip_whitelist_enabled: 'تفعيل القائمة البيضاء',
+    ip_whitelist: 'العناوين IP المسموحة',
+    session_timeout: 'مهلة الجلسة',
+    max_concurrent_sessions: 'الحد الأقصى للجلسات المتزامنة',
+    min_password_length: 'الحد الأدنى لطول كلمة المرور',
+    require_special_chars: 'إلزام الأحرف الخاصة',
+    require_numbers: 'إلزام الأرقام',
+    require_uppercase: 'إلزام الأحرف الكبيرة',
+    max_login_attempts: 'حد محاولات تسجيل الدخول',
+    lockout_duration: 'مدة الحظر',
+  },
+  rate_limiting: {
+    rate_limiting_enabled: 'تفعيل حدود معدل الطلبات',
+    auth_rate_limit_points: 'عدد محاولات المصادقة المسموحة',
+    auth_rate_limit_duration: 'مدة نافذة محاولات المصادقة (ثانية)',
+    auth_rate_limit_block_duration: 'مدة حظر محاولات المصادقة (ثانية)',
+    api_rate_limit_points: 'عدد طلبات API المسموحة',
+    api_rate_limit_duration: 'مدة نافذة طلبات API (ثانية)',
+    upload_rate_limit_points: 'عدد عمليات الرفع المسموحة',
+    upload_rate_limit_duration: 'مدة نافذة عمليات الرفع (ثانية)',
+    search_rate_limit_points: 'عدد عمليات البحث المسموحة',
+    search_rate_limit_duration: 'مدة نافذة عمليات البحث (ثانية)',
+  },
+  storage: {
+    storage_type: 'نوع التخزين',
+    s3_bucket: 'مجلد S3',
+    s3_region: 'منطقة S3',
+    s3_access_key: 'مفتاح الوصول S3',
+    s3_secret_key: 'مفتاح السر S3',
+    local_storage_path: 'مسار التخزين المحلي',
+    azure_account_name: 'اسم حساب Azure',
+    azure_account_key: 'مفتاح حساب Azure',
+    azure_container_name: 'اسم الحاوية Azure',
+    azure_connection_string: 'سلسلة الاتصال Azure',
+  },
+  system: {
+    maintenance_mode: 'وضع الصيانة',
+    maintenance_message: 'رسالة الصيانة',
+    timezone: 'المنطقة الزمنية',
+    log_level: 'مستوى السجلات',
+    log_retention_days: 'فترة الاحتفاظ بالسجلات',
+    cache_ttl: 'مدة التخزين المؤقت',
+    cache_enabled: 'تفعيل التخزين المؤقت',
+    auto_backup_enabled: 'تفعيل النسخ الاحتياطي',
+    backup_schedule: 'جدولة النسخ الاحتياطي',
+    backup_retention_count: 'عدد النسخ الاحتياطية',
+    debug_mode: 'وضع التصحيح',
+    enable_logging: 'تفعيل التسجيل',
+  },
+  feature_flags: {
+    feature_search: 'تفعيل صفحة البحث',
+    feature_catalogs: 'تفعيل صفحة الكتالوجات',
+    feature_upload: 'تفعيل رفع ملفات PDF',
+    feature_files: 'تفعيل صفحة ملفاتي',
+    feature_compare: 'تفعيل المقارنة',
+    feature_subscriptions: 'تفعيل الاشتراكات',
+    feature_payments: 'تفعيل المدفوعات',
+    feature_history: 'تفعيل سجل البحث',
+    feature_notifications: 'تفعيل الإشعارات',
+    feature_admin_dashboard: 'تفعيل لوحة الإدارة',
+    feature_admin_monitoring: 'تفعيل المراقبة',
+    feature_admin_advanced_monitoring: 'تفعيل المراقبة المتقدمة',
+    feature_admin_activity_logs: 'تفعيل سجل الأنشطة',
+    feature_email_smtp: 'تفعيل إعدادات SMTP',
+    feature_rate_limiting: 'تفعيل Rate Limiting',
+    feature_mvp_mode: 'وضع MVP (إخفاء الميزات المتقدمة)',
+  },
+  widget: {
+    widget_bg_color: 'لون خلفية الويدجت العائم',
+    widget_icon_color: 'لون أيقونة الويدجت العائم',
+    widget_shape: 'شكل الويدجت العائم (دائري/مربع)',
+  },
+};
+
+export const buildDefaultSettingsRecords = (): SystemSettingSeed[] => {
+  return Object.entries(DEFAULT_SYSTEM_SETTINGS).flatMap(([category, values]) =>
+    Object.entries(values).map(([key, value]) => ({
+      key,
+      value,
+      category,
+      description: SETTING_DESCRIPTIONS[category as keyof SettingsByCategory]?.[key] || key,
+    }))
+  );
+};
+
+export const buildPublicSettingsFallback = () => ({
+  general: { ...DEFAULT_SYSTEM_SETTINGS.general },
+  feature_flags: { ...DEFAULT_SYSTEM_SETTINGS.feature_flags },
+  widget: { ...DEFAULT_SYSTEM_SETTINGS.widget },
+});

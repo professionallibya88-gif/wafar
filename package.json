@@ -1,0 +1,39 @@
+{
+  "name": "waffer-platform",
+  "version": "2.0.0",
+  "description": "منصة وفر - Waffer Platform - Monorepo with Redis",
+  "private": true,
+  "workspaces": [
+    "apps/backend",
+    "apps/frontend"
+  ],
+  "scripts": {
+    "dev": "nx run-many -t dev --parallel 3",
+    "dev:backend": "nx serve backend",
+    "dev:frontend": "nx serve frontend",
+    "build": "nx run-many -t build --parallel",
+    "build:backend": "nx build backend",
+    "build:frontend": "nx build frontend",
+    "test": "nx run-many -t test --parallel",
+    "lint": "nx run-many -t lint --parallel",
+    "start": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start:all": "concurrently \"nx run backend:dev:all\" \"npm run dev:frontend\"",
+    "install:all": "npm install && cd apps/backend && npm install && cd ../frontend && npm install",
+    "clean": "nx reset",
+    "affected": "nx affected",
+    "affected:build": "nx affected:build",
+    "affected:test": "nx affected:test"
+  },
+  "devDependencies": {
+    "@nx/workspace": "^22.6.5",
+    "concurrently": "^8.2.2",
+    "nx": "^22.6.5",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"
+}

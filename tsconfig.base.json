@@ -1,0 +1,25 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2017", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@waffer/backend": ["apps/backend/src"],
+      "@waffer/frontend": ["apps/frontend/src"],
+      "@waffer/shared": ["libs/shared/src"],
+      "@waffer/types": ["libs/types/src"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

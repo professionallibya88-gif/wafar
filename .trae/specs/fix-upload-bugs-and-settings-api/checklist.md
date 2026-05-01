@@ -1,0 +1,4 @@
+- [x] The extracted Arabic supplier name from PDF metadata displays correctly without reversed characters.
+- [x] The `/api/settings/public` and `/api/system/features` endpoints return 200 OK and valid JSON data.
+- [x] The PDF upload progress UI correctly updates from 0% to 100%.
+- [x] The PDF upload UI displays the completion state and action buttons (e.g., "Continue", "Save") when the upload is finished.

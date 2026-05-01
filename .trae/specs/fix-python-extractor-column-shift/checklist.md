@@ -1,0 +1,4 @@
+- [x] Python PDF Extractor logic drops headers aligned with empty data columns properly
+- [x] The length of `headers` always equals the length of `rows` in the final table output
+- [x] No `<tbody>` nested within `<tbody>` issues exist in `FileDetailView.vue`
+- [x] Manual or automated test shows that headers are mapped perfectly without column shifts

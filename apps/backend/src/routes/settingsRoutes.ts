@@ -1,0 +1,43 @@
+import { Router, Response } from 'express';
+import {
+  getAllSettings,
+  getPublicSettings,
+  updateAllSettings,
+  createSetting,
+  resetToDefaults,
+  updateSetting,
+  testEmailSettings,
+} from '../controllers/settingsController';
+import { adminAuth, adminOnly } from '../middleware/auth';
+import { uploadImage } from '../middleware/upload';
+import { asyncHandler } from '../utils/asyncHandler';
+import { success } from '../utils/ApiResponse';
+import { ValidationError } from '../errors';
+import { AuthenticatedRequest } from '../types';
+
+const router = Router();
+
+router.get('/', adminAuth, adminOnly, getAllSettings);
+router.get('/public', getPublicSettings);
+router.put('/', adminAuth, adminOnly, updateAllSettings);
+router.post('/', adminAuth, adminOnly, createSetting);
+router.post('/reset-defaults', adminAuth, adminOnly, resetToDefaults);
+router.post('/test-email', adminAuth, adminOnly, testEmailSettings);
+router.put('/:key', adminAuth, adminOnly, updateSetting);
+
+// مسار رفع الصور للإعدادات (شعار، أيقونة، الخ)
+router.post(
+  '/upload-image',
+  adminAuth,
+  adminOnly,
+  uploadImage.single('image'),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.file) {
+      throw new ValidationError('الرجاء رفع صورة');
+    }
+    const url = `/uploads/${req.file.filename}`;
+    return success(res, { data: { url }, message: 'تم رفع الصورة بنجاح' });
+  })
+);
+
+export default router;

@@ -1,0 +1,6 @@
+- [x] `requirements.txt` includes `camelot-py[cv]` and `pdfplumber`.
+- [x] A new extraction logic utilizing Camelot's `lattice` or `stream` mode is implemented.
+- [x] A new extraction logic utilizing `pdfplumber` is implemented.
+- [x] The Python API `/extract-tables` accepts an engine parameter (e.g., `engine=camelot`) and defaults gracefully.
+- [x] Fallback mechanism is in place when `pymupdf` fails to extract meaningful data.
+- [x] Outputs from the new engines exactly match the JSON schema required by the Node.js backend.

@@ -1,0 +1,262 @@
+<template>
+  <div class="relative">
+    <!-- زر جرس الإشعارات -->
+    <button
+      ref="buttonRef"
+      @click="toggleNotifications"
+      class="relative p-2 rounded-lg hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors duration-200"
+      :class="{ 'text-brand-600 dark:text-neutral-400': hasUnread }"
+    >
+      <!-- أيقونة الجرس -->
+      <AppIcon name="Bell" size="md" :color="hasUnread ? 'brand' : 'gray'" />
+
+      <!-- شارة عدد الإشعارات غير المءة -->
+      <BaseBadge
+        v-if="unreadCount > 0"
+        :value="unreadCount > 99 ? '99+' : unreadCount"
+        class="absolute -top-1 -right-1"
+      />
+    </button>
+
+    <!-- قائمة الإشعارات -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition ease-out duration-200"
+        enter-from-class="transform opacity-0 scale-95"
+        enter-to-class="transform opacity-100 scale-100"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="transform opacity-100 scale-100"
+        leave-to-class="transform opacity-0 scale-95"
+      >
+        <div
+          v-if="isOpen"
+          class="fixed w-[90%] sm:w-96 md:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999]"
+          :style="{
+            top: dropdownPosition.top + 'px',
+            left: dropdownPosition.left + 'px',
+          }"
+          dir="rtl"
+        >
+          <!-- رأس القائمة -->
+          <div
+            class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700"
+          >
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              الإشعارات
+            </h3>
+            <div class="flex items-center gap-2">
+              <button
+                v-if="hasUnread"
+                @click="markAllAsRead"
+                class="text-sm text-brand-600 dark:text-neutral-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
+                :disabled="loading"
+              >
+                تعليم الكل كمقروء
+              </button>
+              <button
+                @click="closeNotifications"
+                class="p-1 rounded hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <AppIcon name="XMark" size="sm" color="gray" />
+              </button>
+            </div>
+          </div>
+
+          <!-- محتوى القائمة -->
+          <div class="max-h-96 sm:max-h-80 overflow-y-auto">
+            <!-- حالة التحميل -->
+            <div v-if="loading" class="p-8 text-center">
+              <BaseSpinner />
+            </div>
+
+            <!-- قائمة الإشعارات -->
+            <div v-else-if="notifications.length > 0">
+              <NotificationList
+                :notifications="notifications"
+                @mark-read="handleMarkAsRead"
+                @delete="handleDelete"
+              />
+            </div>
+
+            <!-- حالة عدم وجود إشعارات -->
+            <div v-else class="p-8 text-center">
+              <AppIcon
+                name="Bell"
+                size="3xl"
+                color="gray"
+                customClass="mx-auto mb-4"
+              />
+              <p class="text-gray-500 dark:text-gray-400">
+                لا توجد إشعارات
+              </p>
+            </div>
+          </div>
+
+          <!-- تذييل القائمة -->
+          <div
+            v-if="notifications.length > 0"
+            class="p-4 border-t border-gray-200 dark:border-gray-700"
+          >
+            <button
+              @click="handleViewAll"
+              class="w-full text-center text-sm text-brand-600 dark:text-neutral-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
+            >
+              عرض جميع الإشعارات
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+  </div>
+</template>
+
+<script setup>
+import { computed, onMounted, onUnmounted, ref, watch, nextTick } from "vue";
+import { useRouter } from "vue-router";
+import { useNotificationStore } from "@/stores/notification";
+import { useAuthStore } from "@/stores/auth";
+import BaseBadge from "./base/BaseBadge.vue";
+import BaseSpinner from "./base/BaseSpinner.vue";
+import NotificationList from "./NotificationList.vue";
+import { AppIcon } from "./icons";
+
+const notificationStore = useNotificationStore();
+const authStore = useAuthStore();
+const router = useRouter();
+
+const buttonRef = ref(null);
+const dropdownPosition = ref({ top: 0, left: 0 });
+
+const isOpen = computed({
+  get: () => notificationStore.isOpen,
+  set: (value) => {
+    if (value) {
+      notificationStore.openNotifications();
+    } else {
+      notificationStore.closeNotifications();
+    }
+  },
+});
+
+const calculateDropdownPosition = () => {
+  if (buttonRef.value) {
+    const rect = buttonRef.value.getBoundingClientRect();
+    const screenWidth = window.innerWidth;
+    const isMobile = screenWidth < 640; // sm breakpoint
+
+    let dropdownWidth = 384; // w-96
+    let left;
+
+    if (isMobile) {
+      // على الهواتف: تتوسط القائمة الشاشة بعرض 90%
+      dropdownWidth = screenWidth * 0.9; // w-[90%]
+      left = (screenWidth - dropdownWidth) / 2;
+    } else {
+      // على الشاشات الأكبر: التموضع المعتاد
+      left = Math.max(8, rect.left - dropdownWidth + rect.width);
+    }
+
+    dropdownPosition.value = {
+      top: rect.bottom + 8,
+      left: left,
+    };
+  }
+};
+
+watch(isOpen, (newValue) => {
+  if (newValue) {
+    nextTick(() => {
+      calculateDropdownPosition();
+    });
+  }
+});
+
+// إعادة حساب التموضع عند تغيير حجم الشاشة
+const handleResize = () => {
+  if (isOpen.value) {
+    calculateDropdownPosition();
+  }
+};
+
+onMounted(async () => {
+  window.addEventListener("resize", handleResize);
+  if (authStore.isAuthenticated) {
+    try {
+      await notificationStore.fetchUnreadCount();
+    } catch (error) { /* ignore */ }
+  }
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
+
+const notifications = computed(() => notificationStore.notifications);
+const unreadCount = computed(() => notificationStore.unreadCount);
+const hasUnread = computed(() => notificationStore.hasUnread);
+const loading = computed(() => notificationStore.loading);
+
+const toggleNotifications = () => {
+  notificationStore.toggleNotifications();
+  if (isOpen.value) {
+    loadNotifications();
+  }
+};
+
+const closeNotifications = () => {
+  notificationStore.closeNotifications();
+};
+
+const loadNotifications = async () => {
+  try {
+    await notificationStore.fetchNotifications({ limit: 20 });
+  } catch (error) { /* ignore */ }
+};
+
+const markAllAsRead = async () => {
+  try {
+    await notificationStore.markAllAsRead();
+  } catch (error) { /* ignore */ }
+};
+
+const handleMarkAsRead = async (id) => {
+  try {
+    await notificationStore.markAsRead(id);
+  } catch (error) { /* ignore */ }
+};
+
+const handleDelete = async (id) => {
+  try {
+    await notificationStore.deleteNotification(id);
+  } catch (error) { /* ignore */ }
+};
+
+const handleViewAll = () => {
+  closeNotifications();
+  router.push({ name: "Notifications" });
+};
+</script>
+
+<style scoped>
+/* تخصيص شريط التمرير */
+.max-h-96::-webkit-scrollbar,
+.sm\:max-h-80::-webkit-scrollbar {
+  width: 6px;
+}
+
+.max-h-96::-webkit-scrollbar-track,
+.sm\:max-h-80::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.max-h-96::-webkit-scrollbar-thumb,
+.sm\:max-h-80::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 3px;
+}
+
+.dark .max-h-96::-webkit-scrollbar-thumb,
+.dark .sm\:max-h-80::-webkit-scrollbar-thumb {
+  background-color: #475569;
+}
+</style>

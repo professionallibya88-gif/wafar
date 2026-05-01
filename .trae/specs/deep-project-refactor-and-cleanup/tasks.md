@@ -1,0 +1,54 @@
+# Tasks
+- [x] Task 1: فحص وتحليل طبقة قاعدة البيانات (Models & Repositories)
+  - [x] SubTask 1.1: مراجعة نماذج Sequelize والتأكد من استخدام `snake_case` للحقول والجداول.
+  - [x] SubTask 1.2: التأكد من أن جميع الاستعلامات تتم عبر المستودعات (`Repositories`) فقط ولا توجد استدعاءات مباشرة للنماذج في الخدمات أو المتحكمات.
+- [x] Task 2: فحص وتنظيف طبقة الخدمات (Services) والمتحكمات (Controllers)
+  - [x] SubTask 2.1: مراجعة أسماء الدوال والمتغيرات لتكون `camelCase` وذات معنى واضح.
+  - [x] SubTask 2.2: التأكد من استخدام `asyncHandler` و `ApiResponse` في جميع المتحكمات.
+  - [x] SubTask 2.3: فحص معالجة الأخطاء في الخدمات والتأكد من رمي أخطاء مخصصة مثل `NotFoundError` و `ValidationError`.
+- [x] Task 3: فحص وتنظيف الواجهة الأمامية (Frontend)
+  - [x] SubTask 3.1: مراجعة أسماء المكونات (Components) والـ Composables والمتاجر (Stores).
+  - [x] SubTask 3.2: إزالة أي استيرادات غير مستخدمة (Unused Imports) وتكرارات في الكود.
+  - [x] SubTask 3.3: التأكد من أن الواجهة تستخدم `services/storage.js` للتعامل مع `localStorage` ولا تستخدمه مباشرة.
+- [x] Task 4: فحص خدمة البايثون (Python Service)
+  - [x] SubTask 4.1: مراجعة الأكواد للتأكد من استقرارها وخلوها من التكرارات.
+  - [x] SubTask 4.2: توحيد تسميات المتغيرات ومعالجة الأخطاء بشكل سليم.
+- [x] Task 5: إصلاح خروقات الطبقات في Backend
+  - [x] SubTask 5.1: إزالة أي استدعاء مباشر لـ Models خارج `repositories` في سكربتات قاعدة البيانات.
+  - [x] SubTask 5.2: تقليل الأخطاء العامة غير المبررة أو المسارات غير المتسقة في ملفات الإعداد والتهيئة ذات الصلة.
+- [x] Task 6: إصلاح تكامل واجهات المراقبة في Frontend
+  - [x] SubTask 6.1: توحيد أسماء دوال `processingAPI` مع الاستخدام الفعلي داخل `useAdminMonitoring`.
+  - [x] SubTask 6.2: التحقق من عدم حدوث أخطاء وقت تشغيل في شاشة المراقبة بسبب استدعاءات API غير صحيحة.
+- [x] Task 7: تنظيف واستقرار Python Service
+  - [x] SubTask 7.1: إزالة أو إصلاح سكربتات الاختبار المكسورة والاعتمادات على مسارات محلية ثابتة.
+  - [x] SubTask 7.2: تقليل كشف تفاصيل الأخطاء الحساسة وتحسين استقرار العدادات أو المؤشرات العامة حيث يلزم.
+- [x] Task 8: إزالة التكرار والأكواد غير المستخدمة في Backend
+  - [x] SubTask 8.1: توحيد أو تقليل التكرار الواضح بين مسارات التحكم في queue والمعالجة.
+  - [x] SubTask 8.2: إزالة أو دمج أي ملفات middleware أو مسارات إدارية غير مستخدمة بوضوح.
+- [x] Task 9: استكمال تنظيف Python Service
+  - [x] SubTask 9.1: تقليل `print` و`traceback` غير المنظم في مسارات التشغيل الأساسية.
+  - [x] SubTask 9.2: تقليل `except Exception` العامة أو حصرها مع تسجيل منضبط في المسارات الحساسة.
+- [x] Task 10: تشغيل فحص شامل للجذر وكل Workspace
+  - [x] SubTask 10.1: تشغيل فحوصات `lint` و`build` على مستوى الجذر وتسجيل جميع الإخفاقات الفعلية.
+  - [x] SubTask 10.2: تقسيم الإخفاقات إلى Backend و Frontend و Python Service مع أولوية المعالجة.
+- [x] Task 11: إصلاح كامل لأخطاء Backend حتى النجاح
+  - [x] SubTask 11.1: إصلاح جميع أخطاء `eslint` و`tsc` المتعلقة بالـ Backend.
+  - [x] SubTask 11.2: إعادة تشغيل `lint` و`build` للـ Backend والتأكد من النجاح بدون أخطاء.
+- [x] Task 12: إصلاح كامل لأخطاء Frontend حتى النجاح
+  - [x] SubTask 12.1: إصلاح جميع أخطاء `lint` و`build` المتعلقة بالـ Frontend.
+  - [x] SubTask 12.2: إعادة تشغيل `lint` و`build` للـ Frontend والتأكد من النجاح بدون أخطاء.
+- [x] Task 13: إصلاح واستقرار Python Service بشكل نهائي
+  - [x] SubTask 13.1: إصلاح أخطاء الفحوصات والوحدات في python-service إن وجدت.
+  - [x] SubTask 13.2: التحقق من سلامة ملفات الاختبار والتشغيل عبر فحوصات تركيبية (compile/tests).
+- [x] Task 14: التحقق الختامي الشامل وإغلاق الجولة
+  - [x] SubTask 14.1: إعادة تشغيل فحوصات الجذر بعد جميع الإصلاحات.
+  - [x] SubTask 14.2: توثيق النتيجة النهائية في checklist بعلامات مكتملة فقط عند النجاح الكامل.
+
+# Task Dependencies
+- [Task 2] depends on [Task 1]
+- [Task 3] can run in parallel with [Task 1] and [Task 2]
+- [Task 4] can run in parallel with other tasks
+- [Task 5] can run in parallel with [Task 6] and [Task 7]
+- [Task 8] can run in parallel with [Task 9]
+- [Task 11] can run in parallel with [Task 12] and [Task 13] after [Task 10]
+- [Task 14] depends on [Task 11], [Task 12], and [Task 13]

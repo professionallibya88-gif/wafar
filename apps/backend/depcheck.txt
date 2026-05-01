@@ -1,0 +1,1 @@
+﻿* redis: .\src\config\redis.ts

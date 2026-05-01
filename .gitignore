@@ -1,0 +1,25 @@
+node_modules/
+uploads/
+*.log
+.env
+backend/python-service/__pycache__/
+dist/
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Nx
+.nx/
+nx/cache/
+tmp/
+
+# Build outputs
+backend/dist/
+frontend/dist/
+
+# Environment
+.env.local
+.env.*.local

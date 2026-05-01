@@ -1,0 +1,11 @@
+declare module 'express-session';
+declare module 'connect-redis';
+declare module 'multer';
+declare module 'cors';
+declare module 'hpp';
+declare module 'sanitize-html';
+declare module 'compression';
+declare module 'morgan';
+declare module 'rate-limiter-flexible';
+declare module '../../frontend/src/utils/phone';
+declare module '@aws-sdk/client-textract';

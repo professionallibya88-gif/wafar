@@ -1,0 +1,9 @@
+{
+  "toyota": ["تويوتا", "Toyota"],
+  "hyundai": ["هونداي", "هوندا", "Hyundai"],
+  "kia": ["كيا", "Kia"],
+  "chevrolet": ["شفرليت", "شيفروليت", "Chevrolet", "Chevy"],
+  "daewoo": ["داوو", "داو", "Daewoo"],
+  "ford": ["فورد", "Ford"],
+  "nissan": ["نيسان", "Nissan"]
+}

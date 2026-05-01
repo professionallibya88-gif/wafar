@@ -1,0 +1,877 @@
+'اشتراكك قارب على الانتهاء',
+'اكتملت معالجة الملف',
+'الجهاز',
+'الصنف',
+'المصنع',
+'الملف PDF ممسوح ضوئياً ولا يمكن استخراج النص منه. يرجى استخدام ملف PDF يحتوي على نص قابل للاستخراج.',
+'الوكيل',
+'انتهى اشتراكك',
+'تجاوزت الحد اليومي لرفع الملفات، يرجى المحاولة لاحقاً'
+'تم استلام طلب دفع جديد',
+'تم تحديث الملف الشخصي',
+'تم تحديث معلومات ملفك الشخصي بنجاح.',
+'تم تسجيل الدخول بنجاح',
+'تم تغيير كلمة المرور بنجاح عبر رمز استعادة مؤقت',
+'تم تغيير كلمة المرور بنجاح. إذا لم تقم بهذا الإجراء، يرجى التواصل مع الدعم فوراً.',
+'تم تغيير كلمة المرور',
+'تم تفعيل اشتراكك بنجاح',
+'تم رفض دفعتك',
+'تم رفع الملف بنجاح',
+'تم قبول دفعتك',
+'جملة 16',
+'جملة 3',
+'جهاز',
+'طلبات إشعارات كثيرة، يرجى الانتظار قليلاً'
+'غير محدد',
+'فشل استخراج البيانات من الملف. قد يكون الملف ممسوحاً ضوئياً وبدون نص قابل للاستخراج.',
+'فشلت معالجة الملف',
+'قطع الغيار',
+'قطع غيار',
+'كود الجهاز',
+'كود الصنف',
+'كود الوكيل',
+'م',
+'محاولات تسجيل دخول كثيرة، يرجى المحاولة بعد 15 دقيقة'
+'مرحباً بك في منصة وفر',
+'وصلت إلى حد رفع الملفات، يرجى المحاولة لاحقاً'
+* - تحسينات تلقائية
+* - تحليل استخدام الموارد
+* - تقارير الأداء
+* - قياس أداء العمليات
+* 1. حذف جميع المستخدمين الحاليين
+* 2. إنشاء حساب المدير (لوحة التحكم)
+* 3. إنشاء حساب مستخدم (الموقع)
+* @deprecated استخدام PartRepository.applySmartSearchFilters بدلاً من ذلك
+* @param {Array} headers - مصفوفة عناوين الأعمدة
+* @param {Array} row - الصف
+* @param {Array} row - الصف الخام
+* @param {Object} data - البيانات الموحدة
+* @param {Object} mapInfo - معلومات التعيين
+* @param {Object} mapping - خريطة الأعمدة من HeaderMapper
+* @param {Object} mapping - خريطة التعيين
+* @param {Object} normalized - البيانات الموحدة
+* @param {String} a - النص الأول
+* @param {String} b - النص الثاني
+* @param {String} filePath - مسار الملف
+* @param {String} filePath - مسار ملف PDF
+* @param {String} header - عنوان العمود
+* @param {String} name - اسم القطعة
+* @param {String} raw - النص الخام
+* @param {String} text - النص الأصلي
+* @returns {Boolean} - true إذا كان PDF صحيح
+* @returns {Number|null} - السعر
+* @returns {Number|null} - الكمية
+* @returns {Number} - نسبة التشابه (0-1)
+* @returns {Object|null} - {field, confidence} أو null
+* @returns {Object} - البيانات الموحدة
+* @returns {Object} - خريطة {field: {column, originalName, confidence}}
+* @returns {String|null} - القيمة
+* @returns {String|null} - الكود المنظف
+* @returns {String} - النص المطبع
+* @returns {String} - توقيع البحث
+* Advanced Rate Limiter - محدد معدل الطلبات المتقدم مع Redis
+* Middleware للتحقق من حالة Feature Flag قبل السماح بالوصول للـ endpoint.
+* Performance Monitor - مراقب الأداء
+* Redis Configuration - إعداد Redis (v4)
+* health check (نظام المراقبة)
+* middleware لتحديد أن الطلب يتطلب Redis
+* إحصائيات النظام
+* إحصائيات النظام الكاملة (Redis + Queue + DB + OS)
+* إحصائيات لوحة التحكم الرئيسية
+* إدارة المدفوعات
+* إدارة المستخدمين
+* إدارة الموردين
+* إدارة باقات الاشتراك
+* إرسال إشعار لجميع المستخدمين النشطين
+* إرسال إشعار لمجموعة مستخدمين
+* إشعار مستخدم واحد
+* إضافة metric للـ history
+* إضافة metric مخصص
+* إعادة تعيين البيانات
+* إعادة تعيين المستخدمين:
+* إعادة معالجة مهمة فاشلة
+* إعداد الميدلوير العامة: compression + logging + body parsers + static
+* إعداد طبقات الأمان: helmet + cors + hpp + xss sanitizer
+* إغلاق Redis client بشكل آمن
+* إلغاء مهمة
+* إنشاء Redis client باستخدام Redis v4 API
+* إنشاء session middleware مع Redis
+* إنشاء إشعار جديد
+* إنشاء باقة (للإدارة)
+* إنشاء تطبيق Express مع جميع الطبقات مركبة بالترتيب الصحيح
+* إنشاء توقيع البحث
+* إنشاء طلب دفع
+* إنشاء مورد (للإدارة)
+* إنهاء عملية
+* إيقاف المراقبة
+* اختبارات وحدة للمتحققات ودوال المساعدة
+* اختبارات وحدة لنظام المصادقة
+* استخراج البيانات المشتقة من الاسم
+* استخراج الجداول من ملف PDF
+* استخراج تاريخ الملف من النص (أنماط شائعة في كتالوجات ليبيا)
+* استخراج قيمة من خلية
+* البحث الذكي
+* البحث القديم مع ترقيم وتسجيل في السجل
+* البحث المشتق
+* التحقق من الحاجة لـ Garbage Collection
+* التحقق من جودة التعيين
+* التحقق من جودة الصف
+* التحقق من صحة Redis قبل معالجة الطلب
+* التقدم العام (إحصائيات)
+* الحصول على تقرير الأداء
+* الحصول على ملخص الأداء
+* الصنف الأساسي لجميع أخطاء التطبيق
+* الفئات الفريدة
+* الماركات الفريدة
+* المصادقة بالرمز المميز وتهيئة الجلسات.
+* الموافقة على دفعة
+* بدء جمع metrics
+* بدء عملية
+* تأكيد تنبيه
+* تثبيت المسارات ومعالجة الأخطاء
+* تحديث باقة (للإدارة)
+* تحديث مورد (للإدارة)
+* تحليل CPU
+* تحليل الذاكرة
+* تحليل العمليات
+* تحول أسماء الأعمدة من PDF إلى الحقول الموحدة في قاعدة البيانات
+* تحول البيانات الخام من الجداول إلى البيانات الموحدة
+* تحويل bytes إلى MB
+* تحويل قيمة غير معروفة إلى كائن Error
+* تحويل نص السعر إلى رقم
+* تحويل نص المخزون إلى رقم
+* تخزين الجلسات في Redis لتحسين الأداء والتوزيع
+* تصدير البيانات
+* تصدير نتائج البحث إلى Excel
+* تطبيع النص للمقارنة
+* تطبيع رقم الهاتف لتوحيد الإدخال القادم من الواجهات المختلفة
+* تطبيق حدود معدل الطلبات على المسارات
+* تعتمد على Repositories وترمي AppError عند الحاجة
+* تعليم إشعار كمقروء
+* تعليم جميع إشعارات المستخدم كمقروءة
+* تعيين الأعمدة من العناوين الخام
+* تمهيد واجهة الخادم وبدء الاستماع
+* تنظيف الكود (حذف المسافات والنقاط الزائدة)
+* تنظيف صف واحد باستخدام خريطة الأعمدة
+* توحيد قراءة سر JWT في مكان واحد لتفادي اختلاف السلوك بين
+* جلب إشعار محدد
+* جلب الاشتراك النشط للمستخدم
+* جلب الباقات النشطة
+* جلب جميع اشتراكات المستخدم
+* جلب حالة مهمة بـ ID
+* جلب مورد بالمعرف
+* جمع metrics للذاكرة
+* جمع metrics للـ CPU
+* جميع ملفات PDF (للإدارة)
+* حذف إشعار
+* حذف الإشعارات المقروءة للمستخدم
+* حذف باقة (للإدارة)
+* حذف مورد (للإدارة)
+* حساب التشابه بين نصين باستخدام مسافة ليفنشتاين (Levenshtein)
+* خدمة الإشعارات
+* خدمة الاشتراكات والباقات
+* خدمة البحث الرئيسية (ذكي، تقليدي، تصدير، مقارنة)
+* خدمة المدفوعات
+* خدمة الموردين
+* خدمة تعيين الأعمدة
+* خدمة تنظيف وتوحيد صفوف البيانات
+* خطأ التحقق من البيانات (400)
+* خطأ التعارض في البيانات (409)
+* خطأ المورد غير موجود (404)
+* خطأ تجاوز معدل الطلبات (429)
+* خطأ خدمة خارجية (502)
+* خطأ عدم الصلاحية (403)
+* خطأ عدم المصادقة (401)
+* خطأ عمليات الأعمال (422)
+* رفض دفعة
+* سجل البحث
+* شحن كرت
+* عدد الإشعارات غير المقروءة
+* فحص magic bytes للملف للتأكد من أنه PDF حقيقي
+* فحص الذاكرة
+* فحص صحة بسيط
+* فحص صحة شامل
+* قائمة إشعارات المستخدم مع فلاتر
+* قائمة المهام
+* قائمة الموردين النشطين
+* قائمة جميع المدفوعات (للإدارة)
+* قائمة مدفوعات المستخدم
+* قواعد التحقق لبيانات المستخدم
+* قواعد التحقق لعمليات الإدارة
+* قواعد التحقق للإشعارات
+* قواعد التحقق للبحث
+* قواعد التحقق للمدفوعات
+* قواعد التحقق للموردين
+* قواعد التحقق من بيانات المصادقة
+* قياس دالة
+* قياس متزامن
+* لا تحتاج قاعدة بيانات - تعتمد على mocking
+* مراقبة - health
+* مراقبة - metrics
+* مراقبة - أداء
+* مطابقة عنوان عمود واحد
+* معالج OCR لاستخراج النص من ملفات PDF الممسوحة ضوئياً
+* معالجة PDF عبر خدمة Python
+* معالجة PDF واستخراج القطع باستخدام OCR
+* معالجة ملف PDF باستخدام OCR
+* مغلف لدوال التحكم غير المتزامنة
+* مقارنة قطع
+* مُصدَّرة كـ instance للسماح بالاستخدام كدوال ثابتة من الخارج
+* نظام تسجيل منظم بدلاً من console.log/error/warn
+* نقطة تصدير موحدة لجميع قواعد التحقق
+* نقطة تصدير موحدة لوحدات التمهيد
+* واجهة المستخدم المرفق بالطلب (بدون استيراد من models)
+* يجب استدعاؤها بعد applySecurity و applyMiddleware
+* يحمي من هجمات DDoS و Abuse
+* يرث من Error ويضيف حقل statusCode ورسائل مترجمة
+* يستخدم Redis للتخزين الموزع
+* يستخدم Tesseract.js للتعرف على النص في الصور
+* يستخدم لـ:
+* يقوم بجلب القيمة من قاعدة البيانات ويعيد خطأ 403 إذا كانت الميزة معطلة.
+* يلتقط الأخطاء ويمررها إلى middleware معالجة الأخطاء بدون try/catch متكرر
+* يوفر:
+* يُستخدم في معالجة الأخطاء بشكل موحد
+* يُصدَّر لاستخدام في الاختبارات وفي server.js
+.replace(/[\u064B-\u065F]/g, '') // حذف التشكيل
+.replace(/[^a-z0-9\u0600-\u06FF]/g, ''); // حذف الرموز
+.replace(/[أإآ]/g, 'ا')
+.replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 1632))
+.replace(/[٠١٢٣٤٥٦٧٨٩]/g, (d: any) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48)) // تحويل أرقام هندية
+.replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 1776))
+.replace(/\s+/g, ' ') // دمج المسافات المتعددة
+.replace(/ة/g, 'ه')
+.replace(/ى/g, 'ي')
+.withMessage('الاسم يجب أن يكون بين 3 و 200 حرف'),
+.withMessage('الحد الأقصى يجب أن يكون بين 1 و 100'),
+.withMessage('رقم الهاتف يجب أن يبدأ بـ 09 ويتكون من 10 أرقام'),
+.withMessage('رمز التحقق يجب أن يتكون من 6 أرقام'),
+.withMessage('عدد البحث يجب أن يكون رقماً موجباً'),
+.withMessage('عدد الملفات يجب أن يكون رقماً موجباً'),
+.withMessage('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل'),
+.withMessage('كلمتا المرور غير متطابقتين'),
+.withMessage('مدة الباقة يجب أن تكون يوماً واحداً على الأقل'),
+.withMessage('ملاحظات الإدارة يجب أن تكون 500 حرف كحد أقصى'),
+// (قد يُستخدم item_name في التعليقات أو المتغيرات، لكن ليس في الاستعلامات)
+// 2024-01-15 أو 15/01/2024 أو 15-01-2024
+// Middleware للتحقق من rate limit
+// Rate limiters مختلفة
+// Rate limiters مع Redis
+// TODO: إعداد قاعدة بيانات اختبار منفصلة وتفعيل الاختبارات
+// helmet + CSP + HSTS (مخفف في التطوير)
+// إدارة المدفوعات
+// إدارة المستخدمين
+// إدارة الموردين
+// إدارة باقات الاشتراك
+// إذا كان الطلب يتطلب Redis، نرجع خطأ
+// إذا لم يتم استخراج نص، نستخدم OCR على الصفحات
+// إضافة للـ history
+// إعداد Multer
+// إعداد التخزين
+// إعداد العلاقات (Relationships)
+// إعداد عميل Textract
+// إغلاق آمن
+// إنشاء Memory rate limiter (fallback)
+// إنشاء Redis rate limiter
+// إنشاء التطبيق (يتم تركيب جميع الميدلوير والمسارات داخل createApp)
+// إنشاء حساب المدير (لوحة التحكم)
+// إنشاء حساب مستخدم (الموقع)
+// إنشاء مجلد uploads إذا لم يكن موجوداً
+// اختبار التكامل: التأكد من عدم وجود item_name المهجّر
+// استخدام نفس منطق التحليل من NodePDFProcessor
+// استخراج تاريخ الملف تلقائياً من النص إن لم يُدخل يدوياً
+// اقتراح GC
+// الإحصائيات
+// التحقق من الحاجة لـ GC
+// التحقق من الذاكرة
+// الجهة
+// الحفاظ على الحجم
+// الحقول الإلزامية: يجب توفر معرف (رقم أو OEM أو كود) واسم وسعر
+// الخدمات الإضافية (Queue, Worker)
+// السنة
+// الصانع
+// القيم الافتراضية
+// المراقبة
+// المسارات الفرعية (لها middleware خاص مسبقاً)
+// الموديل: إذا وُفر كعمود منفصل نستخدمه، وإلا نستخرجه من الاسم
+// بقية مسارات المراقبة والإدارة للمشرف فقط
+// بيانات تلقائية (حساب المدير)
+// تجاهل
+// تجاهل أخطاء الـ logger لضمان إرجاع القيم الافتراضية
+// تحميل النماذج والعلاقات
+// ترتيب المسارات: المسارات الثابتة قبل المسارات ذات المعاملات
+// تسجيل الطلبات
+// تشغيل السيرفر في غير بيئة الاختبارات
+// تصدير app لاستخدامه في الاختبارات
+// تطبيق auth + adminOnly على جميع مسارات الإدارة
+// تطبيق نظام الإصدارات إذا كان مرتبطاً بمورد
+// تفعيل الاشتراك المرتبط إن وجد
+// تنظيف XSS من body (مع استبعاد الحقول الحساسة)
+// تهيئة Session middleware (يُضاف بعد إنشاء app)
+// تهيئة rate limiters
+// تهيئة rate limiters قبل ربط المسارات فعلياً (rateLimiter يقرأ Redis)
+// تهيئة النماذج أولاً
+// جمع CPU metrics
+// جمع memory metrics
+// جميع ملفات PDF
+// حذف جميع المستخدمين الحاليين
+// خلاف ذلك، نستمر ولكن نحذر
+// دالة توحيد رقم الهاتف (نفس الموجودة في AuthService)
+// دالة خارجية لتحديث حالة التفعيل
+// دالة لقراءة إعدادات Rate Limiting من قاعدة البيانات
+// ضغط الاستجابات
+// فلتر الملفات
+// في بيئة التطوير، أضف console
+// قاعدة البيانات
+// قراءة body
+// قراءة الإعدادات من قاعدة البيانات
+// قراءة الإعدادات من قاعدة البيانات للذاكرة أيضاً
+// متغير عام للتحكم في تفعيل rate limiting (معطل افتراضياً في وضع التطوير)
+// محاولة 1: مطابقة مباشرة
+// محاولة 2: احتواء (مع تفضيل الأطول لتجنب التشابك)
+// محاولة 3: تشابه بسيط (بدون مكتبة خارجية)
+// محاولة استخدام AWS SDK إذا كان متاحاً
+// محاولة استخراج النص أولاً باستخدام pdf-parse
+// مسار عام مختصر للفحص الصحي فقط
+// مسارات إدارية
+// مسارات المعاملات في النهاية
+// ملاحظة: الاختبارات معطلة مؤقتاً لأنها تحتاج إلى إعداد قاعدة بيانات اختبار
+// ملفات ثابتة
+// نتحقق من أنه لا يوجد item_name كحقل مباشر في الاستعلامات
+// نقطة تصدير موحدة للمستودعات بصيغة TypeScript
+// نوع القطعة
+/المورد\s*:\s*(.+?)[\n\r]/,
+/شركة\s+(.+?)[\n\r]/,
+: 100 * 1024 * 1024, // 100MB افتراضياً
+`أهلاً بك ${userName}، نحن سعداء بانضمامك إلينا. ابدأ باستكشاف المنصة الآن.`,
+`اشتراك ${planName} سينتهي خلال ${daysLeft} يوم. قم بتجديده لتجنب انقطاع الخدمة.`,
+`اشتراك ${planName} قد انتهى. قم بتجديده للاستمرار في الاستفادة من الخدمة.`,
+`تعذر إنشاء إشعار نجاح استعادة كلمة المرور للمستخدم ${user.id}: ${error.message}`
+`تم استلام طلب دفع بقيمة ${amount} ريال عبر ${paymentMethod}. جاري مراجعة الطلب.`,
+`تم تسجيل الدخول إلى حسابك من جهاز جديد.`,
+`تم تفعيل اشتراك ${planName} بنجاح. ينتهي اشتراكك في ${expiryDate}.`,
+`تم رفض دفعتك للسبب التالي: ${reason}. يرجى المحاولة مرة أخرى.`,
+`تم رفع ملف ${fileName} بنجاح. جاري معالجته.`,
+`تم قبول دفعتك بقيمة ${amount} ريال وإضافتها إلى رصيدك.`,
+`تم معالجة ملف ${fileName} بنجاح. تم استخراج ${partsCount} قطعة.`,
+`حجم الملف يتجاوز الحد الأقصى ${MAX_FILE_SIZE / 1024 / 1024}MB`
+`فشلت معالجة ملف ${fileName}. الخطأ: ${error}`,
+action_text: 'إعادة المحاولة',
+action_text: 'تجديد الاشتراك',
+action_text: 'عرض الاشتراك',
+action_text: 'عرض المدفوعات',
+action_text: 'عرض الملف',
+action_text: 'عرض الملفات',
+admin_email: 'البريد الإلكتروني للإدارة',
+api_rate_limit_duration: 'مدة نافذة طلبات API (ثانية)',
+api_rate_limit_points: 'عدد طلبات API المسموحة',
+auth_rate_limit_block_duration: 'مدة حظر محاولات المصادقة (ثانية)',
+auth_rate_limit_duration: 'مدة نافذة محاولات المصادقة (ثانية)',
+auth_rate_limit_points: 'عدد محاولات المصادقة المسموحة',
+auto_backup_enabled: 'تفعيل النسخ الاحتياطي',
+await this.sendSystemNotification('خطأ في النظام', `حدث خطأ في النظام: ${error}`, 'urgent');
+backup_retention_count: 'عدد النسخ الاحتياطية',
+backup_schedule: 'جدولة النسخ الاحتياطي',
+body('card_number').trim().notEmpty().withMessage('رقم الكرت مطلوب'),
+body('card_type').isIn(['madar', 'libyana']).withMessage('نوع الكرت غير صالح'),
+body('currency').optional().isIn(['LYD', 'USD']).withMessage('العملة غير صالحة'),
+body('current_password').notEmpty().withMessage('كلمة المرور الحالية مطلوبة'),
+body('duration_days').optional().isInt({ min: 1 }).withMessage('مدة الباقة غير صالحة'),
+body('email').optional().isEmail().withMessage('البريد الإلكتروني غير صالح'),
+body('is_active').optional().isBoolean().withMessage('حالة التفعيل يجب أن تكون قيمة منطقية'),
+body('message').notEmpty().withMessage('نص الإشعار مطلوب'),
+body('name').optional().trim().notEmpty().withMessage('اسم الباقة لا يمكن أن يكون فارغاً'),
+body('name').optional().trim().notEmpty().withMessage('اسم الشركة لا يمكن أن يكون فارغاً'),
+body('name').trim().notEmpty().withMessage('اسم الباقة مطلوب'),
+body('name').trim().notEmpty().withMessage('اسم الشركة مطلوب'),
+body('password').isLength({ min: 6 }).withMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
+body('password').notEmpty().withMessage('كلمة المرور مطلوبة'),
+body('payment_method').notEmpty().withMessage('طريقة الدفع مطلوبة'),
+body('plan_id').notEmpty().withMessage('الباقة مطلوبة'),
+body('price').isFloat({ min: 0 }).withMessage('السعر يجب أن يكون رقماً موجباً'),
+body('price').optional().isFloat({ min: 0 }).withMessage('السعر يجب أن يكون رقماً موجباً'),
+body('priority').optional().isIn(PRIORITY_LEVELS).withMessage('الأولوية غير صالحة'),
+body('reset_token').trim().notEmpty().withMessage('رمز الاستعادة مطلوب'),
+body('title').notEmpty().withMessage('عنوان الإشعار مطلوب'),
+body('type').optional().isIn(NOTIFICATION_TYPES).withMessage('نوع الإشعار غير صالح'),
+body('user_id').notEmpty().withMessage('معرف المستخدم مطلوب'),
+body('user_ids').isArray({ min: 1 }).withMessage('قائمة معرفات المستخدمين مطلوبة'),
+brand: 'تويوتا',
+brand: 'هيونداي',
+cache_enabled: 'تفعيل التخزين المؤقت',
+cache_ttl: 'مدة التخزين المؤقت',
+comment: 'اسم الوكيل المستخرج من ملف PDF',
+comment: 'المسار النسبي للملف (للأمان)',
+comment: 'تاريخ الملف من الشركة الموردة',
+comment: 'رسالة التقدم الحالية',
+comment: 'رقم إصدار الملف للمورد',
+comment: 'طريقة الاستخراج الفعلية المستخدمة',
+comment: 'عدد الجداول المستخرجة',
+comment: 'نسبة التقدم (0-100)',
+comment: 'هل هذا أحدث إصدار للمورد',
+confidence: 80, // قيمة افتراضية
+const ARABIC_DIGITS_PATTERN = /[٠-٩]/g;
+const EXTENDED_ARABIC_DIGITS_PATTERN = /[۰-۹]/g;
+const adminLimiter = rateLimitMiddleware('admin', 'طلبات كثيرة جداً، يرجى المحاولة لاحقاً');
+const apiLimiter = rateLimitMiddleware('api', 'طلبات API كثيرة جداً، يرجى المحاولة لاحقاً');
+const cleaned = raw.replace(/[,٬]/g, '.').replace(/[^\d.]/g, '');
+const defaultSupplierName = `مورد تلقائي ${pdfFile.id.substring(0, 8)}`;
+const headers = ['م', 'الكود', 'الصنف', 'الوكيل', 'كود الوكيل', 'جملة 16', 'جملة 3'];
+const invalidOtpError = new UnauthorizedError('رمز التحقق غير صحيح أو منتهي الصلاحية');
+const invalidTokenError = new UnauthorizedError('رمز الاستعادة غير صالح أو منتهي الصلاحية');
+const message = `رمز التحقق الخاص بك هو ${otp} وصلاحيته ${Math.floor(OTP_TTL_SECONDS / 60)} دقائق`;
+const message = data.is_active ? 'تم تفعيل الحساب' : 'تم تعطيل الحساب';
+const message = error instanceof Error ? error.message : 'خطأ غير معروف';
+const mockRows = [{ id: '1', part_name: 'فلتر زيت', price_cash: 150 }];
+const mockWhere = { part_name: { ilike: '%فلتر%' } };
+const normalized = HeaderMapper.normalize('١٢٣');
+const result = HeaderMapper.matchHeader('الوكيل');
+const result = HeaderMapper.matchHeader('جملة 16');
+const result = HeaderMapper.matchHeader('كود الوكيل');
+const row = ['123', 'فلتر زيت', 'OEM-456', '150', 'شركة الاحساء'];
+const row = ['فلتر زيت', 'تويوتا كورولا'];
+const searchLimiter = rateLimitMiddleware('search', 'طلبات بحث كثيرة، يرجى الانتظار قليلاً');
+const title = 'رمز استعادة كلمة المرور';
+const worksheet = workbook.addWorksheet('قطع الغيار');
+const { data = null, message = 'تم الإنشاء بنجاح', meta = null } = payload;
+constructor(message = 'المورد المطلوب غير موجود') {
+constructor(message = 'تعارض في البيانات') {
+constructor(message = 'تم تجاوز عدد الطلبات المسموح به') {
+constructor(message = 'خطأ في التحقق من البيانات', details: unknown = null) {
+constructor(message = 'خطأ في خدمة خارجية', details: unknown = null) {
+constructor(message = 'خطأ في عمليات الأعمال', details: unknown = null) {
+constructor(message = 'غير مصرح بالدخول') {
+constructor(message = 'ليس لديك صلاحية الوصول إلى هذا المورد') {
+default_language: 'اللغة الافتراضية',
+default_pdf_method: 'طريقة المعالجة الافتراضية',
+describe('Database Tests (مؤقتاً معطلة)', () => {
+describe('HeaderMapper - أعمدة PDF المستخرجة من الصور', () => {
+describe('RowNormalizer - تنظيف صفوف PDF', () => {
+describe('تكامل PartRepository + SmartSearch', () => {
+description: 'إلزام الأحرف الخاصة',
+description: 'إلزام الأحرف الكبيرة',
+description: 'اسم الحاوية Azure',
+description: 'اسم الموقع',
+description: 'اسم حساب Azure',
+description: 'البريد الإلكتروني للإدارة',
+description: 'الحد الأدنى لطول كلمة المرور',
+description: 'الحد الأقصى لحجم الملف',
+description: 'الحد الأقصى للجلسات المتزامنة',
+description: 'الحد الاقصى لحجم الملف بالميغابايت',
+description: 'القائمة البيضاء للعناوين',
+description: 'اللغة الافتراضية',
+description: 'المصادقة الثنائية',
+description: 'المنطقة الزمنية',
+description: 'باقة اسبوعية ببحث غير محدود',
+description: 'باقة سنوية بجميع الميزات وسعر مخفض',
+description: 'باقة شهرية بجميع الميزات',
+description: 'باقة مجانية محدودة الميزات',
+description: 'تفعيل Rate Limiting',
+description: 'تفعيل إعدادات SMTP',
+description: 'تفعيل الإشعارات',
+description: 'تفعيل الاشتراكات',
+description: 'تفعيل التخزين المؤقت',
+description: 'تفعيل القائمة البيضاء',
+description: 'تفعيل المدفوعات',
+description: 'تفعيل المراقبة المتقدمة',
+description: 'تفعيل المراقبة',
+description: 'تفعيل المقارنة',
+description: 'تفعيل النسخ الاحتياطي',
+description: 'تفعيل حدود معدل الطلبات',
+description: 'تفعيل رفع ملفات PDF',
+description: 'تفعيل سجل الأنشطة',
+description: 'تفعيل سجل البحث',
+description: 'تفعيل صفحة البحث',
+description: 'تفعيل صفحة الكتالوجات',
+description: 'تفعيل صفحة ملفاتي',
+description: 'تفعيل لوحة الإدارة',
+description: 'جدولة النسخ الاحتياطي',
+description: 'جودة الاستخراج',
+description: 'حد محاولات تسجيل الدخول',
+description: 'حفظ الصفحات المصغرة',
+description: 'سلسلة الاتصال Azure',
+description: 'طريقة المعالجة الافتراضية',
+description: 'طريقة معالجة PDF الافتراضية',
+description: 'عدد النسخ الاحتياطية',
+description: 'عدد طلبات API المسموحة',
+description: 'عدد عمليات البحث المسموحة',
+description: 'عدد عمليات الرفع المسموحة',
+description: 'عدد محاولات المصادقة المسموحة',
+description: 'عدد مرات إعادة المحاولة',
+description: 'فترة الاحتفاظ بالسجلات',
+description: 'محاولات تسجيل الدخول القصوى',
+description: 'مدة التخزين المؤقت (ثواني)',
+description: 'مدة انتهاء الجلسة (دقائق)',
+description: 'مدة حظر محاولات المصادقة (ثانية)',
+description: 'مدة نافذة طلبات API (ثانية)',
+description: 'مدة نافذة عمليات البحث (ثانية)',
+description: 'مدة نافذة عمليات الرفع (ثانية)',
+description: 'مدة نافذة محاولات المصادقة (ثانية)',
+description: 'مسار التخزين المحلي',
+description: 'مفتاح حساب Azure',
+description: 'مهلة المعالجة',
+description: 'نوع الخط المستخدم في الموقع',
+description: 'نوع خط الموقع',
+description: 'وصف الموقع',
+description: 'وضع MVP (إخفاء الميزات المتقدمة)',
+description: 'وضع الصيانة',
+else if (/\bRH\b|يمين/i.test(text)) (derived as any).side = 'RH';
+expect((nextFn.mock.calls[0] as any)[0].message).toContain('غير مصرح');
+expect((nextFn.mock.calls[0] as any)[0].message).toContain('مدير');
+expect((normalized as any).derived.car_model).toBe('تويوتا كورولا');
+expect(SmartSearch.detectType('فلتر زيت')).toBe('name');
+expect(groups[0].part_name).toBe('فلتر زيت');
+expect(groups[0].suppliers[0].origin_country).toBe('اليابان');
+expect(mapping.brand).toBeDefined(); // المصنع
+expect(mapping.car_model).toBeDefined(); // الجهاز
+expect(mapping.item_name).toBeDefined(); // الصنف
+expect(mapping.item_number).toBeDefined(); // م
+expect(mapping.oem_number).toBeDefined(); // كود الوكيل
+expect(mapping.price_wholesale).toBeDefined(); // جملة 16 أو جملة 3
+expect(mapping.supplier_name).toBeDefined(); // الوكيل
+expect(normalizePhoneNumber('٠٩١٢٣٤٥٦٧٨')).toBe('0912345678');
+expect(normalized.part_name).toBe('فلتر زيت');
+expect(normalized.supplier_name).toBe('شركة الاحساء');
+expect(result.groups[0].suppliers[0].origin_country).toBe('اليابان');
+export const smartSearchRules = [query('q').trim().notEmpty().withMessage('نص البحث مطلوب')];
+extraction_quality: 'جودة الاستخراج',
+feature_admin_activity_logs: 'تفعيل سجل الأنشطة',
+feature_admin_advanced_monitoring: 'تفعيل المراقبة المتقدمة',
+feature_admin_dashboard: 'تفعيل لوحة الإدارة',
+feature_admin_monitoring: 'تفعيل المراقبة',
+feature_catalogs: 'تفعيل صفحة الكتالوجات',
+feature_compare: 'تفعيل المقارنة',
+feature_email_smtp: 'تفعيل إعدادات SMTP',
+feature_files: 'تفعيل صفحة ملفاتي',
+feature_history: 'تفعيل سجل البحث',
+feature_mvp_mode: 'وضع MVP (إخفاء الميزات المتقدمة)',
+feature_notifications: 'تفعيل الإشعارات',
+feature_payments: 'تفعيل المدفوعات',
+feature_rate_limiting: 'تفعيل Rate Limiting',
+feature_search: 'تفعيل صفحة البحث',
+feature_subscriptions: 'تفعيل الاشتراكات',
+feature_upload: 'تفعيل رفع ملفات PDF',
+full_name: 'أحمد محمد',
+full_name: 'أحمد',
+full_name: 'تاجر الاختبار',
+full_name: 'مدير النظام',
+full_name: 'مستخدم الموقع',
+full_name: 'مستخدم معطل',
+full_name: 'مورد الاختبار',
+generate_thumbnails: 'حفظ الصفحات المصغرة',
+health.checks.database = { status: 'healthy', message: 'اتصال قاعدة البيانات سليم' };
+if (!alert) throw new NotFoundError('التنبيه غير موجود');
+if (!file) throw new ValidationError('يرجى اختيار ملف PDF للاختبار');
+if (!file) throw new ValidationError('يرجى اختيار ملف PDF');
+if (!info) throw new BusinessError('نوع الكرت غير صالح');
+if (!job) throw new NotFoundError('المهمة غير موجودة');
+if (!jobId) throw new ValidationError('يرجى تحديد معرف المهمة');
+if (!notification) throw new NotFoundError('الإشعار غير موجود');
+if (!payment) throw new NotFoundError('الدفعة غير موجودة');
+if (!pdfFile) throw new NotFoundError('الملف غير موجود');
+if (!pdfFile) throw new NotFoundError('ملف PDF غير موجود');
+if (!plan) throw new NotFoundError('الباقة غير موجودة');
+if (!req.file) throw new ValidationError('يرجى رفع ملف PDF لاستخراج البيانات');
+if (!req.file) throw new ValidationError('يرجى رفع ملف PDF للاختبار');
+if (!req.file) throw new ValidationError('يرجى رفع ملف PDF');
+if (!supplier) throw new NotFoundError('الشركة غير موجودة');
+if (!user) throw new NotFoundError('المستخدم غير موجود');
+if (/\bLH\b|يسار/i.test(text)) (derived as any).side = 'LH';
+ip_whitelist: 'العناوين IP المسموحة',
+ip_whitelist_enabled: 'تفعيل القائمة البيضاء',
+it('adminOnly يجب أن يرفض مستخدم غير admin', () => {
+it('adminOnly يجب أن يسمح للمدير', () => {
+it('changePasswordRules يقبل كلمات مرور صحيحة', async () => {
+it('completePasswordResetRules يرفض reset_token فارغ', async () => {
+it('loginRules يرفض رقم هاتف غير صالح', async () => {
+it('loginRules يقبل بيانات صحيحة', async () => {
+it('normalizePhoneNumber يحول الأرقام العربية إلى إنجليزية', () => {
+it('normalizePhoneNumber يزيل المسافات', () => {
+it('registerRules يرفض رقم هاتف غير صالح', async () => {
+it('registerRules يرفض كلمات مرور غير متطابقة', async () => {
+it('registerRules يقبل بيانات صحيحة', async () => {
+it('requestPasswordResetRules يرفض رقم هاتف فارغ', async () => {
+it('retailerOnly يجب أن يسمح للتاجر والمدير', () => {
+it('verifyPasswordResetOtpRules يرفض OTP قصير', async () => {
+it('يجب أن تستخدم part_name في جميع استعلامات البحث', () => {
+it('يجب أن تكون أرقام OTP من 6 خانات فقط', () => {
+it('يجب أن يبني where clause ويُرجع نتائج مع الترقيم', async () => {
+it('يجب أن يتعرف على "الوكيل" كـ supplier_name بدقة 100%', () => {
+it('يجب أن يتعرف على "جملة 16" كـ price_wholesale', () => {
+it('يجب أن يتعرف على "كود الوكيل" كـ oem_number بدقة 100%', () => {
+it('يجب أن يتعرف على OEM numbers', () => {
+it('يجب أن يتعرف على item numbers', () => {
+it('يجب أن يتعرف على أعمدة الجدول 1 (م, الصنف, كود الصنف, الجهاز, المصنع, قطع غيار, الوكيل, كود الوكيل, جملة 16, جملة 3)', () => {
+it('يجب أن يتعرف على أعمدة الجدول 2 (م, الكود, الصنف, الوكيل, كود الوكيل, جملة 16, جملة 3)', () => {
+it('يجب أن يتعرف على أعمدة الجدول 3 (م, الصنف, جهاز, كود الجهاز, قطع الغيار, الوكيل, كود الوكيل, جملة 16, جملة 3)', () => {
+it('يجب أن يجمع القطع حسب الاسم مع الحقول الجديدة', () => {
+it('يجب أن يحول الأرقام الهندية إلى عربية في normalize', () => {
+it('يجب أن يرفض رمز Bearer غير صالح', async () => {
+it('يجب أن يرفض طلب بدون رأس Authorization', async () => {
+it('يجب أن يستخرج car_model من العمود المنفصل إن وُجد', () => {
+it('يجب أن يصنف النصوص كأسماء', () => {
+it('يجب أن يعيد نتائج مصنفة بشكل صحيح مع الحقول الجديدة', async () => {
+it('يجب أن يكون التحقق من الصف صحيحاً مع الحقول الجديدة', () => {
+it('يجب أن ينظف الكود من المسافات والنقاط الزائدة', () => {
+it('يجب أن يُنتج part_name و part_code بدلاً من item_name و item_number', () => {
+len: { args: [3, 200], msg: 'الاسم يجب أن يكون بين 3 و 200 حرف' },
+len: { args: [6, 100], msg: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' },
+libyana: { method: 'recharge_libyana', label: 'ليبيانا' },
+lockout_duration: 'مدة الحظر',
+log_level: 'مستوى السجلات',
+log_retention_days: 'فترة الاحتفاظ بالسجلات',
+logger.error('خطأ في جلب الإعدادات العامة:', error);
+logger.error('خطأ في فحص magic bytes:', error);
+logger.error('خطأ في مزامنة قاعدة البيانات:', error);
+logger.error('فشل الاتصال بـ Redis بعد 10 محاولات');
+logger.error('فشلت إعادة تعيين المستخدمين:', error);
+logger.error('متغير ADMIN_PASSWORD مطلوب لإنشاء حساب المدير الافتراضي');
+logger.error(`Worker: فشل Job ${job?.id}`, err.message);
+logger.error(`فشل الاحتياط عبر OCR: ${ocrError.message}`);
+logger.error(`فشل معالجة PDF ${pdfFile.id}:`, error.message);
+logger.error(`فشل معالجة PDF: ${typedJob?.id}`, typedErr.message);
+logger.info('Redis جاهز للاستخدام');
+logger.info('اكتملت إعادة تعيين المستخدمين بنجاح.');
+logger.info('بدء الاتصال بقاعدة البيانات...');
+logger.info('بدء تهيئة البيانات الافتراضية...');
+logger.info('بدء مزامنة قاعدة البيانات...');
+logger.info('تم إعادة تحميل Rate Limiters بنجاح');
+logger.info('تم إنشاء حساب المدير بنجاح.');
+logger.info('تم إنهاء اتصال Redis');
+logger.info('تم الاتصال بـ Redis بنجاح');
+logger.info('تم الاتصال بقاعدة البيانات بنجاح.');
+logger.info('تم تحديث كلمة مرور المدير بنجاح.');
+logger.info('تمت مزامنة قاعدة البيانات بنجاح');
+logger.info(`Job بدأ المعالجة: ${typedJob.id}`);
+logger.info(`Job في الانتظار: ${typedJob.id}`);
+logger.info(`OCRProcessor: استخرج ${lines.length} سطر من النص`);
+logger.info(`OCRProcessor: استخرج ${parts.length} قطعة من ${ocrResult.lines.length} سطر`);
+logger.info(`OCRProcessor: بدء معالجة الملف ${filePath}`);
+logger.info(`Worker: تمت معالجة Job ${job.id}`);
+logger.info(`تقدم معالجة PDF: ${typedJob.id} - ${progress}%`);
+logger.info(`تم إنشاء حساب المدير: ${admin.phone} / 000000`);
+logger.info(`تم إنشاء حساب المستخدم: ${user.phone} / 000000`);
+logger.info(`تم حذف ${deletedCount} مستخدم/مستخدمين.`);
+logger.info(`تم حذف ${keys.length} مفتاح من الـ cache`);
+logger.info(`تم حفظ ${rows.length} قطعة في قاعدة البيانات للملف ${pdfFile.id}`);
+logger.info(`تمت معالجة PDF بنجاح: ${typedJob.id}`);
+logger.info(`محاولة إعادة الاتصال بـ Redis... (محاولة ${retries})`);
+logger.warn('JWT_SECRET غير مضبوط، سيتم استخدام SESSION_SECRET مؤقتاً للمصادقة');
+logger.warn('تم فقدان الاتصال بـ Redis');
+logger.warn('جاري إعادة الاتصال بـ Redis...');
+logger.warn('خطأ في معالجة صف:', error.message);
+logger.warn('فشل في إعادة تحميل Rate Limiters:', error.message);
+logger.warn('فشل في قراءة إعدادات Rate Limiting، استخدام القيم الافتراضية:', error.message);
+logger.warn(`تعذر إنشاء إشعار استعادة كلمة المرور للمستخدم ${user.id}: ${error.message}`);
+logger.warn(`تعذر استخدام Redis لتخزين استعادة كلمة المرور: ${error.message}`);
+logger.warn(`تعذر حذف بيانات استعادة كلمة المرور من Redis: ${error.message}`);
+logger.warn(`تعذر حفظ بيانات استعادة كلمة المرور في Redis: ${error.message}`);
+logger.warn(`رمز استعادة كلمة المرور للمستخدم ${user.phone}: ${otp}`);
+logger.warn(`لم يتم استخراج أي قطعة عبر ${method}، جاري تجربة OCR لـ ${pdfFile.id}`);
+madar: { method: 'recharge_madar', label: 'مدار' },
+maintenance_message: 'رسالة الصيانة',
+maintenance_mode: 'وضع الصيانة',
+max_concurrent_sessions: 'الحد الأقصى للجلسات المتزامنة',
+max_file_size: 'الحد الأقصى لحجم الملف',
+max_login_attempts: 'حد محاولات تسجيل الدخول',
+message: 'BullMQ Queue سليم',
+message: 'إذا كان رقم الهاتف مسجلاً فسيتم إرسال رمز التحقق إليه',
+message: 'اتصال Redis سليم',
+message: 'البيانات مسجلة مسبقا',
+message: 'انتهت صلاحية الجلسة - يرجى تسجيل الدخول مجددا',
+message: 'تم إرسال كرت الشحن بنجاح - سيتم مراجعته من قبل الإدارة',
+message: 'تم إضافة المهمة بنجاح',
+message: 'تم إنشاء طلب الدفع بنجاح - سيتم مراجعته من قبل الإدارة',
+message: 'حجم الملف أكبر من الحد المسموح',
+message: 'خدمة Redis غير متاحة حالياً',
+message: 'خطأ في التحقق من البيانات',
+message: 'خطأ في رفع الملف',
+message: 'خطأ في قاعدة البيانات',
+message: 'رمز المصادقة غير صالح',
+message: 'قاعدة البيانات غير متوفرة حالياً - يرجى المحاولة لاحقاً',
+message: 'لا يمكن تنفيذ العملية بسبب ارتباط البيانات بسجلات أخرى',
+message: `المسار غير موجود: ${req.originalUrl}`,
+message: `تم إرسال الإشعار لـ ${notifications.length} مستخدم`,
+message: isProduction ? 'خطأ في الخادم الداخلي' : genericErr.message || 'خطأ في الخادم الداخلي',
+message: message || 'طلبات كثيرة جداً، يرجى المحاولة لاحقاً',
+min_password_length: 'الحد الأدنى لطول كلمة المرور',
+name_ar: 'اسبوعي',
+name_ar: 'سنوي',
+name_ar: 'شهري',
+name_ar: 'مجاني',
+notEmpty: { msg: 'اسم الشركة الموردة مطلوب' },
+notEmpty: { msg: 'الاسم الكامل مطلوب' },
+notEmpty: { msg: 'رقم الهاتف مطلوب' },
+notEmpty: { msg: 'عنوان الإشعار مطلوب' },
+notEmpty: { msg: 'كلمة المرور مطلوبة' },
+notEmpty: { msg: 'نص الإشعار مطلوب' },
+notes: `شحن كرت ${info.label}`,
+ocr_enabled: 'تفعيل OCR',
+ocr_language: 'لغة OCR',
+origin_country: 'اليابان',
+origin_country: 'كوريا',
+pageCount: 1, // OCR لا يحدد عدد الصفحات بدقة
+part_name: 'فلتر زيت',
+processing_timeout: 'مهلة المعالجة',
+progress_message: 'اكتملت المعالجة بنجاح',
+progress_message: 'جاري تحليل الملف واستخراج البيانات',
+progress_message: 'فشلت المعالجة',
+q: 'فلتر',
+query('is_read').optional().isBoolean().withMessage('قيمة غير صالحة'),
+query('offset').optional().isInt({ min: 0 }).withMessage('الإزاحة يجب أن تكون رقماً صحيحاً'),
+query('part_ids').trim().notEmpty().withMessage('يرجى تحديد القطع للمقارنة'),
+query('priority').optional().isIn(PRIORITY_LEVELS).withMessage('الأولوية غير صالحة'),
+query('type').optional().isIn(NOTIFICATION_TYPES).withMessage('نوع الإشعار غير صالح'),
+query: 'فلتر',
+rate_limiting_enabled: 'تفعيل حدود معدل الطلبات',
+require_numbers: 'إلزام الأرقام',
+require_special_chars: 'إلزام الأحرف الخاصة',
+require_uppercase: 'إلزام الأحرف الكبيرة',
+retry_attempts: 'عدد مرات إعادة المحاولة',
+return cb(new ValidationError('يُسمح فقط بملفات PDF'), false);
+return created(res, { data, message: 'تم إنشاء الإعداد بنجاح' });
+return created(res, { data, message: 'تم إنشاء الحساب بنجاح' });
+return created(res, { data, message: 'تم رفع الملف بنجاح - جاري المعالجة' });
+return created(res, { data: notification, message: 'تم إنشاء الإشعار بنجاح' });
+return created(res, { data: plan, message: 'تم إنشاء الباقة بنجاح' });
+return created(res, { data: supplier, message: 'تم إنشاء الشركة بنجاح' });
+return new Error('فشل الاتصال بـ Redis');
+return next(new ForbiddenError('الحساب معطل - يرجى التواصل مع الدعم الفني'));
+return next(new ForbiddenError('الميزة غير متاحة حالياً، يرجى المحاولة لاحقاً'));
+return next(new ForbiddenError('هذه الصفحة متاحة لتجار التجزئة فقط'));
+return next(new ForbiddenError('هذه الصفحة متاحة للمدير فقط'));
+return next(new UnauthorizedError('المستخدم غير موجود'));
+return next(new UnauthorizedError('رمز المصادقة غير صالح'));
+return next(new UnauthorizedError('غير مصرح بالدخول - يرجى تسجيل الدخول'));
+return next(new ValidationError('خطأ في البيانات المدخلة', details as any));
+return success(res, { data, message: 'تم اختبار الطريقة بنجاح' });
+return success(res, { data, message: 'تم استخراج البيانات بنجاح' });
+return success(res, { data, message: 'تم التحقق من الرمز بنجاح' });
+return success(res, { data, message: 'تم بدء إعادة المعالجة بنجاح' });
+return success(res, { data, message: 'تم بدء اعادة المعالجة بنجاح' });
+return success(res, { data, message: 'تم تحديث الإعداد بنجاح' });
+return success(res, { data, message: 'تم تحديث البيانات بنجاح' });
+return success(res, { data, message: 'تم تسجيل الدخول بنجاح' });
+return success(res, { data: alert, message: 'تم تأكيد التنبيه' });
+return success(res, { data: notification, message: 'تم تعليم الإشعار كمقروء' });
+return success(res, { data: payment, message: 'تم رفض الدفعة' });
+return success(res, { data: payment, message: 'تم قبول الدفعة بنجاح' });
+return success(res, { data: plan, message: 'تم تحديث الباقة بنجاح' });
+return success(res, { data: supplier, message: 'تم إضافة المورد بنجاح' });
+return success(res, { data: supplier, message: 'تم تحديث الشركة بنجاح' });
+return success(res, { data: { count }, message: `تم تعليم ${count} إشعار كمقروء` });
+return success(res, { data: { count }, message: `تم حذف ${count} إشعار مقروء` });
+return success(res, { message: 'تم إضافة المهمة لإعادة المعالجة' });
+return success(res, { message: 'تم إعادة تعيين الإعدادات بنجاح' });
+return success(res, { message: 'تم إعادة محاولة المهمة بنجاح' });
+return success(res, { message: 'تم إلغاء المهمة' });
+return success(res, { message: 'تم إيقاف الـ queue مؤقتاً' });
+return success(res, { message: 'تم استئناف الـ queue' });
+return success(res, { message: 'تم تحديث جميع الإعدادات بنجاح' });
+return success(res, { message: 'تم تسجيل الخروج بنجاح' });
+return success(res, { message: 'تم تغيير كلمة المرور بنجاح' });
+return success(res, { message: 'تم حذف الإشعار بنجاح' });
+return success(res, { message: 'تم حذف الباقة بنجاح' });
+return success(res, { message: 'تم حذف الشركة بنجاح' });
+return success(res, { message: 'تم حذف المستخدم بنجاح' });
+return success(res, { message: 'تم حذف الملف بنجاح' });
+return success(res, { message: 'تم حذف المهمة بنجاح' });
+return success(res, { message: 'تم مسح cache البحث بنجاح' });
+return success(res, { message: 'تم مسح cache الفئات والماركات بنجاح' });
+return success(res, { message: 'تم مسح جميع الـ cache بنجاح' });
+return success(res, { message: `تم مسح ${count} مهمة فاشلة` });
+return success(res, { message: `تم مسح ${count} مهمة مكتملة` });
+return success(res, { message: `تم مسح cache للـ API ${path} بنجاح` });
+return success(res, { message: `تم مسح cache للمستخدم ${userId} بنجاح` });
+search_rate_limit_duration: 'مدة نافذة عمليات البحث (ثانية)',
+search_rate_limit_points: 'عدد عمليات البحث المسموحة',
+session_timeout: 'مهلة الجلسة',
+site_description: 'منصة متخصصة في قطع غيار السيارات',
+site_description: 'وصف الموقع',
+site_logo: 'شعار الموقع',
+site_name: 'اسم الموقع',
+site_name: 'منصة قطع غيار السيارات',
+smtp_enabled: 'تفعيل SMTP',
+smtp_encryption: 'التشفير',
+smtp_from: 'عنوان المرسل',
+smtp_from_name: 'اسم المرسل',
+smtp_host: 'خادم SMTP',
+smtp_password: 'كلمة المرور',
+smtp_port: 'منفذ SMTP',
+smtp_user: 'اسم المستخدم',
+stock: p.in_stock ? 'متوفر' : 'غير متوفر',
+supplier: { name: 'شركة الاحساء' },
+supplier: { name: 'شركة طرابلس' },
+support_phone: 'رقم الهاتف للدعم',
+throw new BusinessError('تم تجاوز عدد محاولات التحقق المسموحة، يرجى طلب رمز جديد');
+throw new BusinessError('تم مراجعة هذه الدفعة مسبقا');
+throw new BusinessError('لا يمكن حذف حساب المدير');
+throw new BusinessError('يمكن إعادة المحاولة للمهام الفاشلة فقط');
+throw new ConflictError('رقم الهاتف مسجل مسبقا');
+throw new Error('تعذر تشغيل المصادقة: JWT_SECRET و SESSION_SECRET غير مضبوطين');
+throw new Error('متغير ADMIN_PASSWORD مطلوب لإنشاء حساب المدير الافتراضي');
+throw new Error('يجب ضبط JWT_SECRET أو SESSION_SECRET لتفعيل المصادقة');
+throw new ExternalServiceError('فشل استخراج الجداول من PDF', { originalError: message });
+throw new ForbiddenError('الحساب معطل - يرجى التواصل مع الدعم الفني');
+throw new NotFoundError('الإعداد غير موجود');
+throw new NotFoundError('المستخدم غير موجود');
+throw new NotFoundError('المهمة غير موجودة');
+throw new NotFoundError('ملف PDF غير موجود على القرص');
+throw new NotFoundError('ملف PDF غير موجود');
+throw new UnauthorizedError('رقم الهاتف أو كلمة المرور غير صحيحة');
+throw new UnauthorizedError('كلمة المرور الحالية غير صحيحة');
+throw new ValidationError('الملف ليس PDF صحيحاً');
+timeout: 180000, // 3 دقائق
+timezone: 'المنطقة الزمنية',
+two_factor_auth: 'المصادقة الثنائية',
+unique: { name: 'phone', msg: 'رقم الهاتف مسجل مسبقا' },
+upload_rate_limit_duration: 'مدة نافذة عمليات الرفع (ثانية)',
+upload_rate_limit_points: 'عدد عمليات الرفع المسموحة',
+value: 'منصة قطع غيار السيارات',
+value: 'منصة متخصصة في قطع غيار السيارات',
+{ header: 'الاسم الانجليزي', key: 'nameEn' },
+{ header: 'الاسم', key: 'name' },
+{ header: 'التوفر', key: 'stock' },
+{ header: 'الجودة', key: 'quality' },
+{ header: 'السعر', key: 'price' },
+{ header: 'الشركة الموردة', key: 'supplier' },
+{ header: 'العملة', key: 'currency' },
+{ header: 'الفئة', key: 'category' },
+{ header: 'الكود', key: 'code' },
+{ header: 'الماركة', key: 'brand' },
+{ header: 'بلد المنشأ', key: 'origin' },
+{ key: 'azure_account_key', value: '', category: 'storage', description: 'مفتاح حساب Azure' },
+{ key: 'azure_account_name', value: '', category: 'storage', description: 'اسم حساب Azure' },
+{ key: 'cache_ttl', value: '60', category: 'system', description: 'مدة التخزين المؤقت' },
+{ key: 'debug_mode', value: 'false', category: 'system', description: 'وضع التصحيح' },
+{ key: 'default_language', value: 'ar', category: 'system', description: 'اللغة الافتراضية' },
+{ key: 'enable_logging', value: 'true', category: 'system', description: 'تفعيل التسجيل' },
+{ key: 'ip_whitelist', value: '', category: 'security', description: 'العناوين IP المسموحة' },
+{ key: 'ip_whitelist', value: '', category: 'security', description: 'العناوين المسموحة' },
+{ key: 'lockout_duration', value: '15', category: 'security', description: 'مدة الحظر' },
+{ key: 'log_level', value: 'info', category: 'system', description: 'مستوى التسجيل' },
+{ key: 'log_level', value: 'info', category: 'system', description: 'مستوى السجلات' },
+{ key: 'maintenance_message', value: '', category: 'system', description: 'رسالة الصيانة' },
+{ key: 'maintenance_mode', value: 'false', category: 'general', description: 'وضع الصيانة' },
+{ key: 'maintenance_mode', value: 'false', category: 'system', description: 'وضع الصيانة' },
+{ key: 'ocr_enabled', value: 'false', category: 'pdf_processing', description: 'تفعيل OCR' },
+{ key: 'ocr_language', value: 'ara', category: 'pdf_processing', description: 'لغة OCR' },
+{ key: 'require_numbers', value: 'true', category: 'security', description: 'إلزام الأرقام' },
+{ key: 's3_access_key', value: '', category: 'storage', description: 'مفتاح الوصول S3' },
+{ key: 's3_bucket', value: '', category: 'storage', description: 'مجلد S3' },
+{ key: 's3_region', value: '', category: 'storage', description: 'منطقة S3' },
+{ key: 's3_secret_key', value: '', category: 'storage', description: 'مفتاح السر S3' },
+{ key: 'session_timeout', value: '30', category: 'security', description: 'مهلة الجلسة' },
+{ key: 'site_logo', value: '', category: 'general', description: 'شعار الموقع' },
+{ key: 'smtp_enabled', value: 'false', category: 'email', description: 'تفعيل SMTP' },
+{ key: 'smtp_encryption', value: 'tls', category: 'email', description: 'التشفير' },
+{ key: 'smtp_from', value: '', category: 'email', description: 'عنوان المرسل' },
+{ key: 'smtp_from_name', value: '', category: 'email', description: 'اسم المرسل' },
+{ key: 'smtp_host', value: '', category: 'email', description: 'خادم SMTP' },
+{ key: 'smtp_password', value: '', category: 'email', description: 'كلمة المرور' },
+{ key: 'smtp_password', value: '', category: 'email', description: 'كلمة مرور SMTP' },
+{ key: 'smtp_port', value: '587', category: 'email', description: 'منفذ SMTP' },
+{ key: 'smtp_user', value: '', category: 'email', description: 'اسم المستخدم' },
+{ key: 'smtp_user', value: '', category: 'email', description: 'اسم مستخدم SMTP' },
+{ key: 'storage_type', value: 'local', category: 'storage', description: 'نوع التخزين' },
+{ key: 'support_phone', value: '', category: 'general', description: 'رقم الهاتف للدعم' },
+{ key: 'timezone', value: 'Asia/Riyadh', category: 'system', description: 'المنطقة الزمنية' },

@@ -1,0 +1,7 @@
+node_modules/
+uploads/
+*.log
+.env
+__pycache__/
+*.py[cod]
+*$py.class
