@@ -17,6 +17,8 @@ export {
   notificationAPI,
   aiProviderAPI,
   supportAPI,
+  cartAPI,
+  orderAPI,
 } from "./api/index";
 
 export default http;
