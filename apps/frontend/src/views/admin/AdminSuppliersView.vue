@@ -16,7 +16,7 @@
       <div class="flex items-center gap-3">
         <select
           v-model="categoryFilter"
-          class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          class="form-select"
         >
           <option value="">جميع الفئات</option>
           <option value="automotive">قطع الغيار سيارات</option>
@@ -69,7 +69,7 @@
         />
         <select
           v-model="form.category"
-          class="px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+          class="form-select"
         >
           <option value="automotive">قطع الغيار سيارات</option>
           <option value="pharmaceutical">أدوية</option>

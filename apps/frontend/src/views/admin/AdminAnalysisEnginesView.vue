@@ -56,7 +56,7 @@
         </div>
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">النوع</label>
-          <select v-model="filters.type" class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-white">
+          <select v-model="filters.type" class="form-select">
             <option value="">الكل</option>
             <option value="pdf">محركات PDF</option>
             <option value="ai">مزودو AI</option>
@@ -64,7 +64,7 @@
         </div>
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">الحالة</label>
-          <select v-model="filters.status" class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm dark:border-neutral-700 dark:bg-neutral-800 dark:text-white">
+          <select v-model="filters.status" class="form-select">
             <option value="">الكل</option>
             <option value="enabled">مفعلة</option>
             <option value="disabled">معطلة</option>

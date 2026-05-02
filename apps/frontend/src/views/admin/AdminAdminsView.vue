@@ -114,7 +114,7 @@
         />
         <select
           v-model="form.role"
-          class="px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500"
+          class="form-select"
         >
           <option value="super_admin">مدير عام</option>
           <option value="editor">محرر</option>

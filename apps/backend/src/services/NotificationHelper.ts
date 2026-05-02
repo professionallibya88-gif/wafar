@@ -269,6 +269,60 @@ export class NotificationHelper {
     }
   }
 
+  static async sendTicketReplyNotification(
+    userId: string,
+    ticketId: string,
+    subject: string
+  ): Promise<void> {
+    try {
+      await notificationService.notifyUser(
+        userId,
+        'info',
+        'رد جديد على تذكرتك',
+        `قام فريق الدعم الفني بالرد على تذكرتك: "${subject}".`,
+        {
+          action_url: `/support?ticket=${ticketId}`,
+          action_text: 'عرض التذكرة',
+          icon: 'chat-bubble-left-right',
+          priority: 'high',
+        }
+      );
+    } catch (error: any) {
+      logger.error('Failed to send ticket reply notification:', error);
+    }
+  }
+
+  static async sendTicketStatusNotification(
+    userId: string,
+    ticketId: string,
+    subject: string,
+    newStatus: string
+  ): Promise<void> {
+    try {
+      const statusMap: Record<string, string> = {
+        open: 'مفتوحة',
+        in_progress: 'قيد المعالجة',
+        closed: 'مغلقة',
+      };
+      const statusAr = statusMap[newStatus] || newStatus;
+
+      await notificationService.notifyUser(
+        userId,
+        'info',
+        'تحديث حالة التذكرة',
+        `تم تغيير حالة تذكرتك "${subject}" إلى: ${statusAr}.`,
+        {
+          action_url: `/support?ticket=${ticketId}`,
+          action_text: 'عرض التذكرة',
+          icon: 'ticket',
+          priority: 'medium',
+        }
+      );
+    } catch (error: any) {
+      logger.error('Failed to send ticket status notification:', error);
+    }
+  }
+
   static async sendSystemNotification(
     title: string,
     message: string,

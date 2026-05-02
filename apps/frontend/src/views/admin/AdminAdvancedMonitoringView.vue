@@ -17,7 +17,7 @@
       <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
         <select
           v-model.number="refreshInterval"
-          class="w-full sm:w-auto px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
+          class="form-select"
         >
           <option :value="5000">تحديث كل 5 ثوان</option>
           <option :value="10000">تحديث كل 10 ثوان</option>

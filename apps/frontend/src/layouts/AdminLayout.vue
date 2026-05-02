@@ -1,10 +1,10 @@
 <template>
   <div class="min-h-screen flex flex-col bg-layer-base">
     <nav
-      class="sticky top-0 z-40 bg-layer-navbar/95 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-800/80 safe-area-inset-top"
+      class="sticky top-0 z-40 overflow-visible bg-layer-navbar/95 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-800/80 safe-area-inset-top"
     >
-      <div class="container-fluid">
-        <div class="flex justify-between items-center h-[4.25rem] gap-3">
+      <div class="container-fluid overflow-visible">
+        <div class="flex justify-between items-center h-[4.25rem] gap-3 overflow-visible">
           <div class="flex items-center gap-3 min-w-0">
             <button
               @click="toggleMobileSidebar"
@@ -34,7 +34,7 @@
             </router-link>
           </div>
 
-          <div class="flex items-center gap-2 md:gap-4 flex-shrink-0">
+          <div class="flex items-center gap-2 md:gap-4 flex-shrink-0 overflow-visible">
             <div
               class="hidden xl:flex items-center gap-4 px-4 py-2 bg-brand-50 dark:bg-neutral-900/40 rounded-2xl"
             >
@@ -59,32 +59,60 @@
 
             <ThemeToggle />
 
-            <router-link
-              to="/admin/settings"
-              class="flex items-center gap-3 pr-2 sm:pr-3 transition-opacity hover:opacity-80"
-            >
-              <div class="hidden sm:block text-right">
-                <p class="text-sm font-bold text-neutral-900 dark:text-white">
-                  {{ authStore.userName }}
-                </p>
-                <p class="text-xs text-neutral-500 dark:text-neutral-400">
-                  {{ authStore.userRoleLabel }}
-                </p>
-              </div>
-              <div
-                class="w-10 h-10 rounded-full bg-brand-50 dark:bg-neutral-800 border border-brand-200 dark:border-neutral-700 flex items-center justify-center text-brand-700 dark:text-neutral-200 font-bold"
+            <div class="relative overflow-visible" ref="adminDropdownRef">
+              <button
+                @click="isAdminDropdownOpen = !isAdminDropdownOpen"
+                class="flex items-center gap-3 pr-2 sm:pr-3 transition-opacity hover:opacity-80"
               >
-                {{ authStore.userName?.charAt(0) || "م" }}
-              </div>
-            </router-link>
+                <div class="hidden sm:block text-right">
+                  <p class="text-sm font-bold text-neutral-900 dark:text-white">
+                    {{ authStore.userName }}
+                  </p>
+                  <p class="text-xs text-neutral-500 dark:text-neutral-400">
+                    {{ authStore.userRoleLabel }}
+                  </p>
+                </div>
+                <div
+                  class="w-10 h-10 rounded-full bg-brand-50 dark:bg-neutral-800 border border-brand-200 dark:border-neutral-700 flex items-center justify-center text-brand-700 dark:text-neutral-200 font-bold"
+                >
+                  <AppIcon name="User" size="md" />
+                </div>
+              </button>
 
-            <button
-              @click="handleLogout"
-              class="flex items-center gap-2 p-2.5 text-neutral-500 hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 rounded-xl transition-all"
-              title="تسجيل خروج"
-            >
-              <AppIcon name="Logout" size="md" />
-            </button>
+              <!-- القائمة المنسدلة -->
+              <transition
+                enter-active-class="transition ease-out duration-100"
+                enter-from-class="transform opacity-0 scale-95"
+                enter-to-class="transform opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-75"
+                leave-from-class="transform opacity-100 scale-100"
+                leave-to-class="transform opacity-0 scale-95"
+              >
+                <div
+                  v-if="isAdminDropdownOpen"
+                  class="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-neutral-900 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden z-50"
+                >
+                  <div class="py-1">
+                    <router-link
+                      to="/admin/settings"
+                      @click="isAdminDropdownOpen = false"
+                      class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-brand-50 dark:hover:bg-neutral-800 hover:text-brand-600 transition-colors"
+                    >
+                      <AppIcon name="UserCircle" size="sm" />
+                      حسابي
+                    </router-link>
+                    <div class="h-px bg-neutral-200 dark:bg-neutral-800 my-1"></div>
+                    <button
+                      @click="handleLogoutClick"
+                      class="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 dark:hover:bg-error-900/30 transition-colors"
+                    >
+                      <AppIcon name="ArrowRightStartOnRectangle" size="sm" />
+                      تسجيل خروج
+                    </button>
+                  </div>
+                </div>
+              </transition>
+            </div>
           </div>
         </div>
       </div>
@@ -275,6 +303,31 @@ const { isEnabled } = useFeatureFlags();
 const showMobileSidebar = ref(false);
 const isSidebarCollapsed = ref(false);
 
+// Admin Dropdown Logic
+const isAdminDropdownOpen = ref(false);
+const adminDropdownRef = ref(null);
+
+const handleLogoutClick = () => {
+  isAdminDropdownOpen.value = false;
+  handleLogout();
+};
+
+const handleClickOutside = (event) => {
+  if (adminDropdownRef.value && !adminDropdownRef.value.contains(event.target)) {
+    isAdminDropdownOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  loadQuickStats();
+  document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.body.classList.remove("sidebar-open");
+  document.removeEventListener("click", handleClickOutside);
+});
+
 const quickStats = ref({
   totalUsers: null,
   totalPDFs: null,
@@ -439,10 +492,6 @@ const loadQuickStats = async () => {
   }
 };
 
-onMounted(() => {
-  loadQuickStats();
-});
-
 const toggleMobileSidebar = () => {
   showMobileSidebar.value = !showMobileSidebar.value;
 };
@@ -459,10 +508,6 @@ watch(showMobileSidebar, (newValue) => {
       document.body.classList.remove("sidebar-open");
     }
   }
-});
-
-onUnmounted(() => {
-  document.body.classList.remove("sidebar-open");
 });
 
 const toggleSidebarCollapse = () => {
@@ -486,6 +531,17 @@ const isActive = (path) => {
 };
 
 const handleLogout = async () => {
+  if (window.$confirm) {
+    const confirmed = await window.$confirm("هل أنت متأكد أنك تريد تسجيل الخروج؟", {
+      title: "تأكيد تسجيل الخروج",
+      confirmText: "تسجيل خروج",
+      cancelText: "إلغاء",
+      type: "danger",
+      icon: "ArrowRightStartOnRectangle",
+      requireTwoSteps: false
+    });
+    if (!confirmed) return;
+  }
   await authStore.logout();
   router.push("/admin/login");
 };

@@ -66,10 +66,7 @@ const applySecurity = (app: Application) => {
   const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
 
   const corsOptions = {
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? allowedOrigins
-        : '*',
+    origin: process.env.NODE_ENV === 'production' ? allowedOrigins : '*',
     credentials: true,
   };
   app.use(cors(corsOptions));

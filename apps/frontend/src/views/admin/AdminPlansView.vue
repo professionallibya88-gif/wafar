@@ -89,7 +89,7 @@
           />
           <select
             v-model="filters.status"
-            class="h-11 rounded-xl border border-neutral-100 bg-neutral-50/50 pr-9 pl-4 text-sm text-neutral-900 outline-none transition focus:border-brand-400 focus:bg-white dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 appearance-none min-w-[140px]"
+            class="form-select h-11"
           >
             <option value="all">كل الحالات</option>
             <option value="active">النشطة</option>
@@ -105,7 +105,7 @@
           />
           <select
             v-model="filters.type"
-            class="h-11 rounded-xl border border-neutral-100 bg-neutral-50/50 pr-9 pl-4 text-sm text-neutral-900 outline-none transition focus:border-brand-400 focus:bg-white dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 appearance-none min-w-[140px]"
+            class="form-select h-11"
           >
             <option value="all">كل الأنواع</option>
             <option
@@ -373,7 +373,7 @@
                 </label>
                 <select
                   v-model="form.plan_type"
-                  class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-brand-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                  class="form-select"
                 >
                   <option
                     v-for="option in planTypeOptions"
@@ -478,7 +478,7 @@
                 </div>
                 <select
                   v-model="form.currency"
-                  class="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                  class="form-select"
                 >
                   <option value="LYD">LYD</option>
                   <option value="USD">USD</option>

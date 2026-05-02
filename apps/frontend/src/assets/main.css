@@ -1405,6 +1405,20 @@ select {
     @apply placeholder:text-neutral-400 dark:placeholder:text-neutral-500 placeholder:opacity-60;
   }
 
+  .form-select {
+    @apply input appearance-none text-right rtl:text-right;
+  }
+  
+  select {
+    background-position: left 0.5rem center !important;
+    padding-right: 0.75rem !important;
+    padding-left: 2.5rem !important;
+  }
+  
+  .dark select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'><path stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/></svg>") !important;
+  }
+
   .input:focus {
     --tw-ring-color: #3b82f6;
   }

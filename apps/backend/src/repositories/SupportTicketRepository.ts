@@ -13,8 +13,7 @@ export class SupportTicketRepository extends BaseRepository<SupportTicket> {
     if (status) where.status = status;
     if (user_id) where.user_id = user_id;
 
-    return this.findAndCountAll({
-      where,
+    return this.findAndCountAll(where, {
       limit,
       offset,
       order: order || [['updated_at', 'DESC']],
@@ -28,12 +27,9 @@ export class SupportTicketRepository extends BaseRepository<SupportTicket> {
       {
         include: [
           { model: User, as: 'user', attributes: ['id', 'full_name', 'phone'] },
-          {
-            model: SupportMessage,
-            as: 'messages',
-            order: [['created_at', 'ASC']],
-          },
+          { model: SupportMessage, as: 'messages' },
         ],
+        order: [[{ model: SupportMessage, as: 'messages' }, 'created_at', 'ASC']],
       }
     );
   }

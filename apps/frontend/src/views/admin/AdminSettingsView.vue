@@ -175,7 +175,7 @@
             >
             <select
               v-model="settings.general.timezone"
-              class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+              class="form-select"
             >
               <option value="Africa/Tripoli">ليبيا (GMT+2)</option>
               <option value="Asia/Riyadh">الرياض (GMT+3)</option>
@@ -333,7 +333,7 @@
             </div>
             <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">الشكل</label>
-              <select v-model="settings.widget.widget_shape" class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500">
+              <select v-model="settings.widget.widget_shape" class="form-select">
                 <option value="circle">دائري</option>
                 <option value="rounded">مربع منحني</option>
               </select>
@@ -367,7 +367,7 @@
             >
             <select
               v-model="settings.pdf_processing.default_pdf_method"
-              class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+              class="form-select"
             >
               <option value="node_pdf">Node.js</option>
               <option value="python_pypdf">بايثون PyPDF</option>
@@ -422,7 +422,7 @@
             >
             <select
               v-model="settings.pdf_processing.extraction_quality"
-              class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+              class="form-select"
             >
               <option value="low">منخفضة (سريع)</option>
               <option value="medium">متوسطة</option>
@@ -440,7 +440,7 @@
             >
             <select
               v-model="settings.pdf_processing.python_table_engine_default"
-              class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+              class="form-select"
             >
               <option value="auto">تلقائي</option>
               <option value="pymupdf">PyMuPDF</option>
@@ -490,7 +490,7 @@
             >
             <select
               v-model="settings.pdf_processing.ocr_language"
-              class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+              class="form-select"
             >
               <option value="ara">العربية</option>
               <option value="eng">الإنجليزية</option>
@@ -676,7 +676,7 @@
             >
             <select
               v-model="settings.ai_providers.ai_preferred_provider"
-              class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+              class="form-select"
             >
               <option value="google">Google Gemini</option>
               <option value="openrouter">OpenRouter</option>
@@ -884,7 +884,7 @@
               >
               <select
                 v-model="settings.email.smtp_encryption"
-                class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                class="form-select"
               >
                 <option value="tls">TLS</option>
                 <option value="ssl">SSL</option>
@@ -1501,7 +1501,7 @@
             >
             <select
               v-model="settings.system.timezone"
-              class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+              class="form-select"
             >
               <option value="Africa/Tripoli">ليبيا (GMT+2)</option>
               <option value="Asia/Riyadh">الرياض (GMT+3)</option>
@@ -1525,7 +1525,7 @@
               >
               <select
                 v-model="settings.system.log_level"
-                class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                class="form-select"
               >
                 <option value="error">أخطاء فقط</option>
                 <option value="warn">تحذيرات</option>
@@ -1624,7 +1624,7 @@
               >
               <select
                 v-model="settings.system.backup_schedule"
-                class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                class="form-select"
               >
                 <option value="daily">يومياً</option>
                 <option value="weekly">أسبوعياً</option>

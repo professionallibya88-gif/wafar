@@ -235,10 +235,13 @@ export class PartAdminService {
   }
 
   private async getFallbackPdfFileId(): Promise<string> {
-    const latestPdfFile = await pdfFileRepository.findOne({
-      order: [['created_at', 'DESC']],
-      attributes: ['id'],
-    });
+    const latestPdfFile = await pdfFileRepository.findOne(
+      {},
+      {
+        order: [['created_at', 'DESC']],
+        attributes: ['id'],
+      }
+    );
 
     if (!latestPdfFile) {
       throw new ValidationError('لا يمكن إنشاء قطعة جديدة قبل وجود ملف PDF واحد على الأقل');

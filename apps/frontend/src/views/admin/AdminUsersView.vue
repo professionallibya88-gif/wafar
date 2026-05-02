@@ -16,7 +16,7 @@
       <div class="flex items-center gap-3">
         <select
           v-model="roleFilter"
-          class="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+          class="form-select"
         >
           <option value="">جميع الأدوار</option>
           <option value="retailer">تاجر</option>
@@ -129,7 +129,7 @@
         />
         <select
           v-model="form.role"
-          class="px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500"
+          class="form-select"
         >
           <option value="retailer">تاجر</option>
           <option value="supplier">مورد</option>

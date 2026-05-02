@@ -17,7 +17,7 @@
         <select
           v-model="statusFilter"
           @change="loadPayments"
-          class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+          class="form-select"
         >
           <option value="">جميع الحالات</option>
           <option value="pending">معلق</option>

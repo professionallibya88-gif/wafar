@@ -89,6 +89,17 @@ const isActive = (path) => {
 };
 
 const handleLogout = async () => {
+  if (window.$confirm) {
+    const confirmed = await window.$confirm("هل أنت متأكد أنك تريد تسجيل الخروج؟", {
+      title: "تأكيد تسجيل الخروج",
+      confirmText: "تسجيل خروج",
+      cancelText: "إلغاء",
+      type: "danger",
+      icon: "ArrowRightStartOnRectangle",
+      requireTwoSteps: false
+    });
+    if (!confirmed) return;
+  }
   await authStore.logout();
   await router.push("/login");
 };

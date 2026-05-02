@@ -143,7 +143,7 @@
                 <div class="relative">
                   <select
                     v-model="filters.quality_grade"
-                    class="w-full pl-4 pr-10 py-3 appearance-none bg-brand-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                    class="form-select"
                   >
                     <option value="">جميع الدرجات</option>
                     <option value="original">أصلي</option>
@@ -208,7 +208,7 @@
                 <div class="relative">
                   <select
                     v-model="filters.pdf_file_id"
-                    class="w-full pl-4 pr-10 py-3 appearance-none bg-brand-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                    class="form-select"
                   >
                     <option value="">جميع الملفات (البحث الشامل)</option>
                     <option

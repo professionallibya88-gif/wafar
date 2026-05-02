@@ -10,8 +10,11 @@
       :closeOnEscape="false"
     >
       <div class="flex flex-col items-center text-center p-4">
-        <div class="w-16 h-16 bg-warning-100 dark:bg-warning-900/30 text-warning-600 rounded-full flex items-center justify-center mb-4">
-          <AppIcon name="ExclamationTriangle" size="xl" />
+        <div 
+          class="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+          :class="iconColorClass"
+        >
+          <AppIcon :name="iconName" size="xl" />
         </div>
         <p class="text-lg text-neutral-800 dark:text-neutral-200 font-medium mb-2">
           {{ state.message }}
@@ -75,7 +78,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, onUnmounted } from "vue";
+import { reactive, computed, onMounted, onUnmounted } from "vue";
 import BaseModal from "./BaseModal.vue";
 import BaseButton from "./BaseButton.vue";
 import { AppIcon } from "@/icons";
@@ -86,6 +89,19 @@ const state = reactive({
   message: "",
   options: {},
   resolve: null,
+});
+
+const iconName = computed(() => {
+  if (state.options.icon) return state.options.icon;
+  if (state.options.type === 'danger') return 'ExclamationCircle';
+  if (state.options.type === 'info') return 'InformationCircle';
+  return 'ExclamationTriangle';
+});
+
+const iconColorClass = computed(() => {
+  if (state.options.type === 'danger') return 'bg-error-100 dark:bg-error-900/30 text-error-600';
+  if (state.options.type === 'info') return 'bg-info-100 dark:bg-info-900/30 text-info-600';
+  return 'bg-warning-100 dark:bg-warning-900/30 text-warning-600';
 });
 
 const showConfirm = (message, options = {}) => {

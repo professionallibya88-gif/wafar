@@ -93,11 +93,13 @@
       >
         <div class="bg-brand-600 rounded-xl p-3 text-white shadow-brand-md">
           <p class="text-sm font-medium">تحتاج مساعدة؟</p>
-          <button
-            class="mt-2 w-full bg-white/20 hover:bg-white/30 text-white text-sm py-2 rounded-lg transition-colors duration-200"
+          <router-link
+            to="/contact"
+            @click="$emit('close-mobile')"
+            class="mt-2 block w-full text-center bg-white/20 hover:bg-white/30 text-white text-sm py-2 rounded-lg transition-colors duration-200"
           >
             تواصل معنا
-          </button>
+          </router-link>
         </div>
       </div>
     </div>

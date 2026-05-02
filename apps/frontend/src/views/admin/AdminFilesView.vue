@@ -16,7 +16,7 @@
       <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
         <select
           v-model="statusFilter"
-          class="w-full sm:w-auto bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+          class="form-select"
         >
           <option value="">جميع الحالات</option>
           <option value="pending">معلق</option>
@@ -153,11 +153,14 @@
               <td class="table-cell text-neutral-600 dark:text-neutral-300">
                 {{ f.user?.full_name || "-" }}
               </td>
-              <td class="px-4 py-4">
-                <span
-                  class="text-xs px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium"
-                  >{{ getProcessingMethodLabel(f.processing_method) }}</span
+              <td class="px-4 py-4 whitespace-nowrap">
+                <BaseBadge
+                  variant="default"
+                  size="sm"
+                  class="whitespace-nowrap"
                 >
+                  {{ getProcessingMethodLabel(f.processing_method) }}
+                </BaseBadge>
               </td>
               <td class="px-4 py-4">
                 <span
@@ -241,7 +244,7 @@
 import { ref, computed, onMounted } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseButton, BaseToast } from "@/components/base";
+import { BaseBadge, BaseButton, BaseToast } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 import { getFileStatusLabel, getFileStatusVariant, getProcessingMethodLabel } from "@/utils/statusLabels";
 

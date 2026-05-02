@@ -19,7 +19,7 @@
           <!-- فلتر النوع -->
           <select
             v-model="filters.type"
-            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            class="form-select"
           >
             <option value="">جميع الأنواع</option>
             <option value="info">معلومات</option>
@@ -36,7 +36,7 @@
           <!-- فلتر الحالة -->
           <select
             v-model="filters.is_read"
-            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            class="form-select"
           >
             <option value="">جميع الحالات</option>
             <option value="false">غير مقروء</option>
@@ -46,7 +46,7 @@
           <!-- فلتر الأولوية -->
           <select
             v-model="filters.priority"
-            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            class="form-select"
           >
             <option value="">جميع الأولويات</option>
             <option value="urgent">عاجل</option>

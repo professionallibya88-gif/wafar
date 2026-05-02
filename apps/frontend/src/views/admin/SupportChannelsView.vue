@@ -108,7 +108,7 @@
         
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">نوع القناة</label>
-          <select v-model="form.type" required class="w-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+          <select v-model="form.type" required class="form-select">
             <option value="whatsapp">واتساب</option>
             <option value="phone">هاتف</option>
             <option value="link">رابط موقع</option>

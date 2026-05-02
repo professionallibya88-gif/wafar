@@ -195,7 +195,7 @@
           </label>
           <select
             v-model="selectedMethod"
-            class="w-full rounded-xl border border-neutral-200 bg-brand-50 px-4 py-3 text-neutral-900 transition-all duration-200 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white dark:focus:bg-neutral-600 dark:focus:ring-brand-900/30"
+            class="form-select"
           >
             <option value="">استخدام الإعداد الافتراضي</option>
             <option value="python_pypdf">Python PyPDF</option>

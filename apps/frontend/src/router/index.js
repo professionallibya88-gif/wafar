@@ -46,6 +46,7 @@ const routes = [
         path: "",
         name: "Home",
         component: () => import("@/views/dashboard/HomeView.vue"),
+        meta: { requiresAuth: true },
       },
       {
         path: "search",
@@ -112,6 +113,12 @@ const routes = [
         name: "Notifications",
         component: () => import("@/views/NotificationsView.vue"),
         meta: { requiresAuth: true, featureFlag: "notifications" },
+      },
+      {
+        path: "contact",
+        name: "Contact",
+        component: () => import("@/views/dashboard/ContactView.vue"),
+        meta: { requiresAuth: true },
       },
     ],
   },

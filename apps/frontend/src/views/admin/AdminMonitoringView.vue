@@ -18,7 +18,7 @@
         <select
           v-model.number="refreshIntervalTime"
           @change="updateAutoRefresh"
-          class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white text-sm"
+          class="form-select"
         >
           <option :value="10000">كل 10 ثوان</option>
           <option :value="30000">كل 30 ثانية</option>

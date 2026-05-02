@@ -1,42 +1,7 @@
 <template>
-  <div 
-    class="page-shell max-w-7xl mx-auto pb-12 relative"
-    :class="{ 'h-[calc(100vh-100px)] overflow-hidden': !isAuthenticated }"
-  >
-    
-    <!-- الغطاء الترويجي للمستخدم غير المسجل (التشويق) -->
-    <div 
-      v-if="!isAuthenticated" 
-      class="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-white/70 dark:bg-neutral-900/80 backdrop-blur-[4px] rounded-3xl mx-4 lg:mx-0"
-    >
-      <div class="bg-white dark:bg-neutral-900 p-8 rounded-3xl shadow-2xl max-w-md w-full border border-neutral-100 dark:border-neutral-800 text-center transform transition-all hover:scale-105 duration-300 relative z-50">
-        <div class="w-20 h-20 bg-brand-50 dark:bg-brand-900/30 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-          <AppIcon name="Sparkles" class="w-10 h-10 text-brand-600 dark:text-brand-400" />
-        </div>
-        <h2 class="text-2xl font-extrabold text-neutral-900 dark:text-white mb-4">
-          {{ siteSettings.landing_hero_title || 'اكتشف منصة وفر لقطع الغيار' }}
-        </h2>
-        <p class="text-neutral-500 dark:text-neutral-400 mb-8 leading-relaxed font-medium">
-          {{ siteSettings.landing_hero_description || 'المنصة الذكية الأولى في ليبيا للبحث المتقدم ومقارنة أسعار قطع غيار السيارات. قم بإنشاء حسابك الآن لتجربة بحث لا مثيل لها.' }}
-        </p>
-        <div class="flex flex-col gap-4">
-          <router-link 
-            to="/login" 
-            class="w-full py-3.5 px-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold shadow-brand-sm transition-all duration-200"
-          >
-            تسجيل الدخول
-          </router-link>
-          <router-link 
-            to="/register" 
-            class="w-full py-3.5 px-4 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-white rounded-xl font-bold transition-all duration-200"
-          >
-            إنشاء حساب جديد
-          </router-link>
-        </div>
-      </div>
-    </div>
+  <div class="page-shell max-w-7xl mx-auto pb-12 relative">
 
-    <div :class="{ 'opacity-10 blur-md pointer-events-none select-none transition-all duration-500': !isAuthenticated }" class="space-y-12">
+    <div class="space-y-12">
       <!-- Welcome Header -->
     <SectionTransition type="fade" :delay="0">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
@@ -160,33 +125,29 @@
     <div class="space-y-10">
       <!-- Quick Actions -->
       <SectionTransition type="slide-up" :delay="250">
-        <h2 class="text-xl font-bold text-neutral-900 dark:text-neutral-50 mb-6">
-          إجراءات سريعة
-        </h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-          <router-link
-            v-for="action in quickActions"
-            :key="action.path"
-            :to="action.path"
-            class="panel-card p-6 flex flex-col items-center justify-center gap-4 hover:-translate-y-1 hover:shadow-lg hover:border-brand-300 dark:hover:border-brand-700 transition-all duration-300 group relative rounded-3xl"
-          >
-            <span
-              v-if="action.requiresAuth && !isAuthenticated"
-              class="absolute top-3 left-3 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"
+        <div>
+          <h2 class="text-xl font-bold text-neutral-900 dark:text-neutral-50 mb-6">
+            إجراءات سريعة
+          </h2>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+            <router-link
+              v-for="action in quickActions"
+              :key="action.path"
+              :to="action.path"
+              class="panel-card p-6 flex flex-col items-center justify-center gap-4 hover:-translate-y-1 hover:shadow-lg hover:border-brand-300 dark:hover:border-brand-700 transition-all duration-300 group relative rounded-3xl"
             >
-              دخول
-            </span>
-            <div class="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-neutral-800 group-hover:bg-brand-100 dark:group-hover:bg-neutral-700 flex items-center justify-center transition-colors">
-              <AppIcon
-                :name="action.iconName"
-                class="w-7 h-7 text-brand-600 dark:text-brand-400"
-              />
-            </div>
-            <span
-              class="text-sm font-bold text-neutral-700 dark:text-neutral-300 text-center"
-              >{{ action.label }}</span
-            >
-          </router-link>
+              <div class="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-neutral-800 group-hover:bg-brand-100 dark:group-hover:bg-neutral-700 flex items-center justify-center transition-colors">
+                <AppIcon
+                  :name="action.iconName"
+                  class="w-7 h-7 text-brand-600 dark:text-brand-400"
+                />
+              </div>
+              <span
+                class="text-sm font-bold text-neutral-700 dark:text-neutral-300 text-center"
+                >{{ action.label }}</span
+              >
+            </router-link>
+          </div>
         </div>
       </SectionTransition>
 
@@ -203,21 +164,13 @@
               <h2
                 class="text-xl font-bold text-neutral-900 dark:text-neutral-50"
               >
-                {{
-                  isAuthenticated
-                    ? "أحدث الملفات المعالجة"
-                    : "ما الذي ستحصل عليه بعد التسجيل"
-                }}
+                أحدث الملفات المعالجة
               </h2>
               <router-link
                 :to="filesActionPath"
                 class="text-sm font-bold text-brand-600 dark:text-neutral-400 hover:text-brand-700"
               >
-                {{
-                  isAuthenticated
-                    ? "عرض السجل الكامل"
-                    : "ابدأ الآن"
-                }}
+                عرض السجل الكامل
                 ←
               </router-link>
             </div>
@@ -229,11 +182,7 @@
                 <AppIcon name="DocumentText" class="w-8 h-8 text-neutral-400" />
               </div>
               <p class="text-neutral-500 dark:text-neutral-400 font-medium">
-                {{
-                  isAuthenticated
-                    ? "لم تقم برفع أي ملفات حتى الآن"
-                    : "بعد إنشاء الحساب ستظهر هنا الملفات المرفوعة ونتائج معالجتها باحترافية."
-                }}
+                لم تقم برفع أي ملفات حتى الآن
               </p>
             </div>
 
@@ -286,21 +235,13 @@
               <h2
                 class="text-xl font-bold text-neutral-900 dark:text-neutral-50"
               >
-                {{
-                  isAuthenticated
-                    ? "عمليات البحث الأخيرة"
-                    : "البحث الذكي بعد تسجيل الدخول"
-                }}
+                عمليات البحث الأخيرة
               </h2>
               <router-link
                 :to="historyActionPath"
                 class="text-sm font-bold text-brand-600 dark:text-neutral-400 hover:text-brand-700"
               >
-                {{
-                  isAuthenticated
-                    ? "سجل البحث"
-                    : "سجل الدخول"
-                }}
+                سجل البحث
                 ←
               </router-link>
             </div>
@@ -315,11 +256,7 @@
                 />
               </div>
               <p class="text-neutral-500 dark:text-neutral-400 font-medium">
-                {{
-                  isAuthenticated
-                    ? "سجل البحث فارغ حالياً"
-                    : "يمكنك مراجعة سجل البحث ومتابعة النتائج فور تسجيل الدخول إلى حسابك."
-                }}
+                سجل البحث فارغ حالياً
               </p>
             </div>
 
@@ -366,132 +303,80 @@ import { pdfAPI, searchAPI } from "@/services/api";
 import { BaseBadge } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { SectionTransition } from "@/components/transitions";
-import { buildLoginRedirect } from "@/utils/authRedirect";
 import { useFeatureFlags } from "@/composables/useFeatureFlags";
-import { useSiteSettings } from "@/composables/useSiteSettings";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 import { getFileStatusLabel, getFileStatusVariant } from "@/utils/statusLabels";
 
 const router = useRouter();
 const authStore = useAuthStore();
 const { isEnabled } = useFeatureFlags();
-const { siteSettings } = useSiteSettings();
 const quickSearch = ref("");
 const recentFiles = ref([]);
 const recentSearches = ref([]);
 const catalogsCount = ref(0);
-const isAuthenticated = computed(() => authStore.isAuthenticated);
-const loginRedirect = computed(() => buildLoginRedirect("/upload"));
 const primaryActionPath = computed(() => {
-  if (!isAuthenticated.value) return "/register";
   if (isEnabled("upload")) return "/upload";
   if (isEnabled("search")) return "/search";
   return "/";
 });
 const primaryActionLabel = computed(() => {
-  if (!isAuthenticated.value) return "إنشاء حساب جديد";
   if (isEnabled("upload")) return "+ رفع ملف جديد";
   if (isEnabled("search")) return "البحث";
   return "الرئيسية";
 });
-const filesActionPath = computed(() =>
-  isAuthenticated.value ? "/files" : loginRedirect.value,
-);
-const historyActionPath = computed(() =>
-  isAuthenticated.value ? "/history" : loginRedirect.value,
-);
+const filesActionPath = computed(() => "/files");
+const historyActionPath = computed(() => "/history");
 const welcomeTitle = computed(() => {
   return `مرحباً، ${authStore.userName || "المستخدم"}`;
 });
 
-const welcomeDescription = computed(() =>
-  isAuthenticated.value
-    ? `حسابك الحالي مصنف كـ ${authStore.userRoleLabel}`
-    : "مرحباً بك في منصتك لقطع غيار السيارات"
-);
-const statusLabelText = computed(() =>
-  isAuthenticated.value ? "الوضع الحالي" : "وضع الاستشارة",
-);
+const welcomeDescription = computed(() => `حسابك الحالي مصنف كـ ${authStore.userRoleLabel}`);
+const statusLabelText = computed(() => "الوضع الحالي");
 
 // Stats Data
 const statsData = computed(() => {
-  if (isAuthenticated.value) {
-    const stats = [];
-    if (isEnabled("upload") || isEnabled("files")) {
-      stats.push({
-        label: "الملفات المرفوعة",
-        value: String(recentFiles.value.length || 0),
-        iconName: "DocumentText",
-        bgColor: "bg-brand-100 dark:bg-neutral-900/30",
-        iconColor: "text-brand-600 dark:text-neutral-400",
-        trend: 12,
-      });
-    }
-    if (isEnabled("catalogs")) {
-      stats.push({
-        label: "النتائج المتاحة",
-        value: String(catalogsCount.value || 0),
-        iconName: "BookOpen",
-        bgColor: "bg-brand-100 dark:bg-neutral-900/30",
-        iconColor: "text-brand-600 dark:text-neutral-400",
-        trend: 8,
-      });
-    }
-    if (isEnabled("search") || isEnabled("history")) {
-      stats.push({
-        label: "عمليات البحث",
-        value: String(recentSearches.value.length || 0),
-        iconName: "MagnifyingGlass",
-        bgColor: "bg-green-100 dark:bg-green-900/30",
-        iconColor: "text-green-600 dark:text-green-400",
-        trend: 25,
-      });
-    }
-    if (isEnabled("payments")) {
-      stats.push({
-        label: "الرصيد",
-        value: formatCurrency(500),
-        iconName: "CurrencyDollar",
-        bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
-        iconColor: "text-yellow-600 dark:text-yellow-400",
-        trend: 0,
-      });
-    }
-    return stats;
+  const stats = [];
+  if (isEnabled("upload") || isEnabled("files")) {
+    stats.push({
+      label: "الملفات المرفوعة",
+      value: String(recentFiles.value.length || 0),
+      iconName: "DocumentText",
+      bgColor: "bg-brand-100 dark:bg-neutral-900/30",
+      iconColor: "text-brand-600 dark:text-neutral-400",
+      trend: 12,
+    });
   }
-
-  return [
-    {
-      label: "النتائج",
-      iconName: "Sparkles",
+  if (isEnabled("catalogs")) {
+    stats.push({
+      label: "النتائج المتاحة",
+      value: String(catalogsCount.value || 0),
+      iconName: "BookOpen",
       bgColor: "bg-brand-100 dark:bg-neutral-900/30",
       iconColor: "text-brand-600 dark:text-neutral-400",
-      trend: 18,
-    },
-    {
-      label: "الأقسام الرئيسية",
-      value: "6",
-      iconName: "Grid",
-      bgColor: "bg-brand-100 dark:bg-neutral-900/30",
-      iconColor: "text-brand-600 dark:text-neutral-400",
-      trend: 10,
-    },
-    {
-      label: "سرعة الاستجابة",
-      iconName: "Bolt",
+      trend: 8,
+    });
+  }
+  if (isEnabled("search") || isEnabled("history")) {
+    stats.push({
+      label: "عمليات البحث",
+      value: String(recentSearches.value.length || 0),
+      iconName: "MagnifyingGlass",
       bgColor: "bg-green-100 dark:bg-green-900/30",
       iconColor: "text-green-600 dark:text-green-400",
       trend: 25,
-    },
-    {
-      label: "واجهة عربية",
-      value: "RTL",
-      iconName: "Globe",
+    });
+  }
+  if (isEnabled("payments")) {
+    stats.push({
+      label: "الرصيد",
+      value: formatCurrency(500),
+      iconName: "CurrencyDollar",
       bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
       iconColor: "text-yellow-600 dark:text-yellow-400",
       trend: 0,
-    },
-  ];
+    });
+  }
+  return stats;
 });
 
 // Quick Actions
@@ -541,8 +426,6 @@ const quickActions = computed(() =>
 );
 
 const fetchData = async () => {
-  if (!isAuthenticated.value) return;
-
   const promises = [];
   if (isEnabled("files") || isEnabled("upload")) {
     promises.push(pdfAPI.getFiles({ limit: 5 }));
@@ -579,10 +462,7 @@ let pollingInterval = null;
 
 onMounted(async () => {
   await fetchData();
-  
-  if (isAuthenticated.value) {
-    pollingInterval = setInterval(fetchData, 10000); // 10 seconds for real-time feel
-  }
+  pollingInterval = setInterval(fetchData, 10000); // 10 seconds for real-time feel
 });
 
 onUnmounted(() => {

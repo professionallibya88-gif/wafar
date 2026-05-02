@@ -8,6 +8,7 @@ import { testConnection, syncDatabase } from './database';
 import { initRateLimiters } from './middleware/rateLimiter';
 import { initializeServices } from './bootstrap/services';
 import { setupGracefulShutdown } from './bootstrap/gracefulShutdown';
+import { initSocket } from './socket';
 
 const PORT = process.env.PORT || 5050;
 
@@ -56,6 +57,9 @@ const startServer = async () => {
       logger.info(`Server running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV}`);
     });
+
+    // تهيئة WebSockets
+    initSocket(server);
 
     // إغلاق آمن
     setupGracefulShutdown(server);

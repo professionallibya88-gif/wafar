@@ -87,7 +87,7 @@
           </label>
           <select
             v-model="filters.category"
-            class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+            class="form-select"
           >
             <option value="">كل الفئات</option>
             <option v-for="category in filterOptions.categories" :key="category" :value="category">
@@ -102,7 +102,7 @@
           </label>
           <select
             v-model="filters.brand"
-            class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+            class="form-select"
           >
             <option value="">كل العلامات</option>
             <option v-for="brand in filterOptions.brands" :key="brand" :value="brand">
@@ -117,7 +117,7 @@
           </label>
           <select
             v-model="filters.quality_grade"
-            class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+            class="form-select"
           >
             <option value="">كل الدرجات</option>
             <option
@@ -136,7 +136,7 @@
           </label>
           <select
             v-model="filters.supplier_id"
-            class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+            class="form-select"
           >
             <option value="">كل الموردين</option>
             <option
@@ -183,7 +183,7 @@
           </label>
           <select
             v-model="filters.in_stock"
-            class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+            class="form-select"
           >
             <option value="">الكل</option>
             <option value="true">متوفر</option>
@@ -197,7 +197,7 @@
           </label>
           <select
             v-model="filters.sort_field"
-            class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+            class="form-select"
           >
             <option value="created_at">الأحدث</option>
             <option value="part_name">الاسم</option>
@@ -214,7 +214,7 @@
           </label>
           <select
             v-model="filters.sort_dir"
-            class="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+            class="form-select"
           >
             <option value="DESC">تنازلي</option>
             <option value="ASC">تصاعدي</option>
@@ -418,7 +418,7 @@
 
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">المورد</label>
-          <select v-model="form.supplier_id" class="form-input">
+          <select v-model="form.supplier_id" class="form-select">
             <option value="">بدون ربط</option>
             <option
               v-for="supplier in filterOptions.suppliers"
@@ -437,7 +437,7 @@
 
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">درجة الجودة</label>
-          <select v-model="form.quality_grade" class="form-input">
+          <select v-model="form.quality_grade" class="form-select">
             <option
               v-for="grade in filterOptions.qualityGrades"
               :key="grade"

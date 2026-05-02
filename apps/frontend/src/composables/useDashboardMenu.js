@@ -76,6 +76,12 @@ export const useDashboardMenu = () => {
       requiresAuth: true,
       featureKey: "notifications",
     },
+    contact: {
+      path: "/contact",
+      label: "تواصل معنا",
+      icon: "ChatBubbleLeftRight",
+      requiresAuth: true,
+    },
     profile: {
       path: "/profile",
       label: "حسابي",
@@ -101,6 +107,7 @@ export const useDashboardMenu = () => {
     "subscriptions",
     "payments",
     "notifications",
+    "contact",
     "profile",
   ]);
 
@@ -123,6 +130,13 @@ export const useDashboardMenu = () => {
         path: "/admin",
         label: "لوحة الإدارة",
         icon: "ShieldCheck",
+        requiresAuth: true,
+        isAdmin: true,
+      });
+      items.push({
+        path: "/admin/support-tickets",
+        label: "محادثات الدعم",
+        icon: "TicketIcon",
         requiresAuth: true,
         isAdmin: true,
       });

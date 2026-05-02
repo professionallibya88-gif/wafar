@@ -4,7 +4,9 @@ import logger from '../config/logger';
 
 dotenv.config();
 
-const isSSL = process.env.DB_SSL === 'true' || (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('sslmode=require'));
+const isSSL =
+  process.env.DB_SSL === 'true' ||
+  (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('sslmode=require'));
 
 const sequelizeOptions: any = {
   host: process.env.DB_HOST,

@@ -1,5 +1,8 @@
 import { supportTicketRepository, supportMessageRepository } from '../repositories';
 import { NotFoundError, ForbiddenError, ValidationError } from '../errors';
+import { NotificationHelper } from './NotificationHelper';
+import { getIO } from '../socket';
+import logger from '../config/logger';
 
 export class SupportTicketService {
   async getUserTickets(user_id: string, query: any) {
@@ -64,10 +67,19 @@ export class SupportTicketService {
       content: messageContent,
     });
 
-    return {
+    const fullTicket = {
       ...ticket.toJSON(),
       messages: [message.toJSON()],
     };
+
+    // إرسال إشعار للمشرفين
+    try {
+      getIO().to('admins').emit('new_ticket', fullTicket);
+    } catch (err) {
+      logger.error('Socket error:', err instanceof Error ? err.message : String(err));
+    }
+
+    return fullTicket;
   }
 
   async addReply(
@@ -100,21 +112,68 @@ export class SupportTicketService {
       content,
     });
 
+    const newStatus = sender_type === 'admin' ? 'in_progress' : 'open';
+
     // Update ticket updated_at by performing a dummy update or status change if needed
     await supportTicketRepository.updateById(ticket_id, {
-      status: sender_type === 'admin' ? 'resolved' : 'open',
+      status: newStatus,
     });
+
+    // Notify user if admin replied
+    if (sender_type === 'admin') {
+      await NotificationHelper.sendTicketReplyNotification(
+        ticket.user_id,
+        ticket.id,
+        ticket.subject
+      );
+    }
+
+    // إرسال إشعار لحظي عبر WebSocket
+    try {
+      const io = getIO();
+      const messageData = message.toJSON();
+
+      if (sender_type === 'admin') {
+        io.to(`user_${ticket.user_id}`).emit('ticket_reply', messageData);
+      } else {
+        io.to('admins').emit('ticket_reply', messageData);
+      }
+    } catch (err) {
+      logger.error('Socket error:', err instanceof Error ? err.message : String(err));
+    }
 
     return message;
   }
 
-  async updateTicketStatus(ticket_id: string, status: 'open' | 'closed' | 'resolved') {
+  async updateTicketStatus(ticket_id: string, status: 'open' | 'closed' | 'in_progress') {
     const ticket = await supportTicketRepository.findById(ticket_id);
     if (!ticket) {
       throw new NotFoundError('التذكرة غير موجودة');
     }
 
-    await supportTicketRepository.updateById(ticket_id, { status });
+    if (ticket.status !== status) {
+      await supportTicketRepository.updateById(ticket_id, { status });
+      await NotificationHelper.sendTicketStatusNotification(
+        ticket.user_id,
+        ticket.id,
+        ticket.subject,
+        status
+      );
+
+      // إرسال إشعار لحظي عبر WebSocket
+      try {
+        getIO().to(`user_${ticket.user_id}`).emit('ticket_status_changed', {
+          ticket_id,
+          status,
+        });
+        getIO().to('admins').emit('ticket_status_changed', {
+          ticket_id,
+          status,
+        });
+      } catch (err) {
+        logger.error('Socket error:', err instanceof Error ? err.message : String(err));
+      }
+    }
 
     return supportTicketRepository.findById(ticket_id);
   }

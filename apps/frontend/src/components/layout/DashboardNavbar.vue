@@ -68,7 +68,7 @@
           ></div>
 
           <!-- قائمة المستخدم -->
-          <div v-if="isAuthenticated" class="flex items-center gap-3">
+          <div v-if="isAuthenticated" class="flex items-center gap-3 relative" ref="userDropdownRef">
             <div class="hidden md:block text-right">
               <p class="text-sm font-bold text-neutral-900 dark:text-white">
                 {{ userName }}
@@ -79,13 +79,47 @@
                 {{ userRoleLabel }}
               </p>
             </div>
-            <router-link
-              to="/profile"
+            <button
+              @click="toggleUserDropdown"
               class="w-10 h-10 bg-brand-50 dark:bg-neutral-800 border border-brand-200 dark:border-neutral-700 rounded-full flex items-center justify-center text-brand-600 dark:text-neutral-400 font-bold hover:ring-2 hover:ring-brand-500 hover:ring-offset-2 dark:hover:ring-offset-neutral-900 transition-all overflow-hidden"
             >
               <img v-if="userAvatar" :src="userAvatar" alt="Avatar" class="w-full h-full object-cover" />
-              <span v-else>{{ userName?.charAt(0) || "م" }}</span>
-            </router-link>
+              <AppIcon v-else name="User" size="md" />
+            </button>
+
+            <!-- القائمة المنسدلة -->
+            <transition
+              enter-active-class="transition ease-out duration-100"
+              enter-from-class="transform opacity-0 scale-95"
+              enter-to-class="transform opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-75"
+              leave-from-class="transform opacity-100 scale-100"
+              leave-to-class="transform opacity-0 scale-95"
+            >
+              <div
+                v-if="uiState.isUserDropdownOpen"
+                class="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-neutral-900 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden z-50"
+              >
+                <div class="py-1">
+                  <router-link
+                    to="/profile"
+                    @click="closeUserDropdown"
+                    class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-brand-50 dark:hover:bg-neutral-800 hover:text-brand-600 transition-colors"
+                  >
+                    <AppIcon name="UserCircle" size="sm" />
+                    حسابي
+                  </router-link>
+                  <div class="h-px bg-neutral-200 dark:bg-neutral-800 my-1"></div>
+                  <button
+                    @click="handleLogoutClick"
+                    class="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 dark:hover:bg-error-900/30 transition-colors"
+                  >
+                    <AppIcon name="ArrowRightStartOnRectangle" size="sm" />
+                    تسجيل خروج
+                  </button>
+                </div>
+              </div>
+            </transition>
           </div>
 
           <div v-else class="flex items-center gap-2">
@@ -103,16 +137,6 @@
               تسجيل الدخول
             </router-link>
           </div>
-
-          <!-- تسجيل خروج -->
-          <button
-            v-if="isAuthenticated"
-            @click="$emit('logout')"
-            class="flex items-center gap-2 p-2.5 text-neutral-500 hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/30 rounded-xl transition-all"
-            title="تسجيل خروج"
-          >
-            <AppIcon name="ArrowRightStartOnRectangle" size="md" />
-          </button>
         </div>
       </div>
     </div>
@@ -120,7 +144,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import { AppIcon } from "@/icons";
 import { ThemeToggle } from "@/base";
@@ -130,7 +154,9 @@ import { useSiteSettings } from "@/composables/useSiteSettings";
 
 const { siteSettings } = useSiteSettings();
 
-defineProps({
+const emit = defineEmits(["toggle-mobile", "toggle-collapse", "logout"]);
+
+const props = defineProps({
   isAuthenticated: { type: Boolean, default: false },
   userName: { type: String, default: "" },
   userAvatar: { type: String, default: "" },
@@ -146,5 +172,36 @@ const registerLink = computed(() => ({
   query: authRedirect.value.query,
 }));
 
-defineEmits(["toggle-mobile", "toggle-collapse", "logout"]);
+// User Dropdown Logic
+const uiState = reactive({
+  isUserDropdownOpen: false,
+});
+const userDropdownRef = ref(null);
+
+const toggleUserDropdown = () => {
+  uiState.isUserDropdownOpen = !uiState.isUserDropdownOpen;
+};
+
+const closeUserDropdown = () => {
+  uiState.isUserDropdownOpen = false;
+};
+
+const handleLogoutClick = () => {
+  closeUserDropdown();
+  emit("logout");
+};
+
+const handleClickOutside = (event) => {
+  if (userDropdownRef.value && !userDropdownRef.value.contains(event.target)) {
+    closeUserDropdown();
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>

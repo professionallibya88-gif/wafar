@@ -172,7 +172,7 @@
             </div>
             <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">النوع</label>
-              <select v-model="form.provider_type" class="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+              <select v-model="form.provider_type" class="form-select">
                 <option value="google">Google Gemini</option>
                 <option value="openrouter">OpenRouter</option>
                 <option value="openai">OpenAI</option>

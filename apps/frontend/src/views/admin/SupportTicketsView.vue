@@ -3,10 +3,20 @@
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">تذاكر الدعم والمراسلات</h1>
       <div class="flex items-center gap-4">
+        <!-- Audio Alert Toggle -->
+        <button
+          @click="toggleMute"
+          class="p-2 rounded-full transition-colors flex items-center justify-center border"
+          :class="isMuted ? 'border-gray-200 text-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800' : 'border-amber-200 bg-amber-50 text-amber-500 hover:bg-amber-100 dark:border-amber-900/50 dark:bg-amber-900/20'"
+          :title="isMuted ? 'تفعيل التنبيهات الصوتية' : 'كتم التنبيهات الصوتية'"
+        >
+          <AppIcon :name="isMuted ? 'Bell' : 'BellAlert'" class="w-5 h-5" />
+        </button>
+
         <!-- Status Filter -->
         <select
           v-model="filters.status"
-          class="block w-48 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+          class="form-select w-48"
           @change="fetchTickets"
         >
           <option value="">جميع الحالات</option>
@@ -81,7 +91,7 @@
                 </span>
               </div>
               <div class="text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center mt-2">
-                <span>{{ ticket.user?.name || ticket.user?.phone || 'مستخدم' }}</span>
+                <span>{{ ticket.user?.full_name || ticket.user?.name || ticket.user?.phone || 'مستخدم' }}</span>
                 <span>{{ formatDate(ticket.created_at) }}</span>
               </div>
             </li>
@@ -115,11 +125,18 @@
           <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
             <div>
               <h2 class="font-bold text-lg text-gray-900 dark:text-white">{{ selectedTicket.subject }}</h2>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                بواسطة: {{ selectedTicket.user?.name || selectedTicket.user?.phone || 'غير معروف' }}
-                <span class="mx-2">|</span>
-                {{ formatDate(selectedTicket.created_at) }}
-              </p>
+              <div class="flex items-center gap-3 mt-2">
+                <span class="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300">
+                  <AppIcon name="UserIcon" class="w-4 h-4 text-gray-400" />
+                  {{ selectedTicket.user?.full_name || selectedTicket.user?.name || 'غير معروف' }}
+                </span>
+                <span v-if="selectedTicket.user?.phone" class="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300" dir="ltr">
+                  <AppIcon name="PhoneIcon" class="w-4 h-4 text-gray-400" />
+                  {{ selectedTicket.user.phone }}
+                </span>
+                <span class="text-gray-300 dark:text-gray-600">|</span>
+                <span class="text-xs text-gray-500">{{ formatDate(selectedTicket.created_at) }}</span>
+              </div>
             </div>
             
             <!-- Actions -->
@@ -127,7 +144,7 @@
               <select
                 v-model="selectedTicket.status"
                 @change="updateStatus(selectedTicket.status)"
-                class="block w-36 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                class="form-select w-36"
               >
                 <option value="open">مفتوحة</option>
                 <option value="in_progress">قيد المعالجة</option>
@@ -151,7 +168,7 @@
               >
                 <div class="flex items-center gap-2 mb-1">
                   <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    {{ msg.sender_type === 'admin' ? 'الدعم الفني (أنت)' : (selectedTicket.user?.name || 'العميل') }}
+                    {{ msg.sender_type === 'admin' ? 'الدعم الفني (أنت)' : (selectedTicket.user?.full_name || selectedTicket.user?.name || 'العميل') }}
                   </span>
                   <span class="text-[10px] text-gray-400">{{ formatTime(msg.created_at) }}</span>
                 </div>
@@ -161,7 +178,7 @@
                     ? 'bg-primary-600 text-white rounded-tr-none' 
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-tl-none'"
                 >
-                  <p class="whitespace-pre-wrap text-sm">{{ msg.message }}</p>
+                  <p class="whitespace-pre-wrap text-sm">{{ msg.message || msg.content }}</p>
                 </div>
               </div>
             </template>
@@ -205,12 +222,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import AppIcon from '@/components/icons/AppIcon.vue';
 import { supportAPI } from '@/services/api';
 import { useNotificationStore } from '@/stores/notification';
+import { useAuthStore } from '@/stores/auth';
+import { getSocket } from '@/services/socket';
 
 const notificationStore = useNotificationStore();
+const authStore = useAuthStore();
 
 // State
 const loading = ref(true);
@@ -233,6 +253,54 @@ const loadingMessages = ref(false);
 const newMessage = ref('');
 const sendingMessage = ref(false);
 const messagesContainer = ref(null);
+const isMuted = ref(false);
+
+let socketClient = null;
+
+const getMuteStorageKey = () => {
+  const adminId = authStore.user?.id || 'admin';
+  return `admin_support_muted_${adminId}`;
+};
+
+const loadMutePreference = () => {
+  try {
+    isMuted.value = localStorage.getItem(getMuteStorageKey()) === '1';
+  } catch {
+    isMuted.value = false;
+  }
+};
+
+const toggleMute = () => {
+  isMuted.value = !isMuted.value;
+  try {
+    localStorage.setItem(getMuteStorageKey(), isMuted.value ? '1' : '0');
+  } catch {
+    // تجاهل
+  }
+};
+
+const playNotificationSound = () => {
+  if (isMuted.value) return;
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = 'sine';
+    // نغمة مختلفة للإدارة للتمييز
+    oscillator.frequency.setValueAtTime(660, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.1);
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch {
+    // تجاهل
+  }
+};
 
 // Fetch Tickets
 const fetchTickets = async () => {
@@ -374,7 +442,69 @@ const formatTime = (dateString) => {
   });
 };
 
+// WebSocket Logic
+const connectRealtime = () => {
+  socketClient = getSocket();
+  socketClient.emit('join_admin');
+
+  // عندما يستلم الإدمن تذكرة جديدة تماماً
+  socketClient.on('new_ticket', async (ticketData) => {
+    playNotificationSound();
+    notificationStore.info(`تذكرة جديدة: ${ticketData.subject}`);
+    await fetchTickets();
+  });
+
+  // عندما يرد مستخدم على تذكرة
+  socketClient.on('ticket_reply', async (messageData) => {
+    if (!messageData?.ticket_id) return;
+    
+    // إذا كان المرسل ليس أدمن
+    if (messageData.sender_type !== 'admin') {
+      playNotificationSound();
+    }
+
+    const ticketId = messageData.ticket_id;
+    
+    // تحديث المحادثة النشطة إذا كانت هي نفسها
+    if (selectedTicket.value?.id === ticketId && selectedTicketDetails.value?.messages) {
+      const alreadyExists = selectedTicketDetails.value.messages.some(m => m.id === messageData.id);
+      if (!alreadyExists) {
+        selectedTicketDetails.value.messages.push(messageData);
+        await nextTick();
+        scrollToBottom();
+      }
+    }
+
+    // تحديث قائمة التذاكر لجلب أحدث تعديل
+    await fetchTickets();
+  });
+
+  // عند تغير حالة التذكرة
+  socketClient.on('ticket_status_changed', async (payload) => {
+    if (!payload?.ticket_id) return;
+    
+    if (selectedTicket.value?.id === payload.ticket_id) {
+      selectedTicket.value.status = payload.status;
+    }
+    
+    await fetchTickets();
+  });
+};
+
+const disconnectRealtime = () => {
+  if (!socketClient) return;
+  socketClient.off('new_ticket');
+  socketClient.off('ticket_reply');
+  socketClient.off('ticket_status_changed');
+};
+
 onMounted(() => {
+  loadMutePreference();
   fetchTickets();
+  connectRealtime();
+});
+
+onUnmounted(() => {
+  disconnectRealtime();
 });
 </script>

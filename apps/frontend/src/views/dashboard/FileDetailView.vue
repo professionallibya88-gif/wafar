@@ -194,7 +194,7 @@
           </div>
           <div>
             <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">الجودة</label>
-            <select v-model="filters.quality_grade" @change="applyFilters" class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-1 focus:ring-brand-500 dark:text-white">
+            <select v-model="filters.quality_grade" @change="applyFilters" class="form-select">
               <option value="">الكل</option>
               <option value="original">أصلي</option>
               <option value="high">جيد</option>
@@ -204,7 +204,7 @@
           </div>
           <div>
             <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">التوفر</label>
-            <select v-model="filters.in_stock" class="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-1 focus:ring-brand-500 dark:text-white">
+            <select v-model="filters.in_stock" class="form-select">
               <option value="">الكل</option>
               <option value="true">متوفر فقط</option>
               <option value="false">غير متوفر</option>

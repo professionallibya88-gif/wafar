@@ -165,7 +165,7 @@
               >
               <select
                 v-model="cardType"
-                class="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-brand-50 dark:bg-neutral-700 text-neutral-900 dark:text-white transition-all focus:bg-white dark:focus:bg-neutral-600"
+                class="form-select"
               >
                 <option value="madar">كرت مدار</option>
                 <option value="libyana">كرت ليبيانا</option>
@@ -260,7 +260,7 @@
               >
               <select
                 v-model="transferApp"
-                class="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-600 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-brand-50 dark:bg-neutral-700 text-neutral-900 dark:text-white transition-all focus:bg-white dark:focus:bg-neutral-600"
+                class="form-select"
               >
                 <option value="money_transfer_sarad">سراد</option>
                 <option value="money_transfer_tadawul">تداول</option>
@@ -375,7 +375,7 @@
             <!-- Status Filter -->
             <select
               v-model="statusFilter"
-              class="px-4 py-2 bg-brand-50 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded-xl text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all"
+              class="form-select"
             >
               <option value="">كل الحالات</option>
               <option value="pending">قيد المراجعة</option>

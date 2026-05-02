@@ -15,14 +15,14 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">تفعيل الإشعارات البريدية</label>
-            <select v-model="settings.emailEnabled" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+            <select v-model="settings.emailEnabled" class="form-select">
               <option :value="true">مفعل</option>
               <option :value="false">معطل</option>
             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">تفعيل إشعارات النظام (Push)</label>
-            <select v-model="settings.pushEnabled" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+            <select v-model="settings.pushEnabled" class="form-select">
               <option :value="true">مفعل</option>
               <option :value="false">معطل</option>
             </select>

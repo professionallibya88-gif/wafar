@@ -40,11 +40,12 @@
     "pdf-parse": "^1.1.1",
     "pg": "^8.11.3",
     "rate-limiter-flexible": "^5.0.0",
+    "redis": "^4.6.0",
     "sanitize-html": "^2.11.0",
     "sequelize": "^6.37.0",
+    "socket.io": "^4.8.3",
     "tesseract.js": "^5.0.2",
     "uuid": "^9.0.0",
-    "redis": "^4.6.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
