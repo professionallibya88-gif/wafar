@@ -1,11 +1,20 @@
 <template>
   <div class="w-full">
     <!-- Header -->
-    <div class="text-center mb-8">
-      <div class="w-16 h-16 bg-brand-600 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg shadow-brand-500/30">
-        <AppIcon name="ShieldCheck" size="xl" class="text-white" />
+    <div class="text-center mb-6 pt-0 flex flex-col items-center">
+      <img
+        v-if="siteSettings?.site_logo"
+        :src="siteSettings.site_logo"
+        class="w-16 h-16 object-contain mb-4"
+        :alt="siteSettings?.site_name || 'وفر'"
+      />
+      <div
+        v-else
+        class="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center shadow-brand-sm mb-4"
+      >
+        <AppIcon name="DocumentText" size="lg" color="white" />
       </div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white mb-2 transition-colors">
+      <h1 class="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white mb-2 transition-colors">
         تسجيل دخول الإدارة
       </h1>
       <p class="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 transition-colors">
@@ -17,9 +26,9 @@
     <Transition name="slide-fade">
       <div
         v-if="authStore.error"
-        class="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl flex items-center gap-3 transition-colors"
+        class="mb-5 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-3.5 transition-colors dark:border-red-500/20 dark:bg-red-500/10"
       >
-        <div class="w-8 h-8 bg-red-100 dark:bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+        <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-500/20">
           <AppIcon name="ExclamationCircle" size="sm" class="text-red-600 dark:text-red-400" />
         </div>
         <p class="text-sm text-red-700 dark:text-red-400">
@@ -29,7 +38,7 @@
     </Transition>
 
     <!-- Login Form -->
-    <form @submit.prevent="handleLogin" class="space-y-5">
+    <form @submit.prevent="handleLogin" class="space-y-4">
       <!-- Email/Phone Input -->
       <div class="space-y-2">
         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors">
@@ -44,7 +53,7 @@
             type="text"
             required
             dir="ltr"
-            class="w-full pr-12 pl-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:bg-white dark:focus:bg-neutral-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all duration-200 placeholder:text-neutral-400 text-left dark:text-white text-base font-sans"
+            class="w-full rounded-xl border border-neutral-200 bg-white py-2.5 pr-12 pl-4 text-left text-base font-sans transition-all duration-200 placeholder:text-neutral-400 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-800"
             placeholder="admin@example.com / 091XXXXXXX"
           />
         </div>
@@ -64,7 +73,7 @@
             :type="showPassword ? 'text' : 'password'"
             required
             dir="ltr"
-            class="w-full pr-12 pl-12 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:bg-white dark:focus:bg-neutral-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all duration-200 placeholder:text-neutral-400 text-left tracking-widest dark:text-white text-base font-sans"
+            class="w-full rounded-xl border border-neutral-200 bg-white py-2.5 pr-12 pl-12 text-left text-base tracking-widest font-sans transition-all duration-200 placeholder:text-neutral-400 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-800"
             placeholder="••••••••"
           />
           <button
@@ -79,15 +88,13 @@
       </div>
 
       <!-- Remember Me -->
-      <div class="flex items-center gap-3">
-        <div class="relative flex items-center">
-          <input
-            id="remember"
-            type="checkbox"
-            v-model="rememberMe"
-            class="w-5 h-5 text-brand-600 bg-white border-neutral-300 rounded focus:ring-brand-500 dark:bg-neutral-800 dark:border-neutral-600 dark:focus:ring-brand-500/30 transition-colors"
-          />
-        </div>
+      <div class="checkbox-inline">
+        <input
+          id="remember"
+          type="checkbox"
+          v-model="rememberMe"
+          class="h-5 w-5 rounded border-neutral-300 bg-white text-brand-600 transition-colors focus:ring-brand-500 dark:border-neutral-600 dark:bg-neutral-800 dark:focus:ring-brand-500/30"
+        />
         <label
           for="remember"
           class="text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer select-none transition-colors"
@@ -100,14 +107,14 @@
       <button
         type="submit"
         :disabled="authStore.loading"
-        class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/30 hover:shadow-xl hover:shadow-brand-500/40 active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base mt-2"
+        class="mt-1.5 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 py-3 text-base font-semibold text-white shadow-lg shadow-brand-500/30 transition-all duration-200 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-500/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
       >
         <AppIcon v-if="authStore.loading" name="Refresh" size="sm" customClass="animate-spin" />
         <span>{{ authStore.loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول للإدارة' }}</span>
       </button>
     </form>
 
-    <div class="mt-8 text-center border-t border-neutral-200 dark:border-neutral-700 pt-6">
+    <div class="mt-6 border-t border-neutral-200 pt-5 text-center dark:border-neutral-700">
       <router-link
         to="/login"
         class="text-sm text-neutral-500 hover:text-brand-600 dark:text-neutral-400 dark:hover:text-brand-400 transition-colors"
@@ -124,10 +131,12 @@ import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { AppIcon } from "@/components/icons";
 import { getPostAdminAuthRedirect } from "@/utils/authRedirect";
+import { useSiteSettings } from "@/composables/useSiteSettings";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const { siteSettings } = useSiteSettings();
 
 const email = ref("");
 const password = ref("");

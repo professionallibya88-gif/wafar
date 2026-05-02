@@ -1,8 +1,20 @@
 <template>
   <div class="w-full">
     <!-- Header -->
-    <div class="text-center mb-8">
-      <h1 class="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white mb-2 transition-colors">
+    <div class="text-center mb-6 pt-0 flex flex-col items-center">
+      <img
+        v-if="siteSettings?.site_logo"
+        :src="siteSettings.site_logo"
+        class="w-16 h-16 object-contain mb-4"
+        :alt="siteSettings?.site_name || 'وفر'"
+      />
+      <div
+        v-else
+        class="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center shadow-brand-sm mb-4"
+      >
+        <AppIcon name="DocumentText" size="lg" color="white" />
+      </div>
+      <h1 class="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white mb-2 transition-colors">
         إنشاء حساب
       </h1>
       <p class="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 transition-colors">
@@ -14,9 +26,9 @@
     <Transition name="slide-fade">
       <div
         v-if="validationError || authStore.error"
-        class="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl flex items-center gap-3 transition-colors"
+        class="mb-5 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-3.5 transition-colors dark:border-red-500/20 dark:bg-red-500/10"
       >
-        <div class="w-8 h-8 bg-red-100 dark:bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+        <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-500/20">
           <AppIcon name="ExclamationCircle" size="sm" class="text-red-600 dark:text-red-400" />
         </div>
         <p class="text-sm text-red-700 dark:text-red-400">
@@ -26,7 +38,7 @@
     </Transition>
 
     <!-- Register Form -->
-    <form @submit.prevent="handleRegister" class="space-y-5">
+    <form @submit.prevent="handleRegister" class="space-y-4">
       <!-- Full Name Input -->
       <div class="space-y-2">
         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors">
@@ -41,7 +53,7 @@
             type="text"
             required
             minlength="3"
-            class="w-full pr-12 pl-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:bg-white dark:focus:bg-neutral-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all duration-200 placeholder:text-neutral-400 text-left dark:text-white text-base"
+            class="w-full rounded-xl border border-neutral-200 bg-white py-2.5 pr-12 pl-4 text-left text-base transition-all duration-200 placeholder:text-neutral-400 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-800"
             placeholder="أدخل اسمك الرباعي"
           />
         </div>
@@ -61,7 +73,7 @@
             type="tel"
             required
             dir="ltr"
-            class="w-full pr-12 pl-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:bg-white dark:focus:bg-neutral-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all duration-200 placeholder:text-neutral-400 text-left dark:text-white text-base"
+            class="w-full rounded-xl border border-neutral-200 bg-white py-2.5 pr-12 pl-4 text-left text-base transition-all duration-200 placeholder:text-neutral-400 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-800"
             placeholder="091XXXXXXX"
           />
         </div>
@@ -80,7 +92,7 @@
             v-model="password"
             :type="showPassword ? 'text' : 'password'"
             required
-            class="w-full pr-12 pl-12 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:bg-white dark:focus:bg-neutral-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all duration-200 placeholder:text-neutral-400 dark:text-white text-base"
+            class="w-full rounded-xl border border-neutral-200 bg-white py-2.5 pr-12 pl-12 text-base transition-all duration-200 placeholder:text-neutral-400 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-800"
             placeholder="6 أحرف على الأقل"
           />
           <button
@@ -93,7 +105,7 @@
           </button>
         </div>
         <!-- Password Strength Indicator -->
-        <div class="mt-2">
+        <div class="mt-1.5">
           <div class="flex gap-1">
             <div
               v-for="i in 4"
@@ -122,7 +134,7 @@
             :type="showPassword ? 'text' : 'password'"
             required
             :class="[
-              'w-full pr-12 pl-4 py-3 bg-white dark:bg-neutral-800 border rounded-xl transition-all duration-200 text-base dark:text-white',
+              'w-full rounded-xl border bg-white py-2.5 pr-12 pl-4 text-base transition-all duration-200 dark:bg-neutral-800 dark:text-white',
               confirmPassword && password !== confirmPassword
                 ? 'border-red-500 focus:ring-4 focus:ring-red-500/10'
                 : 'border-neutral-200 dark:border-neutral-700 focus:bg-white dark:focus:bg-neutral-800 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10',
@@ -136,13 +148,13 @@
       </div>
 
       <!-- Terms Checkbox -->
-      <div class="flex items-center gap-3">
+      <div class="checkbox-inline">
         <input
           id="terms"
           type="checkbox"
           v-model="acceptTerms"
           required
-          class="w-5 h-5 text-brand-600 bg-white border-neutral-300 rounded focus:ring-brand-500 dark:bg-neutral-800 dark:border-neutral-600 dark:focus:ring-brand-500/30 transition-colors"
+          class="h-5 w-5 rounded border-neutral-300 bg-white text-brand-600 transition-colors focus:ring-brand-500 dark:border-neutral-600 dark:bg-neutral-800 dark:focus:ring-brand-500/30"
         />
         <label for="terms" class="text-sm text-neutral-600 dark:text-neutral-400 transition-colors">
           أوافق على
@@ -154,7 +166,7 @@
       <button
         type="submit"
         :disabled="authStore.loading || !acceptTerms"
-        class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/30 hover:shadow-xl hover:shadow-brand-500/40 active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base"
+        class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 py-3 text-base font-semibold text-white shadow-lg shadow-brand-500/30 transition-all duration-200 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-500/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
       >
         <AppIcon v-if="authStore.loading" name="Refresh" size="sm" customClass="animate-spin" />
         <span>{{ authStore.loading ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب' }}</span>
@@ -162,7 +174,7 @@
     </form>
 
     <!-- Login Link -->
-    <div class="mt-8 text-center">
+    <div class="mt-6 text-center">
       <p class="text-sm text-neutral-500 dark:text-neutral-400 transition-colors">
         لديك حساب بالفعل؟
         <router-link
@@ -183,10 +195,12 @@ import { useAuthStore } from "@/stores/auth";
 import { AppIcon } from "@/components/icons";
 import { getPostAuthRedirect } from "@/utils/authRedirect";
 import { normalizePhoneNumber } from "@/utils/phone";
+import { useSiteSettings } from "@/composables/useSiteSettings";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const { siteSettings } = useSiteSettings();
 
 const fullName = ref("");
 const phone = ref("");

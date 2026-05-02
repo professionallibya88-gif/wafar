@@ -7,7 +7,7 @@
         <h1 class="page-title">قنوات الدعم والتواصل</h1>
         <p class="page-subtitle">إدارة قنوات التواصل المتاحة للعملاء</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
         <BaseButton @click="openCreateForm" variant="primary" class="inline-flex items-center gap-2">
           <AppIcon name="Plus" size="md" color="white" />
           إضافة قناة
@@ -16,11 +16,11 @@
     </div>
 
     <!-- Table -->
-    <div class="bg-layer-stats rounded-xl border border-neutral-200/70 dark:border-neutral-800/70 overflow-hidden">
+    <div class="panel-table">
       <div class="p-4 border-b border-neutral-200/70 dark:border-neutral-800/70">
         <h3 class="font-bold text-gray-900 dark:text-white">قائمة القنوات</h3>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
             <tr>
@@ -54,7 +54,7 @@
             </tr>
             <tr v-else v-for="channel in channels" :key="channel.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
               <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                   <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400">
                     <AppIcon :name="channel.icon || getIconName(channel.type)" size="md" />
                   </div>
@@ -83,7 +83,7 @@
                 </button>
               </td>
               <td class="px-6 py-4 text-right text-sm font-medium">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                   <button @click="openEditForm(channel)" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
                     <AppIcon name="Pencil" size="sm" />
                   </button>
@@ -108,11 +108,16 @@
         
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">نوع القناة</label>
-          <select v-model="form.type" required class="form-select">
-            <option value="whatsapp">واتساب</option>
-            <option value="phone">هاتف</option>
-            <option value="link">رابط موقع</option>
-          </select>
+          <BaseSelect
+  v-model="form.type"
+  select-class="form-select"
+  required
+  :options="[
+    { label: 'واتساب', value: 'whatsapp' },
+    { label: 'هاتف', value: 'phone' },
+    { label: 'رابط موقع', value: 'link' },
+  ]"
+/>
         </div>
 
         <div>

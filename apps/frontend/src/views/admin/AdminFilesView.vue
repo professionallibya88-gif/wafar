@@ -14,16 +14,17 @@
         </p>
       </div>
       <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-        <select
-          v-model="statusFilter"
-          class="form-select"
-        >
-          <option value="">جميع الحالات</option>
-          <option value="pending">معلق</option>
-          <option value="processing">جاري المعالجة</option>
-          <option value="completed">مكتمل</option>
-          <option value="failed">فشل</option>
-        </select>
+        <BaseSelect
+  v-model="statusFilter"
+  select-class="form-select w-full sm:w-auto"
+  :options="[
+    { label: 'جميع الحالات', value: '' },
+    { label: 'معلق', value: 'pending' },
+    { label: 'جاري المعالجة', value: 'processing' },
+    { label: 'مكتمل', value: 'completed' },
+    { label: 'فشل', value: 'failed' },
+  ]"
+/>
         <div class="relative w-full sm:w-auto">
           <input
             v-model="searchQuery"
@@ -39,21 +40,21 @@
     <Transition name="slide-fade">
       <div
         v-if="selectedFiles.length > 0"
-        class="bg-brand-600 dark:bg-brand-700 rounded-xl p-4 flex items-center justify-between animate-fadeIn"
+        class="bg-brand-600 dark:bg-brand-700 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-fadeIn"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
           <AppIcon name="CheckCircle" size="lg" color="white" />
           <span class="text-white font-medium">
             تم تحديد {{ selectedFiles.length }} ملف
           </span>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <BaseButton
             @click="reprocessSelected"
             :disabled="processing"
             variant="secondary"
             size="sm"
-            class="bg-white/20 hover:bg-white/30 text-white border-0"
+            class="bg-white/20 hover:bg-white/30 text-white border-0 w-full sm:w-auto justify-center"
           >
             <AppIcon name="ArrowPath" size="sm" color="white" />
             إعادة معالجة
@@ -63,6 +64,7 @@
             :disabled="processing"
             variant="danger"
             size="sm"
+            class="w-full sm:w-auto justify-center"
           >
             <AppIcon name="Trash" size="sm" color="white" />
             حذف المحدد
@@ -80,7 +82,7 @@
 
     <!-- Files Table Card -->
     <div class="panel-table">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-brand-50 dark:bg-gray-900">
             <tr>
@@ -133,7 +135,7 @@
                 />
               </td>
               <td class="px-4 py-4">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                   <div
                     class="w-10 h-10 bg-red-100 dark:bg-red-900/50 rounded-lg flex items-center justify-center flex-shrink-0"
                   >
@@ -244,7 +246,7 @@
 import { ref, computed, onMounted } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseBadge, BaseButton, BaseToast } from "@/components/base";
+import { BaseBadge, BaseButton, BaseToast, BaseSelect } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 import { getFileStatusLabel, getFileStatusVariant, getProcessingMethodLabel } from "@/utils/statusLabels";
 

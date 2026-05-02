@@ -62,6 +62,7 @@ import {
   // أيقونات التنبيهات
   BellIcon,
   BellAlertIcon,
+  BellSlashIcon,
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   InformationCircleIcon,
@@ -73,6 +74,7 @@ import {
   DocumentMagnifyingGlassIcon,
   DocumentChartBarIcon,
   DocumentDuplicateIcon,
+  InboxIcon,
   
   // أيقونات المستخدم
   UserCircleIcon,
@@ -116,7 +118,9 @@ import {
   ScaleIcon,
   TruckIcon,
   PhotoIcon,
+  CameraIcon,
   HashtagIcon,
+  FaceSmileIcon,
 
   // أيقونات التحميل
   ArrowUpIcon,
@@ -124,6 +128,7 @@ import {
 
   // أيقونات الرد
   ChatBubbleLeftIcon,
+  ChatBubbleOvalLeftIcon,
   ChatBubbleLeftRightIcon,
   PaperAirplaneIcon,
   TicketIcon,
@@ -141,6 +146,8 @@ import {
   // أيقونات السمة
   SunIcon,
   MoonIcon,
+  LifebuoyIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/vue/24/outline";
 
 // تصدير جميع الأيقونات
@@ -209,6 +216,7 @@ export const Icons = {
   // أيقونات التنبيهات
   Bell: BellIcon,
   BellAlert: BellAlertIcon,
+  BellSlash: BellSlashIcon,
   ExclamationTriangle: ExclamationTriangleIcon,
   ExclamationCircle: ExclamationCircleIcon,
   InformationCircle: InformationCircleIcon,
@@ -220,6 +228,7 @@ export const Icons = {
   DocumentMagnifyingGlass: DocumentMagnifyingGlassIcon,
   DocumentChart: DocumentChartBarIcon,
   DocumentDuplicate: DocumentDuplicateIcon,
+  Inbox: InboxIcon,
   
   // أيقونات المستخدم
   UserCircle: UserCircleIcon,
@@ -265,8 +274,10 @@ export const Icons = {
   Scale: ScaleIcon,
   Truck: TruckIcon,
   Photo: PhotoIcon,
+  Camera: CameraIcon,
   Hashtag: HashtagIcon,
   ArrowLeftEndOnRectangle: ArrowLeftEndOnRectangleIcon,
+  FaceSmile: FaceSmileIcon,
 
   // أيقونات التحميل
   ArrowUp: ArrowUpIcon,
@@ -274,6 +285,7 @@ export const Icons = {
 
   // أيقونات الرد
   ChatBubble: ChatBubbleLeftIcon,
+  ChatBubbleOvalLeft: ChatBubbleOvalLeftIcon,
   ChatBubbleLeftRight: ChatBubbleLeftRightIcon,
   PaperAirplane: PaperAirplaneIcon,
   TicketIcon: TicketIcon,
@@ -293,6 +305,8 @@ export const Icons = {
   Sun: SunIcon,
   Moon: MoonIcon,
   Computer: ComputerDesktopIcon,
+  Lifebuoy: LifebuoyIcon,
+  QuestionMarkCircle: QuestionMarkCircleIcon,
 };
 
 // الأسماء المستعارة الشائعة - kebab-case وغيرها
@@ -413,6 +427,11 @@ export const IconAliases = {
   "arrow-path": "Refresh",
   "clipboard-document-list": "ClipboardDocumentList",
   "document-magnifying-glass": "DocumentMagnifyingGlass",
+  "bell-slash": "BellSlash",
+  "bell-alert": "BellAlert",
+  "inbox": "Inbox",
+  "chat-bubble-oval-left": "ChatBubbleOvalLeft",
+  "face-smile": "FaceSmile",
 };
 
 // دالة للحصول على أيقونة بالاسم
@@ -424,20 +443,27 @@ export const getIcon = (name) => {
     return name;
   }
 
-  // محاولة الحصول على الاسم المستعقارن أولاً
-  const aliasName = IconAliases[name];
-  const iconName = aliasName || name;
+  // تنظيف الاسم من لاحقة Icon إذا وجدت لتسهيل المطابقة
+  let cleanName = name;
+  if (typeof cleanName === 'string' && cleanName.endsWith('Icon')) {
+    cleanName = cleanName.replace(/Icon$/, '');
+  }
+
+  // محاولة الحصول على الاسم المستعار أولاً (بالاسم الأصلي أو المنظف)
+  const aliasName = IconAliases[name] || IconAliases[cleanName];
+  const iconName = aliasName || cleanName;
 
   // محاولة camelCase مع حرف أول كبير (PascalCase)
-  const pascalCaseName = name
+  const pascalCaseName = iconName
     .split(/[-_\s]/)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join("");
 
   // البحث عن الأيقونة بالترتيب:
-  // 1. الاسم الأصلي كما هو
+  // 1. الاسم المنظف
   // 2. PascalCase
-  return Icons[iconName] || Icons[pascalCaseName] || null;
+  // 3. الاسم الأصلي (كخيار أخير)
+  return Icons[iconName] || Icons[pascalCaseName] || Icons[name] || null;
 };
 
 // الحجم الافتراضي للأيقونات

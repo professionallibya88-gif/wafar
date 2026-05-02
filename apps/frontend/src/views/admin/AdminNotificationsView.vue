@@ -15,17 +15,25 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">تفعيل الإشعارات البريدية</label>
-            <select v-model="settings.emailEnabled" class="form-select">
-              <option :value="true">مفعل</option>
-              <option :value="false">معطل</option>
-            </select>
+            <BaseSelect
+  v-model="settings.emailEnabled"
+  select-class="form-select"
+  :options="[
+    { label: 'مفعل', value: true },
+    { label: 'معطل', value: false },
+  ]"
+/>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">تفعيل إشعارات النظام (Push)</label>
-            <select v-model="settings.pushEnabled" class="form-select">
-              <option :value="true">مفعل</option>
-              <option :value="false">معطل</option>
-            </select>
+            <BaseSelect
+  v-model="settings.pushEnabled"
+  select-class="form-select"
+  :options="[
+    { label: 'مفعل', value: true },
+    { label: 'معطل', value: false },
+  ]"
+/>
           </div>
         </div>
 
@@ -40,6 +48,7 @@
 </template>
 
 <script setup>
+import { BaseSelect } from "@/components/base";
 import { ref } from 'vue'
 
 const settings = ref({
@@ -49,6 +58,5 @@ const settings = ref({
 
 const saveSettings = () => {
   // Save logic
-  console.log('Settings saved', settings.value)
 }
 </script>

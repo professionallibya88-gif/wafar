@@ -1,84 +1,70 @@
 <template>
-  <div class="space-y-6">
-    <BaseToast ref="toast" />
-    <!-- Header -->
-    <div
-      class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-    >
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-          إعدادات النظام
-        </h1>
-        <p class="mt-1 text-gray-500 dark:text-gray-400">
-          إدارة إعدادات المنصة
-        </p>
-      </div>
-      <div class="flex gap-3">
-        <button
-          @click="resetToDefaults"
-          class="px-4 py-2 text-sm font-medium text-brand-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-brand-50 dark:hover:bg-gray-700 transition-all flex items-center gap-2"
-        >
-          <AppIcon name="ArrowPath" size="sm" />
-          إعادة التعيين
-        </button>
-        <button
-          @click="saveAllSettings"
-          :disabled="saving"
-          class="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-xl hover:bg-brand-700 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <AppIcon
-            v-if="saving"
-            name="Refresh"
-            size="sm"
-            customClass="animate-spin"
-          />
-          <AppIcon v-else name="Check" size="sm" />
-          {{ saving ? "جاري الحفظ..." : "حفظ التغييرات" }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Success Message -->
-    <div
-      v-if="showSuccess"
-      class="p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl flex items-center gap-3"
-    >
-      <AppIcon
-        name="CheckCircle"
-        size="lg"
-        customClass="text-green-600 dark:text-green-400"
-      />
-      <span class="text-sm font-medium text-green-800 dark:text-green-200"
-        >تم حفظ الإعدادات بنجاح</span
+  <BaseTabsLayout
+    v-model="activeTab"
+    :tabs="tabs"
+    title="إعدادات النظام"
+    subtitle="إدارة إعدادات المنصة"
+  >
+    <!-- Desktop & Mobile List Actions -->
+    <template #actions>
+      <button
+        @click="resetToDefaults"
+        class="px-4 py-2 text-sm font-medium text-brand-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-brand-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2"
       >
-    </div>
+        <AppIcon name="ArrowPath" size="sm" />
+        <span class="sm:inline">إعادة التعيين</span>
+      </button>
+      <button
+        @click="saveAllSettings"
+        :disabled="saving"
+        class="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-xl hover:bg-brand-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <AppIcon
+          v-if="saving"
+          name="Refresh"
+          size="sm"
+          customClass="animate-spin"
+        />
+        <AppIcon v-else name="Check" size="sm" />
+        <span class="sm:inline">{{ saving ? "جاري الحفظ..." : "حفظ التغييرات" }}</span>
+      </button>
+    </template>
 
-    <!-- Tabs -->
-    <div
-      class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-2"
-    >
-      <div class="flex gap-2 overflow-x-auto pb-2">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          @click="activeTab = tab.key"
-          class="px-4 py-2.5 text-sm font-medium rounded-xl whitespace-nowrap transition-all flex items-center gap-2"
-          :class="
-            activeTab === tab.key
-              ? 'bg-brand-100 dark:bg-neutral-900/30 text-brand-700 dark:text-neutral-300'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-brand-50 dark:hover:bg-gray-700'
-          "
-        >
-          <AppIcon :name="tab.icon" size="sm" />
-          {{ tab.label }}
-        </button>
-      </div>
-    </div>
+    <!-- Mobile Header Actions (Inside Tab) -->
+    <template #mobile-actions>
+      <button
+        @click="saveAllSettings"
+        :disabled="saving"
+        class="w-10 h-10 flex items-center justify-center text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 rounded-full disabled:opacity-50"
+      >
+        <AppIcon
+          v-if="saving"
+          name="Refresh"
+          size="sm"
+          customClass="animate-spin"
+        />
+        <AppIcon v-else name="Check" size="sm" />
+      </button>
+    </template>
 
     <!-- Tab Content -->
-    <div
-      class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 lg:p-8"
-    >
+    <div class="space-y-6">
+      <BaseToast ref="toast" />
+
+      <!-- Success Message -->
+      <div
+        v-if="showSuccess"
+        class="p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl flex items-center gap-3"
+      >
+        <AppIcon
+          name="CheckCircle"
+          size="lg"
+          customClass="text-green-600 dark:text-green-400"
+        />
+        <span class="text-sm font-medium text-green-800 dark:text-green-200"
+          >تم حفظ الإعدادات بنجاح</span
+        >
+      </div>
       <!-- General Settings -->
       <div v-show="activeTab === 'general'" class="space-y-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -173,16 +159,17 @@
               class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >المنطقة الزمنية</label
             >
-            <select
-              v-model="settings.general.timezone"
-              class="form-select"
-            >
-              <option value="Africa/Tripoli">ليبيا (GMT+2)</option>
-              <option value="Asia/Riyadh">الرياض (GMT+3)</option>
-              <option value="Asia/Dubai">دبي (GMT+4)</option>
-              <option value="Asia/Cairo">القاهرة (GMT+2)</option>
-              <option value="UTC">UTC</option>
-            </select>
+            <BaseSelect
+  v-model="settings.general.timezone"
+  select-class="form-select"
+  :options="[
+    { label: 'ليبيا (GMT+2)', value: 'Africa/Tripoli' },
+    { label: 'الرياض (GMT+3)', value: 'Asia/Riyadh' },
+    { label: 'دبي (GMT+4)', value: 'Asia/Dubai' },
+    { label: 'القاهرة (GMT+2)', value: 'Asia/Cairo' },
+    { label: 'UTC', value: 'UTC' },
+  ]"
+/>
           </div>
 
           <!-- البريد الإلكتروني للإدارة -->
@@ -224,7 +211,7 @@
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 شعار الموقع (Logo)
               </label>
-              <div class="flex items-center gap-4">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
                 <div
                   class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-600"
                 >
@@ -273,7 +260,7 @@
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 أيقونة الموقع (Favicon)
               </label>
-              <div class="flex items-center gap-4">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
                 <div
                   class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-600"
                 >
@@ -318,29 +305,207 @@
             </div>
           </div>
         </div>
-        <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-          <h3 class="text-md font-medium text-gray-900 dark:text-white mb-4">
-            إعدادات الويدجت العائم
-          </h3>
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      </div>
+
+      <!-- Auth Visual Settings -->
+      <div v-show="activeTab === 'auth_visual'" class="space-y-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          واجهة الدخول والمصادقة
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          تحكم في النصوص والشارة التي تظهر في الجانب الأيسر (الخلفية المتحركة) في صفحات الدخول.
+        </p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="space-y-6 bg-gray-50/50 dark:bg-gray-800/30 p-5 sm:p-6 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+            <!-- الشارة -->
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">لون الخلفية</label>
-              <input type="color" v-model="settings.widget.widget_bg_color" class="w-full h-12 rounded-xl cursor-pointer" />
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                الشارة (Badge)
+              </label>
+              <input
+                v-model="settings.auth_visual.auth_visual_badge"
+                class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                placeholder="مثال: REALTIME SEARCH CORE"
+              />
             </div>
+
+            <!-- العنوان الرئيسي -->
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">لون الأيقونة</label>
-              <input type="color" v-model="settings.widget.widget_icon_color" class="w-full h-12 rounded-xl cursor-pointer" />
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                العنوان الرئيسي
+              </label>
+              <textarea
+                v-model="settings.auth_visual.auth_visual_title"
+                rows="2"
+                class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                placeholder="العنوان الذي يظهر في الواجهة البصرية"
+              ></textarea>
             </div>
+
+            <!-- الوصف -->
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">الشكل</label>
-              <select v-model="settings.widget.widget_shape" class="form-select">
-                <option value="circle">دائري</option>
-                <option value="rounded">مربع منحني</option>
-              </select>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                الوصف التفصيلي
+              </label>
+              <textarea
+                v-model="settings.auth_visual.auth_visual_description"
+                rows="4"
+                class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                placeholder="الوصف الذي يظهر تحت العنوان"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="bg-gray-900 rounded-2xl border border-gray-800 p-8 flex flex-col justify-end overflow-hidden relative min-h-[400px]">
+            <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.2),rgba(2,6,23,0.5),rgba(2,6,23,0.9))]"></div>
+            <div class="relative z-10 space-y-6">
+              <div v-if="settings.auth_visual.auth_visual_badge" class="inline-flex items-center gap-3 rounded-full border border-white/20 px-4 py-2 text-xs tracking-[0.2em] text-white/80 backdrop-blur-xl">
+                <span class="h-2 w-2 rounded-full bg-sky-300 shadow-[0_0_12px_rgba(125,211,252,0.9)]"></span>
+                <span>{{ settings.auth_visual.auth_visual_badge }}</span>
+              </div>
+              <h2 v-if="settings.auth_visual.auth_visual_title" class="text-3xl font-black leading-[1.2] text-white whitespace-pre-line">
+                {{ settings.auth_visual.auth_visual_title }}
+              </h2>
+              <p v-if="settings.auth_visual.auth_visual_description" class="text-sm leading-7 text-white/70">
+                {{ settings.auth_visual.auth_visual_description }}
+              </p>
             </div>
           </div>
         </div>
+      </div>
 
+      <!-- Widget Settings -->
+      <div v-show="activeTab === 'widget'" class="space-y-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          إعدادات ويدجت الدعم الفني
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          تحكم في مظهر ومكان زر الدعم الفني العائم الذي يظهر للمستخدمين.
+        </p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Form Settings -->
+          <div class="space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">لون الخلفية</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" v-model="settings.widget.widget_bg_color" class="w-12 h-12 rounded-xl cursor-pointer p-0 border-0" />
+                  <input type="text" v-model="settings.widget.widget_bg_color" class="flex-1 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white" />
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">لون الأيقونة</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" v-model="settings.widget.widget_icon_color" class="w-12 h-12 rounded-xl cursor-pointer p-0 border-0" />
+                  <input type="text" v-model="settings.widget.widget_icon_color" class="flex-1 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white" />
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">الشكل</label>
+                <BaseSelect
+                  v-model="settings.widget.widget_shape"
+                  select-class="form-select"
+                  :options="[
+                    { label: 'دائري', value: 'circle' },
+                    { label: 'مربع منحني', value: 'rounded' },
+                  ]"
+                />
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">الحجم</label>
+                <BaseSelect
+                  v-model="settings.widget.widget_size"
+                  select-class="form-select"
+                  :options="[
+                    { label: 'صغير', value: 'small' },
+                    { label: 'متوسط', value: 'medium' },
+                    { label: 'كبير', value: 'large' },
+                  ]"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">الموضع (يمين / يسار)</label>
+                <BaseSelect
+                  v-model="settings.widget.widget_position_x"
+                  select-class="form-select"
+                  :options="[
+                    { label: 'يسار', value: 'left' },
+                    { label: 'يمين', value: 'right' },
+                  ]"
+                />
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">الأيقونة</label>
+                <BaseSelect
+                  v-model="settings.widget.widget_icon"
+                  select-class="form-select"
+                  :options="[
+                    { label: 'محادثة', value: 'chat-bubble-left-right' },
+                    { label: 'رسالة', value: 'envelope' },
+                    { label: 'سماعة', value: 'phone' },
+                    { label: 'استفهام', value: 'QuestionMarkCircle' },
+                    { label: 'مساعدة', value: 'Lifebuoy' }
+                  ]"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">البعد من الأسفل (موبايل - بكسل)</label>
+                <input
+                  v-model.number="settings.widget.widget_bottom_mobile"
+                  type="number"
+                  class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                  placeholder="112"
+                />
+                <p class="text-xs text-gray-500">يجب أن يكون أكبر من 60px لتفادي الشريط السفلي</p>
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">البعد من الأسفل (ديسكتوب - بكسل)</label>
+                <input
+                  v-model.number="settings.widget.widget_bottom_desktop"
+                  type="number"
+                  class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                  placeholder="24"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Preview -->
+          <div class="space-y-4">
+            <h3 class="font-medium text-gray-900 dark:text-white">معاينة حية</h3>
+            <div class="relative w-full h-[400px] bg-gray-100 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex items-center justify-center">
+              <div class="text-gray-400 text-sm">مساحة المعاينة (ديسكتوب)</div>
+              <button
+                class="absolute flex items-center justify-center text-white shadow-lg transition-all duration-300"
+                :class="[
+                  settings.widget.widget_shape === 'square' ? 'rounded-xl' : 'rounded-full',
+                  settings.widget.widget_size === 'small' ? 'w-10 h-10' : settings.widget.widget_size === 'large' ? 'w-14 h-14' : 'w-12 h-12'
+                ]"
+                :style="{
+                  backgroundColor: settings.widget.widget_bg_color || '#2563eb',
+                  color: settings.widget.widget_icon_color || '#ffffff',
+                  bottom: `${settings.widget.widget_bottom_desktop || 24}px`,
+                  left: settings.widget.widget_position_x === 'left' ? '16px' : 'auto',
+                  right: settings.widget.widget_position_x === 'right' ? '16px' : 'auto',
+                }"
+              >
+                <AppIcon :name="settings.widget.widget_icon || 'chat-bubble-left-right'" :size="settings.widget.widget_size === 'small' ? 'md' : settings.widget.widget_size === 'large' ? 'xl' : 'lg'" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- PDF Processing Settings -->
@@ -365,15 +530,16 @@
               class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >طريقة المعالجة الافتراضية</label
             >
-            <select
-              v-model="settings.pdf_processing.default_pdf_method"
-              class="form-select"
-            >
-              <option value="node_pdf">Node.js</option>
-              <option value="python_pypdf">بايثون PyPDF</option>
-              <option value="python_ai">Python AI</option>
-              <option value="aws_textract">AWS Textract</option>
-            </select>
+            <BaseSelect
+  v-model="settings.pdf_processing.default_pdf_method"
+  select-class="form-select"
+  :options="[
+    { label: 'Node.js', value: 'node_pdf' },
+    { label: 'بايثون PyPDF', value: 'python_pypdf' },
+    { label: 'Python AI', value: 'python_ai' },
+    { label: 'AWS Textract', value: 'aws_textract' },
+  ]"
+/>
             <p class="text-xs text-gray-500 dark:text-gray-400">
               المحرك المستخدم لاستخراج النصوص من
               ملفات PDF
@@ -420,14 +586,15 @@
               class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >جودة الاستخراج</label
             >
-            <select
-              v-model="settings.pdf_processing.extraction_quality"
-              class="form-select"
-            >
-              <option value="low">منخفضة (سريع)</option>
-              <option value="medium">متوسطة</option>
-              <option value="high">عالية</option>
-            </select>
+            <BaseSelect
+  v-model="settings.pdf_processing.extraction_quality"
+  select-class="form-select"
+  :options="[
+    { label: 'منخفضة (سريع)', value: 'low' },
+    { label: 'متوسطة', value: 'medium' },
+    { label: 'عالية', value: 'high' },
+  ]"
+/>
             <p class="text-xs text-gray-500 dark:text-gray-400">
               تؤثر على دقة استخراج النصوص
             </p>
@@ -438,15 +605,16 @@
               class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >محرك استخراج الجداول في Python</label
             >
-            <select
-              v-model="settings.pdf_processing.python_table_engine_default"
-              class="form-select"
-            >
-              <option value="auto">تلقائي</option>
-              <option value="pymupdf">PyMuPDF</option>
-              <option value="pdfplumber">pdfplumber</option>
-              <option value="camelot">Camelot</option>
-            </select>
+            <BaseSelect
+  v-model="settings.pdf_processing.python_table_engine_default"
+  select-class="form-select"
+  :options="[
+    { label: 'تلقائي', value: 'auto' },
+    { label: 'PyMuPDF', value: 'pymupdf' },
+    { label: 'pdfplumber', value: 'pdfplumber' },
+    { label: 'Camelot', value: 'camelot' },
+  ]"
+/>
           </div>
 
           <div class="space-y-2">
@@ -470,7 +638,7 @@
               class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >تفعيل OCR للصور الممسوحة</label
             >
-            <div class="flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
               <input
                 type="checkbox"
                 v-model="settings.pdf_processing.ocr_enabled"
@@ -488,16 +656,15 @@
               class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >لغة OCR</label
             >
-            <select
-              v-model="settings.pdf_processing.ocr_language"
-              class="form-select"
-            >
-              <option value="ara">العربية</option>
-              <option value="eng">الإنجليزية</option>
-              <option value="ara+eng">
-                العربية والإنجليزية
-              </option>
-            </select>
+            <BaseSelect
+  v-model="settings.pdf_processing.ocr_language"
+  select-class="form-select"
+  :options="[
+    { label: 'العربية', value: 'ara' },
+    { label: 'الإنجليزية', value: 'eng' },
+    { label: 'العربية والإنجليزية', value: 'ara+eng' },
+  ]"
+/>
           </div>
 
           <!-- حفظ الصفحات المصغرة -->
@@ -506,7 +673,7 @@
               class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >حفظ الصفحات المصغرة</label
             >
-            <div class="flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
               <input
                 type="checkbox"
                 v-model="settings.pdf_processing.generate_thumbnails"
@@ -674,16 +841,17 @@
               class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >المزود المفضل الافتراضي</label
             >
-            <select
-              v-model="settings.ai_providers.ai_preferred_provider"
-              class="form-select"
-            >
-              <option value="google">Google Gemini</option>
-              <option value="openrouter">OpenRouter</option>
-              <option value="openai">OpenAI</option>
-              <option value="anthropic">Anthropic Claude</option>
-              <option value="mistral">Mistral AI</option>
-            </select>
+            <BaseSelect
+  v-model="settings.ai_providers.ai_preferred_provider"
+  select-class="form-select"
+  :options="[
+    { label: 'Google Gemini', value: 'google' },
+    { label: 'OpenRouter', value: 'openrouter' },
+    { label: 'OpenAI', value: 'openai' },
+    { label: 'Anthropic Claude', value: 'anthropic' },
+    { label: 'Mistral AI', value: 'mistral' },
+  ]"
+/>
           </div>
 
           <!-- تفعيل التبديل التلقائي -->
@@ -827,7 +995,7 @@
 
         <!-- تفعيل SMTP -->
         <div
-          class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl"
+          class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl"
         >
           <div>
             <h3 class="font-medium text-gray-900 dark:text-white">
@@ -838,7 +1006,7 @@
               خادم SMTP
             </p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex justify-end sm:justify-start w-full sm:w-auto">
             <input
               type="checkbox"
               v-model="settings.email.smtp_enabled"
@@ -882,14 +1050,15 @@
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >التشفير</label
               >
-              <select
-                v-model="settings.email.smtp_encryption"
-                class="form-select"
-              >
-                <option value="tls">TLS</option>
-                <option value="ssl">SSL</option>
-                <option value="none">بدون تشفير</option>
-              </select>
+              <BaseSelect
+  v-model="settings.email.smtp_encryption"
+  select-class="form-select"
+  :options="[
+    { label: 'TLS', value: 'tls' },
+    { label: 'SSL', value: 'ssl' },
+    { label: 'بدون تشفير', value: 'none' },
+  ]"
+/>
             </div>
 
             <!-- اسم المستخدم -->
@@ -947,7 +1116,7 @@
           </div>
 
           <!-- زر اختبار -->
-          <div class="flex gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
             <button
               @click="testEmailSettings"
               :disabled="testingEmail"
@@ -984,7 +1153,7 @@
                 المسؤولين
               </p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
               <input
                 type="checkbox"
                 v-model="settings.security.two_factor_auth"
@@ -1006,7 +1175,7 @@
                 بالوصول إلى لوحة الإدارة
               </p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
               <input
                 type="checkbox"
                 v-model="settings.security.ip_whitelist_enabled"
@@ -1096,7 +1265,7 @@
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >إلزام الأحرف الخاصة</label
               >
-              <div class="flex items-center gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                 <input
                   type="checkbox"
                   v-model="settings.security.require_special_chars"
@@ -1114,7 +1283,7 @@
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >إلزام الأرقام</label
               >
-              <div class="flex items-center gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                 <input
                   type="checkbox"
                   v-model="settings.security.require_numbers"
@@ -1132,7 +1301,7 @@
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >إلزام الأحرف الكبيرة</label
               >
-              <div class="flex items-center gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                 <input
                   type="checkbox"
                   v-model="settings.security.require_uppercase"
@@ -1206,7 +1375,7 @@
               الطلبات
             </p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
             <input
               type="checkbox"
               v-model="settings.rate_limiting.rate_limiting_enabled"
@@ -1470,7 +1639,7 @@
               التحديثات
             </p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
             <input
               type="checkbox"
               v-model="settings.system.maintenance_mode"
@@ -1499,16 +1668,17 @@
               class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >المنطقة الزمنية</label
             >
-            <select
-              v-model="settings.system.timezone"
-              class="form-select"
-            >
-              <option value="Africa/Tripoli">ليبيا (GMT+2)</option>
-              <option value="Asia/Riyadh">الرياض (GMT+3)</option>
-              <option value="Asia/Dubai">دبي (GMT+4)</option>
-              <option value="Asia/Cairo">القاهرة (GMT+2)</option>
-              <option value="UTC">UTC</option>
-            </select>
+            <BaseSelect
+  v-model="settings.system.timezone"
+  select-class="form-select"
+  :options="[
+    { label: 'ليبيا (GMT+2)', value: 'Africa/Tripoli' },
+    { label: 'الرياض (GMT+3)', value: 'Asia/Riyadh' },
+    { label: 'دبي (GMT+4)', value: 'Asia/Dubai' },
+    { label: 'القاهرة (GMT+2)', value: 'Asia/Cairo' },
+    { label: 'UTC', value: 'UTC' },
+  ]"
+/>
           </div>
         </div>
 
@@ -1523,15 +1693,16 @@
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >مستوى السجلات</label
               >
-              <select
-                v-model="settings.system.log_level"
-                class="form-select"
-              >
-                <option value="error">أخطاء فقط</option>
-                <option value="warn">تحذيرات</option>
-                <option value="info">معلومات</option>
-                <option value="debug">تصحيح</option>
-              </select>
+              <BaseSelect
+  v-model="settings.system.log_level"
+  select-class="form-select"
+  :options="[
+    { label: 'أخطاء فقط', value: 'error' },
+    { label: 'تحذيرات', value: 'warn' },
+    { label: 'معلومات', value: 'info' },
+    { label: 'تصحيح', value: 'debug' },
+  ]"
+/>
             </div>
 
             <!-- الاحتفاظ بالسجلات -->
@@ -1579,7 +1750,7 @@
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >تفعيل التخزين المؤقت</label
               >
-              <div class="flex items-center gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                 <input
                   type="checkbox"
                   v-model="settings.system.cache_enabled"
@@ -1604,7 +1775,7 @@
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >تفعيل النسخ الاحتياطي التلقائي</label
               >
-              <div class="flex items-center gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                 <input
                   type="checkbox"
                   v-model="settings.system.auto_backup_enabled"
@@ -1622,14 +1793,15 @@
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >جدول النسخ الاحتياطي</label
               >
-              <select
-                v-model="settings.system.backup_schedule"
-                class="form-select"
-              >
-                <option value="daily">يومياً</option>
-                <option value="weekly">أسبوعياً</option>
-                <option value="monthly">شهرياً</option>
-              </select>
+              <BaseSelect
+  v-model="settings.system.backup_schedule"
+  select-class="form-select"
+  :options="[
+    { label: 'يومياً', value: 'daily' },
+    { label: 'أسبوعياً', value: 'weekly' },
+    { label: 'شهرياً', value: 'monthly' },
+  ]"
+/>
             </div>
 
             <!-- عدد النسخ الاحتياطية -->
@@ -1710,7 +1882,7 @@
               كتالوجات) وتُخفى كل الميزات المتقدمة تلقائياً
             </p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
             <input
               type="checkbox"
               v-model="settings.feature_flags.feature_mvp_mode"
@@ -1768,7 +1940,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </BaseTabsLayout>
 </template>
 
 <script setup>
@@ -1776,7 +1948,8 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { settingsAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast } from "@/components/base";
+import { BaseToast, BaseSelect } from "@/components/base";
+import BaseTabsLayout from "@/components/base/BaseTabsLayout.vue";
 
 const settings = ref({
   general: {},
@@ -1788,6 +1961,7 @@ const settings = ref({
   system: {},
   feature_flags: {},
   widget: {},
+  auth_visual: {},
 });
 const activeTab = ref("general");
 const saving = ref(false);
@@ -1801,6 +1975,8 @@ const uploadingFavicon = ref(false);
 
 const tabs = [
   { key: "general", label: "عام", icon: "Cog6Tooth" },
+  { key: "auth_visual", label: "واجهة الدخول", icon: "Photo" },
+  { key: "widget", label: "ويدجت الدعم", icon: "ChatBubbleLeftRight" },
   { key: "pdf", label: "معالجة ملفات PDF", icon: "DocumentText" },
   { key: "ai_providers", label: "الذكاء الاصطناعي", icon: "CpuChip" },
   {
@@ -1975,6 +2151,16 @@ const loadSettings = async () => {
         widget_bg_color: data.widget?.widget_bg_color || '#2563eb',
         widget_icon_color: data.widget?.widget_icon_color || '#ffffff',
         widget_shape: data.widget?.widget_shape || 'circle',
+        widget_size: data.widget?.widget_size || 'medium',
+        widget_position_x: data.widget?.widget_position_x || 'left',
+        widget_bottom_desktop: data.widget?.widget_bottom_desktop || 24,
+        widget_bottom_mobile: data.widget?.widget_bottom_mobile || 112,
+        widget_icon: data.widget?.widget_icon || 'chat-bubble-left-right',
+      },
+      auth_visual: {
+        auth_visual_badge: data.auth_visual?.auth_visual_badge || 'REALTIME SEARCH CORE',
+        auth_visual_title: data.auth_visual?.auth_visual_title || 'عمق بصري حي\nيعبّر عن قوة النظام',
+        auth_visual_description: data.auth_visual?.auth_visual_description || 'مشهد ثلاثي الأبعاد نظيف ومتحرك بهدوء، يوحي بمحرك بحث ومعالجة بيانات يعمل في العمق بشكل متقدم واحترافي.',
       },
     };
   } catch (e) {

@@ -48,6 +48,27 @@ export const useDashboardMenu = () => {
       requiresAuth: true,
       featureKey: "compare",
     },
+    cart: {
+      path: "/cart",
+      label: "سلة المشتريات",
+      icon: "ShoppingCart",
+      requiresAuth: true,
+      featureKey: "cart",
+    },
+    myOrders: {
+      path: "/my-orders",
+      label: "طلباتي",
+      icon: "ClipboardDocumentList",
+      requiresAuth: true,
+      featureKey: "cart",
+    },
+    supplierOrders: {
+      path: "/supplier-orders",
+      label: "طلبات العملاء",
+      icon: "Inbox",
+      requiresAuth: true,
+      featureKey: "cart",
+    },
     history: {
       path: "/history",
       label: "سجل البحث",
@@ -103,6 +124,9 @@ export const useDashboardMenu = () => {
     "upload",
     "files",
     "compare",
+    "cart",
+    "myOrders",
+    "supplierOrders",
     "history",
     "subscriptions",
     "payments",
@@ -112,7 +136,7 @@ export const useDashboardMenu = () => {
   ]);
 
   const rawBottomNavItems = buildItems(
-    ["home", "search", "catalogs", "upload", "profile"],
+    ["home", "search", "upload", "catalogs", "profile"],
     {
       upload: { label: "رفع ملف" },
     }
@@ -124,6 +148,11 @@ export const useDashboardMenu = () => {
     let items = rawMenuItems.filter(
       (item) => !item.featureKey || isEnabled(item.featureKey)
     );
+
+    // Hide supplier specific items if not supplier
+    if (authStore.userRole !== 'supplier') {
+      items = items.filter((item) => item.path !== '/supplier-orders');
+    }
 
     if (authStore.isAdmin) {
       items.push({

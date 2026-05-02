@@ -41,7 +41,7 @@
           >{{ history.length }} عملية</span
         >
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-brand-50 dark:bg-gray-900">
             <tr>
@@ -75,7 +75,7 @@
               @click="searchAgain(h.query)"
             >
               <td class="px-4 py-4">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                   <div
                     class="w-8 h-8 bg-brand-50 dark:bg-neutral-900/30 rounded-lg flex items-center justify-center group-hover:bg-brand-100 dark:group-hover:bg-brand-800/50 transition-colors"
                   >

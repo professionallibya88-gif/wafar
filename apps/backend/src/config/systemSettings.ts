@@ -18,6 +18,7 @@ type SettingsByCategory = {
   system: SettingsMap;
   feature_flags: SettingsMap;
   widget: SettingsMap;
+  auth_visual: SettingsMap;
 };
 
 export const DEFAULT_SYSTEM_SETTINGS: SettingsByCategory = {
@@ -142,11 +143,23 @@ export const DEFAULT_SYSTEM_SETTINGS: SettingsByCategory = {
     feature_email_smtp: 'true',
     feature_rate_limiting: 'true',
     feature_mvp_mode: 'false',
+    feature_cart: 'false',
   },
   widget: {
     widget_bg_color: '#2563eb',
     widget_icon_color: '#ffffff',
     widget_shape: 'circle',
+    widget_size: 'medium',
+    widget_position_x: 'left',
+    widget_bottom_desktop: '24',
+    widget_bottom_mobile: '112',
+    widget_icon: 'chat-bubble-left-right',
+  },
+  auth_visual: {
+    auth_visual_badge: 'REALTIME SEARCH CORE',
+    auth_visual_title: 'عمق بصري حي\nيعبّر عن قوة النظام',
+    auth_visual_description:
+      'مشهد ثلاثي الأبعاد نظيف ومتحرك بهدوء، يوحي بمحرك بحث ومعالجة بيانات يعمل في العمق بشكل متقدم واحترافي.',
   },
 };
 
@@ -276,6 +289,16 @@ export const SETTING_DESCRIPTIONS: Record<keyof SettingsByCategory, Record<strin
     widget_bg_color: 'لون خلفية الويدجت العائم',
     widget_icon_color: 'لون أيقونة الويدجت العائم',
     widget_shape: 'شكل الويدجت العائم (دائري/مربع)',
+    widget_size: 'حجم الويدجت العائم',
+    widget_position_x: 'موضع الويدجت العائم (يمين/يسار)',
+    widget_bottom_desktop: 'البعد من الأسفل (ديسكتوب)',
+    widget_bottom_mobile: 'البعد من الأسفل (موبايل)',
+    widget_icon: 'أيقونة الويدجت العائم',
+  },
+  auth_visual: {
+    auth_visual_badge: 'شارة الواجهة البصرية',
+    auth_visual_title: 'عنوان الواجهة البصرية',
+    auth_visual_description: 'وصف الواجهة البصرية',
   },
 };
 
@@ -294,4 +317,5 @@ export const buildPublicSettingsFallback = () => ({
   general: { ...DEFAULT_SYSTEM_SETTINGS.general },
   feature_flags: { ...DEFAULT_SYSTEM_SETTINGS.feature_flags },
   widget: { ...DEFAULT_SYSTEM_SETTINGS.widget },
+  auth_visual: { ...DEFAULT_SYSTEM_SETTINGS.auth_visual },
 });

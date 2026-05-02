@@ -14,8 +14,6 @@ export const initSocket = () => {
   });
 
   socket.on('connect', () => {
-    console.log('Connected to WebSocket server');
-    
     // Join user room if authenticated
     const authStore = useAuthStore();
     if (authStore.isAuthenticated && authStore.user?.id) {
@@ -24,7 +22,7 @@ export const initSocket = () => {
   });
 
   socket.on('disconnect', () => {
-    console.log('Disconnected from WebSocket server');
+    // Handle disconnect
   });
 
   return socket;

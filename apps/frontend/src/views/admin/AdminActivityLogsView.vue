@@ -13,22 +13,23 @@
           تتبع جميع الأنشطة في النظام
         </p>
       </div>
-      <div class="flex gap-3">
-        <select
-          v-model="actionFilter"
-          class="form-select"
-        >
-          <option value="">جميع الإجراءات</option>
-          <option value="create">إنشاء</option>
-          <option value="update">تعديل</option>
-          <option value="delete">حذف</option>
-          <option value="login">تسجيل دخول</option>
-          <option value="logout">تسجيل خروج</option>
-        </select>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+        <BaseSelect
+  v-model="actionFilter"
+  select-class="form-select"
+  :options="[
+    { label: 'جميع الإجراءات', value: '' },
+    { label: 'إنشاء', value: 'create' },
+    { label: 'تعديل', value: 'update' },
+    { label: 'حذف', value: 'delete' },
+    { label: 'تسجيل دخول', value: 'login' },
+    { label: 'تسجيل خروج', value: 'logout' },
+  ]"
+/>
         <div class="relative">
           <input
             v-model="search"
-            class="w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+            class="w-full sm:w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             placeholder="بحث..."
           />
         </div>
@@ -39,7 +40,7 @@
     <div
       class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
     >
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-brand-50 dark:bg-gray-900">
             <tr>
@@ -77,7 +78,7 @@
               class="hover:bg-brand-50 dark:hover:bg-gray-700/50 transition-colors"
             >
               <td class="px-4 py-4">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                   <div
                     class="w-8 h-8 bg-brand-50 dark:bg-neutral-900/50 rounded-lg flex items-center justify-center"
                   >
@@ -171,7 +172,7 @@
 import { ref, onMounted } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast } from "@/components/base";
+import { BaseToast, BaseSelect } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 
 const logs = ref([]);

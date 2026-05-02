@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-8">
+  <div class="page-shell-content">
     <!-- Header -->
     <div
       class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
@@ -193,16 +193,17 @@
               الافتراضي: {{ processingMethodLabel(defaultMethod) }}
             </span>
           </label>
-          <select
-            v-model="selectedMethod"
-            class="form-select"
-          >
-            <option value="">استخدام الإعداد الافتراضي</option>
-            <option value="python_pypdf">Python PyPDF</option>
-            <option value="python_ai">Python AI</option>
-            <option value="node_pdf">Node PDF</option>
-            <option value="aws_textract">AWS Textract</option>
-          </select>
+          <BaseSelect
+  v-model="selectedMethod"
+  select-class="form-select"
+  :options="[
+    { label: 'استخدام الإعداد الافتراضي', value: '' },
+    { label: 'Python PyPDF', value: 'python_pypdf' },
+    { label: 'Python AI', value: 'python_ai' },
+    { label: 'Node PDF', value: 'node_pdf' },
+    { label: 'AWS Textract', value: 'aws_textract' },
+  ]"
+/>
           <p class="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
             يمكنك اختيار طريقة مخصصة لهذا الملف فقط، أو ترك النظام يستخدم الإعداد الافتراضي من لوحة الإدارة.
           </p>
@@ -216,7 +217,7 @@
         </div>
 
         <!-- Upload Button - Smaller size -->
-        <div class="flex gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <button
             @click="uploadFile"
             :disabled="uploading || extractingMetadata || !selectedFile || !supplierName.trim() || !documentDate"
@@ -364,7 +365,7 @@
         key="total-files"
         class="bg-white dark:bg-neutral-800 rounded-xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-700"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <div
             class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center"
           >
@@ -387,7 +388,7 @@
         key="processing-files"
         class="bg-white dark:bg-neutral-800 rounded-xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-700"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <div
             class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center"
           >
@@ -410,7 +411,7 @@
         key="completed-files"
         class="bg-white dark:bg-neutral-800 rounded-xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-700"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <div
             class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center"
           >
@@ -433,7 +434,7 @@
         key="total-parts"
         class="bg-white dark:bg-neutral-800 rounded-xl p-4 shadow-sm border border-neutral-100 dark:border-neutral-700"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <div
             class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center"
           >
@@ -527,7 +528,7 @@ import { useRouter } from "vue-router";
 import { pdfAPI, settingsAPI, supplierAPI } from "@/services/api";
 import ProcessingProgress from "@/components/ProcessingProgress.vue";
 import { AppIcon } from "@/components/icons";
-import { BaseBadge } from "@/components/base";
+import { BaseBadge, BaseSelect } from "@/components/base";
 
 // Helper functions - تعريف الدوال المساعدة في البداية
 const formatSize = (bytes) => {

@@ -16,6 +16,7 @@ import { AuthenticatedRequest } from '../types';
 import { adminRepository } from '../repositories/AdminRepository';
 import * as bcrypt from 'bcryptjs';
 import { NotFoundError } from '../errors';
+import { activityLogService } from '../services/ActivityLogService';
 
 /**
  * إدارة المديرين
@@ -125,12 +126,13 @@ export const listAdmins = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const createAdmin = asyncHandler(async (req: Request, res: Response) => {
-  const { full_name, email, password, role, is_active } = req.body;
+  const { full_name, email, phone, password, role, is_active } = req.body;
   const hashedPassword = await bcrypt.hash(password, 12);
 
   const admin = await adminRepository.create({
     full_name,
-    email: email.toLowerCase(),
+    email: email ? email.toLowerCase() : null,
+    phone: phone || null,
     password: hashedPassword,
     role: role || 'editor',
     is_active: is_active !== undefined ? is_active : true,
@@ -158,8 +160,11 @@ export const updateAdmin = asyncHandler(async (req: Request, res: Response) => {
     delete updates.password;
   }
 
-  if (updates.email) {
-    updates.email = updates.email.toLowerCase();
+  if (updates.email !== undefined) {
+    updates.email = updates.email ? updates.email.toLowerCase() : null;
+  }
+  if (updates.phone !== undefined) {
+    updates.phone = updates.phone || null;
   }
 
   const updatedAdmin = await adminRepository.updateById(adminId, updates);
@@ -347,4 +352,24 @@ export const updatePart = asyncHandler(async (req: Request, res: Response) => {
 export const deletePart = asyncHandler(async (req: Request, res: Response) => {
   await partAdminService.deletePart(req.params.id as string);
   return success(res, { message: 'تم حذف قطعة الغيار بنجاح' });
+});
+
+/**
+ * سجلات النشاط
+ */
+export const getActivityLogs = asyncHandler(async (req: Request, res: Response) => {
+  const { limit, offset, page } = parsePagination(req.query, { defaultLimit: 50, maxLimit: 100 });
+  const { search, action } = req.query;
+
+  const { rows, count } = await activityLogService.getLogs({
+    search: search as string,
+    action: action as string,
+    limit,
+    offset,
+  });
+
+  return success(res, {
+    data: { logs: rows, total: count, totalPages: Math.ceil(count / limit) },
+    meta: buildPaginationMeta({ total: count, page, limit }),
+  });
 });

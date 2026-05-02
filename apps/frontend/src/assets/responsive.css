@@ -310,7 +310,7 @@
   padding-bottom: env(safe-area-inset-bottom, 0);
   min-height: calc(64px + env(safe-area-inset-bottom, 0px));
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow: visible; /* Prevent clipping of floating buttons */
   will-change: transform;
 }
 

@@ -77,6 +77,9 @@ router.post('/parts', runValidators(adminRules.createPartRules), adminController
 router.put('/parts/:id', runValidators(adminRules.updatePartRules), adminController.updatePart);
 router.delete('/parts/:id', adminController.deletePart);
 
+// سجلات النشاط
+router.get('/activity-logs', adminController.getActivityLogs);
+
 // المسارات الفرعية (لها middleware خاص مسبقاً)
 router.use('/cache', cacheRoutes);
 router.use('/queue', queueRoutes);

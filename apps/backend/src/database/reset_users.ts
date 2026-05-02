@@ -39,7 +39,9 @@ const resetUsers = async () => {
         },
         { transaction }
       );
-      adminEmail = admin.email;
+      if (admin && admin.email) {
+        adminEmail = admin.email;
+      }
 
       const userPassword = await bcrypt.hash('000000', 12);
       const user = await userRepository.create(

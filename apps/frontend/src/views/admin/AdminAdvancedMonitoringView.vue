@@ -15,15 +15,16 @@
         </p>
       </div>
       <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-        <select
-          v-model.number="refreshInterval"
-          class="form-select"
-        >
-          <option :value="5000">تحديث كل 5 ثوان</option>
-          <option :value="10000">تحديث كل 10 ثوان</option>
-          <option :value="30000">تحديث كل 30 ثانية</option>
-          <option :value="60000">تحديث كل دقيقة</option>
-        </select>
+        <BaseSelect
+  v-model.number="refreshInterval"
+  select-class="form-select"
+  :options="[
+    { label: 'تحديث كل 5 ثوان', value: 5000 },
+    { label: 'تحديث كل 10 ثوان', value: 10000 },
+    { label: 'تحديث كل 30 ثانية', value: 30000 },
+    { label: 'تحديث كل دقيقة', value: 60000 },
+  ]"
+/>
         <button
           @click="refreshData"
           :disabled="loading"
@@ -232,7 +233,7 @@
           المهام الحالية
         </h2>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-gray-50 dark:bg-gray-700/50">
             <tr>
@@ -265,7 +266,7 @@
               class="hover:bg-brand-50 dark:hover:bg-gray-700/30"
             >
               <td class="px-4 py-4">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                   <div
                     class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center"
                   >
@@ -321,7 +322,7 @@
         @click="clearCompleted"
         class="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all text-right"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center"
           >
@@ -346,7 +347,7 @@
         @click="retryFailed"
         class="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-red-500 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-right"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center"
           >
@@ -371,7 +372,7 @@
         @click="exportReport"
         class="p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-right"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
           >
@@ -398,7 +399,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { AppIcon } from "@/components/icons";
-import { BaseToast } from "@/components/base";
+import { BaseToast, BaseSelect } from "@/components/base";
 import { useAdminMonitoring } from "@/composables/useAdminMonitoring";
 import {
   getQueuePercentage,

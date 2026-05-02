@@ -44,11 +44,12 @@
             placeholder="ابحث باسم القطعة أو الرقم أو الرقم الأصلي أو رقم OEM..."
           />
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 w-full md:w-auto">
           <BaseButton
             @click="showFilters = !showFilters"
             variant="outline"
             size="lg"
+            class="w-full md:w-auto justify-center"
           >
             <AppIcon name="AdjustmentsHorizontal" size="lg" />
             <span class="hidden sm:inline mr-1">فلاتر</span>
@@ -84,7 +85,7 @@
                 <AppIcon name="Funnel" size="sm" />
                 تصفية متقدمة
               </h3>
-              <div class="flex items-center gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                 <button @click="clearFilters" class="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 font-medium transition-colors">
                   إعادة ضبط الفلاتر
                 </button>
@@ -141,16 +142,17 @@
                   >درجة الجودة</label
                 >
                 <div class="relative">
-                  <select
-                    v-model="filters.quality_grade"
-                    class="form-select"
-                  >
-                    <option value="">جميع الدرجات</option>
-                    <option value="original">أصلي</option>
-                    <option value="high">جيد</option>
-                    <option value="medium">متوسط</option>
-                    <option value="low">اقتصادي</option>
-                  </select>
+                  <BaseSelect
+  v-model="filters.quality_grade"
+  select-class="form-select"
+  :options="[
+    { label: 'جميع الدرجات', value: '' },
+    { label: 'أصلي', value: 'original' },
+    { label: 'جيد', value: 'high' },
+    { label: 'متوسط', value: 'medium' },
+    { label: 'اقتصادي', value: 'low' },
+  ]"
+/>
                   <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <AppIcon name="ShieldCheck" size="sm" class="text-neutral-400" />
                   </div>
@@ -206,19 +208,14 @@
                   >البحث في ملف محدد</label
                 >
                 <div class="relative">
-                  <select
-                    v-model="filters.pdf_file_id"
-                    class="form-select"
-                  >
-                    <option value="">جميع الملفات (البحث الشامل)</option>
-                    <option
-                      v-for="file in availableFiles"
-                      :key="file.id"
-                      :value="file.id"
-                    >
-                      {{ file.original_name }} ({{ file.supplier?.name || 'مورد غير معروف' }}) - {{ new Date(file.created_at).toLocaleDateString('ar-LY') }}
-                    </option>
-                  </select>
+                  <BaseSelect
+  v-model="filters.pdf_file_id"
+  select-class="form-select"
+  :options="[
+    { label: 'جميع الملفات (البحث الشامل)', value: '' },
+    ...(availableFiles || []).map(file => ({ label: `${file.original_name} (${file.supplier?.name || 'مورد غير معروف'}) - ${new Date(file.created_at).toLocaleDateString('ar-LY')}`, value: file.id })),
+  ]"
+/>
                   <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                     <AppIcon name="DocumentText" size="sm" class="text-neutral-400" />
                   </div>
@@ -242,7 +239,7 @@
       <div
         class="p-4 lg:p-6 border-b border-neutral-200 dark:border-neutral-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <BaseBadge variant="primary" size="lg">
             {{ totalResults }} نتيجة
           </BaseBadge>
@@ -252,7 +249,7 @@
             >صفحة {{ currentPage }} من {{ totalPages }}</span
           >
         </div>
-        <BaseButton @click="selectAll" variant="outline" size="sm">
+        <BaseButton @click="selectAll" variant="outline" size="sm" class="w-full sm:w-auto justify-center">
           <template #iconLeft>
             <AppIcon name="CheckCircle" size="sm" />
           </template>
@@ -302,6 +299,12 @@
                 class="px-3 xs:px-4 py-3 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider hidden sm:table-cell"
               >
                 مصرف / جملة
+              </th>
+              <th
+                v-if="isEnabled('cart')"
+                class="px-3 xs:px-4 py-3 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider"
+              >
+                <!-- إجراءات السلة -->
               </th>
             </tr>
           </thead>
@@ -389,6 +392,18 @@
                   <span v-if="!part.price_bank && !part.price_wholesale" class="text-neutral-400">-</span>
                 </div>
               </td>
+              <td v-if="isEnabled('cart')" class="px-3 xs:px-4 py-3 xs:py-4">
+                <BaseButton
+                  v-if="part.part_id"
+                  @click="addToCart(part.part_id)"
+                  variant="success"
+                  size="sm"
+                  class="rounded-full !p-2"
+                  title="إضافة للسلة"
+                >
+                  <AppIcon name="Plus" size="sm" />
+                </BaseButton>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -465,15 +480,17 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { formatCurrency } from "@/utils/currency";
 import { searchAPI, pdfAPI } from "@/services/api";
-import { BaseButton, BaseBadge, BaseToast } from "@/components/base";
+import { BaseButton, BaseBadge, BaseToast, BaseSelect } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 import { useFeatureFlags } from "@/composables/useFeatureFlags";
 import { vClickOutside } from "@/utils/directives";
+import { useCartStore } from "@/stores/cart";
 
 const route = useRoute();
 const router = useRouter();
 const { isEnabled } = useFeatureFlags();
+const cartStore = useCartStore();
 
 const searchQuery = ref(route.query.q || "");
 const loading = ref(false);
@@ -719,10 +736,16 @@ const selectAll = () => {
 };
 
 const compareSelected = () => {
+  if (selectedParts.value.length < 2) return;
   router.push({
     path: "/compare",
     query: { ids: selectedParts.value.join(",") },
   });
+};
+
+const addToCart = async (partId) => {
+  if (!isEnabled('cart')) return;
+  await cartStore.addItem(partId, 1);
 };
 
 const exportResults = async () => {

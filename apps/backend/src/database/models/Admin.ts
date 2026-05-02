@@ -3,7 +3,8 @@ import { Model, DataTypes, Optional, Sequelize } from 'sequelize';
 export interface AdminAttributes {
   id: string;
   full_name: string;
-  email: string;
+  email?: string;
+  phone?: string;
   password?: string; // Optional for selection responses
   role: 'super_admin' | 'admin' | 'editor' | 'viewer';
   is_active: boolean;
@@ -26,7 +27,8 @@ export class Admin
 {
   declare id: string;
   declare full_name: string;
-  declare email: string;
+  declare email?: string;
+  declare phone?: string;
   declare password: string;
   declare role: 'super_admin' | 'admin' | 'editor' | 'viewer';
   declare is_active: boolean;
@@ -56,12 +58,16 @@ export class Admin
         },
         email: {
           type: DataTypes.STRING(255),
-          allowNull: false,
+          allowNull: true,
           unique: { name: 'email', msg: 'البريد الإلكتروني مسجل مسبقا' },
           validate: {
             isEmail: { msg: 'البريد الإلكتروني غير صالح' },
-            notEmpty: { msg: 'البريد الإلكتروني مطلوب' },
           },
+        },
+        phone: {
+          type: DataTypes.STRING(20),
+          allowNull: true,
+          unique: { name: 'phone', msg: 'رقم الهاتف مسجل مسبقا' },
         },
         password: {
           type: DataTypes.STRING(255),
@@ -106,6 +112,13 @@ export class Admin
         createdAt: 'created_at',
         updatedAt: 'updated_at',
         deletedAt: 'deleted_at',
+        validate: {
+          eitherEmailOrPhone() {
+            if (!this.email && !this.phone) {
+              throw new Error('يجب إدخال البريد الإلكتروني أو رقم الهاتف');
+            }
+          },
+        },
       }
     );
   }

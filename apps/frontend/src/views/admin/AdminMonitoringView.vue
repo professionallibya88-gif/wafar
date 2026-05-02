@@ -15,16 +15,17 @@
         </p>
       </div>
       <div class="flex gap-2">
-        <select
-          v-model.number="refreshIntervalTime"
-          @change="updateAutoRefresh"
-          class="form-select"
-        >
-          <option :value="10000">كل 10 ثوان</option>
-          <option :value="30000">كل 30 ثانية</option>
-          <option :value="60000">كل دقيقة</option>
-          <option :value="0">بدون تحديث تلقائي</option>
-        </select>
+        <BaseSelect
+  v-model.number="refreshIntervalTime"
+  select-class="form-select"
+  @change="updateAutoRefresh"
+  :options="[
+    { label: 'كل 10 ثوان', value: 10000 },
+    { label: 'كل 30 ثانية', value: 30000 },
+    { label: 'كل دقيقة', value: 60000 },
+    { label: 'بدون تحديث تلقائي', value: 0 },
+  ]"
+/>
         <button
           @click="refreshData"
           :disabled="loading"
@@ -298,7 +299,7 @@
 <script setup>
 import { ref } from "vue";
 import { AppIcon } from "@/components/icons";
-import { BaseToast } from "@/components/base";
+import { BaseToast, BaseSelect } from "@/components/base";
 import { useAdminMonitoring } from "@/composables/useAdminMonitoring";
 import {
   formatDateTime,

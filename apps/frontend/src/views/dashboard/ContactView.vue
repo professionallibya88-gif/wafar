@@ -5,7 +5,7 @@
       <p class="text-sm text-gray-500 dark:text-gray-400">نحن هنا لمساعدتك والإجابة على كافة استفساراتك</p>
     </div>
 
-    <div class="flex flex-col md:flex-row gap-6">
+    <div class="flex flex-col md:flex-row-reverse gap-6">
       <!-- Contact Info / Channels -->
       <div class="w-full md:w-1/3 space-y-4">
         <div class="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-700">

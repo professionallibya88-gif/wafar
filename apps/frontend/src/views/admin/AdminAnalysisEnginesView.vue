@@ -56,19 +56,27 @@
         </div>
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">النوع</label>
-          <select v-model="filters.type" class="form-select">
-            <option value="">الكل</option>
-            <option value="pdf">محركات PDF</option>
-            <option value="ai">مزودو AI</option>
-          </select>
+          <BaseSelect
+  v-model="filters.type"
+  select-class="form-select"
+  :options="[
+    { label: 'الكل', value: '' },
+    { label: 'محركات PDF', value: 'pdf' },
+    { label: 'مزودو AI', value: 'ai' },
+  ]"
+/>
         </div>
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">الحالة</label>
-          <select v-model="filters.status" class="form-select">
-            <option value="">الكل</option>
-            <option value="enabled">مفعلة</option>
-            <option value="disabled">معطلة</option>
-          </select>
+          <BaseSelect
+  v-model="filters.status"
+  select-class="form-select"
+  :options="[
+    { label: 'الكل', value: '' },
+    { label: 'مفعلة', value: 'enabled' },
+    { label: 'معطلة', value: 'disabled' },
+  ]"
+/>
         </div>
         <div class="flex items-end gap-3">
           <BaseButton class="flex-1" variant="secondary" @click="resetFilters">
@@ -108,7 +116,7 @@
           @change="toggleColumn"
         />
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[1000px]">
           <thead class="bg-neutral-50 dark:bg-neutral-950">
             <tr>
@@ -267,7 +275,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { aiProviderAPI, pdfAPI, settingsAPI } from "@/services/api";
-import { BaseBadge, BaseButton, BaseDrawer, BaseDropdown, BaseToast } from "@/components/base";
+import { BaseBadge, BaseButton, BaseDrawer, BaseDropdown, BaseToast, BaseSelect } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 
 const router = useRouter();

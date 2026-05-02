@@ -4,16 +4,16 @@ import { themeStorage } from "@/services/storage";
 
 export const useThemeStore = defineStore("theme", () => {
   // حالة الوضع الحالي
-  const themeMode = ref("light");
-  const resolvedTheme = ref("light");
+  const themeMode = ref("dark");
+  const resolvedTheme = ref("dark");
   const isInitialized = ref(false);
 
   // مراقبة تفضيلات النظام
   let systemDarkQuery = null;
   let systemListener = null;
 
-  // تطلبيق الوضع على DOM
-  const applyTheme = (newTheme, mode = "light") => {
+  // تطبيق الوضع على DOM
+  const applyTheme = (newTheme, mode = "dark") => {
     if (typeof document === "undefined") return;
 
     const root = document.documentElement;
@@ -45,7 +45,7 @@ export const useThemeStore = defineStore("theme", () => {
     if (systemDarkQuery) {
       return systemDarkQuery.matches ? "dark" : "light";
     }
-    return "light";
+    return "dark";
   };
 
   // الحصول على الوضع المحفوظ أو الافتراضي
@@ -77,10 +77,10 @@ export const useThemeStore = defineStore("theme", () => {
 
     // الحصول على الوضع المحفوظ أو الافتراضي
     const stored = getStoredTheme();
-    themeMode.value = stored || "light";
+    themeMode.value = stored || "dark";
     resolvedTheme.value = resolveTheme(themeMode.value);
 
-    // تطلبيق الوضع
+    // تطبيق الوضع
     applyTheme(resolvedTheme.value, themeMode.value);
 
     // إضافة مستمع لتغيرات النظام

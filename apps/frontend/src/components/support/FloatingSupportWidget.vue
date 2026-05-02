@@ -1,5 +1,15 @@
 <template>
-  <div v-if="isAuthenticated" class="fixed z-50 support-widget" :class="[isOpen ? 'inset-0 sm:inset-auto sm:bottom-24 lg:sm:bottom-6 sm:left-6' : 'bottom-24 lg:bottom-6 left-6']" dir="rtl">
+  <div 
+    v-if="isAuthenticated && shouldShowWidget" 
+    class="fixed z-50 support-widget" 
+    :class="[isOpen ? 'inset-0 sm:inset-auto' : '']"
+    :style="isOpen && !isDesktop ? {} : {
+      bottom: isDesktop ? `${widgetBottomDesktop}px` : `${widgetBottomMobile}px`,
+      left: widgetPositionX === 'left' ? '16px' : 'auto',
+      right: widgetPositionX === 'right' ? '16px' : 'auto',
+    }"
+    dir="rtl"
+  >
     <!-- خلفية مظللة للموبايل فقط عند فتح المحادثة -->
     <div v-if="isOpen" class="fixed inset-0 bg-black/50 sm:hidden z-40" @click="isOpen = false"></div>
 
@@ -14,12 +24,20 @@
     >
       <div
         v-if="isOpen"
-        class="absolute z-50 sm:bottom-16 sm:left-0 sm:mb-2 w-full sm:w-96 bg-white dark:bg-gray-800 sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[85vh] sm:h-[600px] bottom-0 left-0 sm:max-h-[85vh] rounded-t-3xl"
+        class="absolute z-50 sm:mb-2 w-full sm:w-96 bg-white dark:bg-gray-800 sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[85vh] sm:h-[600px] bottom-0 sm:max-h-[85vh] rounded-t-3xl"
+        :style="isDesktop ? {
+          bottom: '100%',
+          left: widgetPositionX === 'left' ? '0' : 'auto',
+          right: widgetPositionX === 'right' ? '0' : 'auto',
+        } : { left: '0' }"
       >
         <div 
-          class="p-4 text-center shrink-0 relative"
+          class="p-4 text-center shrink-0 relative sm:pt-4"
           :style="{ backgroundColor: widgetBgColor, color: widgetIconColor }"
         >
+          <!-- مؤشر السحب (Drag Handle) للموبايل -->
+          <div class="sm:hidden absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-full bg-white/40"></div>
+          
           <!-- زر إغلاق للموبايل -->
           <button @click="isOpen = false" class="absolute top-4 left-4 sm:hidden p-1 bg-black/10 rounded-full hover:bg-black/20 transition-colors">
             <AppIcon name="xmark" class="w-5 h-5" />
@@ -207,32 +225,59 @@
     <button
       v-show="!isOpen || (isOpen && isDesktop)"
       @click="toggleOpen"
-      class="fixed sm:absolute bottom-24 sm:bottom-0 left-6 sm:left-0 z-50 flex items-center justify-center w-14 h-14 text-white shadow-lg hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+      class="fixed sm:absolute z-50 flex items-center justify-center text-white shadow-lg hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-50"
       :class="[
         isOpen ? 'rotate-180' : '',
-        widgetShape === 'square' ? 'rounded-xl' : 'rounded-full'
+        widgetShape === 'square' ? 'rounded-xl' : 'rounded-full',
+        widgetSizeClass
       ]"
-      :style="{ backgroundColor: widgetBgColor, color: widgetIconColor }"
+      :style="isDesktop ? {
+        bottom: '0',
+        left: widgetPositionX === 'left' ? '0' : 'auto',
+        right: widgetPositionX === 'right' ? '0' : 'auto',
+        backgroundColor: widgetBgColor, 
+        color: widgetIconColor
+      } : {
+        bottom: isOpen ? '24px' : `${widgetBottomMobile}px`,
+        left: widgetPositionX === 'left' ? '16px' : 'auto',
+        right: widgetPositionX === 'right' ? '16px' : 'auto',
+        backgroundColor: widgetBgColor, 
+        color: widgetIconColor
+      }"
       aria-label="تواصل معنا"
     >
-      <AppIcon v-if="isOpen" name="xmark" size="lg" />
-      <AppIcon v-else name="chat-bubble-left-right" size="lg" />
+      <AppIcon v-if="isOpen" name="xmark" :size="widgetIconSize" />
+      <AppIcon v-else :name="widgetIcon" :size="widgetIconSize" />
     </button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
+import { useRoute } from "vue-router";
 import { supportAPI } from "@/services/api";
 import AppIcon from "@/components/icons/AppIcon.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useSiteSettings } from "@/composables/useSiteSettings";
 import { getSocket } from "@/services/socket";
 
+const route = useRoute();
 const authStore = useAuthStore();
 const { siteSettings } = useSiteSettings();
 
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+// Show widget only on specific pages
+const allowedRoutes = ['Home', 'Profile', 'Subscriptions', 'Payments', 'Contact', 'About', 'Settings', 'Privacy', 'Terms', 'AdminSettings'];
+const shouldShowWidget = computed(() => {
+  return route.name && allowedRoutes.includes(route.name);
+});
+
+watch(shouldShowWidget, (newVal) => {
+  if (!newVal && isOpen.value) {
+    isOpen.value = false;
+  }
+});
 
 // Check if desktop to manage floating button visibility on mobile when open
 const isDesktop = ref(window.innerWidth >= 640);
@@ -244,6 +289,29 @@ const updateDesktopState = () => {
 const widgetBgColor = computed(() => siteSettings.value.widget_bg_color || '#2563eb');
 const widgetIconColor = computed(() => siteSettings.value.widget_icon_color || '#ffffff');
 const widgetShape = computed(() => siteSettings.value.widget_shape || 'circle');
+const widgetSize = computed(() => siteSettings.value.widget_size || 'medium');
+const widgetPositionX = computed(() => siteSettings.value.widget_position_x || 'left');
+const widgetBottomDesktop = computed(() => siteSettings.value.widget_bottom_desktop || 24);
+const widgetBottomMobile = computed(() => siteSettings.value.widget_bottom_mobile || 112);
+const widgetIcon = computed(() => siteSettings.value.widget_icon || 'chat-bubble-left-right');
+
+const widgetSizeClass = computed(() => {
+  switch(widgetSize.value) {
+    case 'small': return 'w-10 h-10 sm:w-12 sm:h-12';
+    case 'large': return 'w-14 h-14 sm:w-16 sm:h-16';
+    case 'medium':
+    default: return 'w-12 h-12 sm:w-14 sm:h-14';
+  }
+});
+
+const widgetIconSize = computed(() => {
+  switch(widgetSize.value) {
+    case 'small': return 'md';
+    case 'large': return 'xl';
+    case 'medium':
+    default: return 'lg';
+  }
+});
 
 // Main State
 const isOpen = ref(false);

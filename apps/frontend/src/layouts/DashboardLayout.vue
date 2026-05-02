@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-shell flex flex-col h-screen">
+  <div class="dashboard-shell flex flex-col min-h-screen">
     <!-- الشريط العلوي -->
     <DashboardNavbar
       :is-authenticated="authStore.isAuthenticated"
@@ -11,15 +11,15 @@
       @toggle-collapse="toggleSidebar"
       @logout="handleLogout"
       class="transition-all duration-300"
-      :class="sidebarCollapsed ? 'lg:pr-[7rem]' : 'lg:pr-[20rem]'"
+      :class="desktopSidebarOffsetClass"
     />
 
-    <div class="flex flex-1 relative h-full w-full">
+    <div class="flex flex-1 relative w-full">
       <!-- شاشة تظليل الخلفية -->
       <div
         v-if="showMobileSidebar"
         @click="closeMobileSidebar"
-        class="fixed inset-0 bg-black/50 z-40 lg:hidden animate-fade-in"
+        class="fixed inset-0 bg-black/50 z-[100] lg:hidden animate-fade-in"
       />
 
       <!-- الشريط الجانبي -->
@@ -36,8 +36,8 @@
       <main
         class="dashboard-main flex-1 transition-all duration-300"
         :class="[
-          sidebarCollapsed ? 'lg:mr-[7rem]' : 'lg:mr-[20rem]',
-          showMobileSidebar || (!authStore.isAuthenticated && route.path === '/') ? 'overflow-hidden' : 'overflow-auto lg:overflow-auto',
+          desktopSidebarOffsetClass,
+          showMobileSidebar || (!authStore.isAuthenticated && route.path === '/') ? 'overflow-hidden' : '',
         ]"
       >
         <div class="max-w-7xl mx-auto w-full pb-32 lg:pb-8">
@@ -60,6 +60,7 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useDashboardMenu } from "@/composables/useDashboardMenu";
@@ -81,6 +82,14 @@ const {
   closeMobileSidebar,
   toggleSidebar,
 } = useSidebarState();
+
+const desktopSidebarOffsetClass = computed(() => {
+  if (!authStore.isAuthenticated) {
+    return "";
+  }
+
+  return sidebarCollapsed.value ? "lg:pr-[7rem]" : "lg:pr-[20rem]";
+});
 
 const isActive = (path) => {
   if (path === "/") return route.path === "/";

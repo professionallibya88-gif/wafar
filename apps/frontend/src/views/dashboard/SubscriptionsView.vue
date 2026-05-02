@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-8">
+  <div class="page-shell-content">
     <!-- Header -->
     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
       <div>
@@ -17,7 +17,7 @@
       v-if="currentPlanId"
       class="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-6"
     >
-      <div class="flex items-center gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
         <div
           class="w-12 h-12 bg-brand-100 dark:bg-neutral-900/50 rounded-xl flex items-center justify-center"
         >
@@ -35,7 +35,7 @@
     </div>
 
     <!-- Plans Grid -->
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div class="content-grid-centered">
       <div
         v-for="plan in plans"
         :key="plan.id"

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-8">
+  <div class="page-shell-content">
     <BaseToast />
 
     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+    <div class="content-grid-centered">
       <div
         v-for="card in summaryCards"
         :key="card.key"
@@ -87,14 +87,15 @@
             size="sm" 
             customClass="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
           />
-          <select
-            v-model="filters.status"
-            class="form-select h-11"
-          >
-            <option value="all">كل الحالات</option>
-            <option value="active">النشطة</option>
-            <option value="inactive">المعطلة</option>
-          </select>
+          <BaseSelect
+  v-model="filters.status"
+  select-class="form-select h-11"
+  :options="[
+    { label: 'كل الحالات', value: 'all' },
+    { label: 'النشطة', value: 'active' },
+    { label: 'المعطلة', value: 'inactive' },
+  ]"
+/>
         </div>
 
         <div class="relative">
@@ -103,24 +104,19 @@
             size="sm" 
             customClass="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
           />
-          <select
-            v-model="filters.type"
-            class="form-select h-11"
-          >
-            <option value="all">كل الأنواع</option>
-            <option
-              v-for="option in planTypeOptions"
-              :key="option.value"
-              :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
+          <BaseSelect
+  v-model="filters.type"
+  select-class="form-select h-11"
+  :options="[
+    { label: 'كل الأنواع', value: 'all' },
+    ...(planTypeOptions || []).map(option => ({ label: option.label, value: option.value })),
+  ]"
+/>
         </div>
       </div>
     </div>
 
-    <div v-if="loading" class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+    <div v-if="loading" class="content-grid-centered">
       <div
         v-for="index in 4"
         :key="index"
@@ -130,7 +126,7 @@
 
     <div
       v-else-if="filteredPlans.length"
-      class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      class="content-grid-centered"
     >
       <div
         v-for="plan in filteredPlans"
@@ -371,18 +367,13 @@
                 <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-200">
                   نوع الباقة
                 </label>
-                <select
-                  v-model="form.plan_type"
-                  class="form-select"
-                >
-                  <option
-                    v-for="option in planTypeOptions"
-                    :key="option.value"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </option>
-                </select>
+                <BaseSelect
+  v-model="form.plan_type"
+  select-class="form-select"
+  :options="[
+    ...(planTypeOptions || []).map(option => ({ label: option.label, value: option.value })),
+  ]"
+/>
               </div>
 
               <div>
@@ -476,13 +467,14 @@
                     متاحة حالياً بعملتين
                   </p>
                 </div>
-                <select
-                  v-model="form.currency"
-                  class="form-select"
-                >
-                  <option value="LYD">LYD</option>
-                  <option value="USD">USD</option>
-                </select>
+                <BaseSelect
+  v-model="form.currency"
+  select-class="form-select"
+  :options="[
+    { label: 'LYD', value: 'LYD' },
+    { label: 'USD', value: 'USD' },
+  ]"
+/>
               </label>
             </div>
           </section>
@@ -765,7 +757,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseModal } from "@/components/base";
+import { BaseToast, BaseModal, BaseSelect } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 import { formatCurrency } from "@/utils/currency";
 

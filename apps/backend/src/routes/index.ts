@@ -17,6 +17,9 @@ import healthRoutes from './healthRoutes';
 import aiProviderRoutes from './aiProviderRoutes';
 import supportChannelRoutes from './supportChannelRoutes';
 import supportTicketRoutes from './supportTicketRoutes';
+import cartRoutes from './cartRoutes';
+import orderRoutes from './orderRoutes';
+import { errorHandler } from '../middleware/errorHandler';
 
 const router = Router();
 
@@ -37,5 +40,9 @@ router.use('/health', healthRoutes);
 router.use('/ai-providers', aiProviderRoutes);
 router.use('/support-channels', supportChannelRoutes);
 router.use('/support-tickets', supportTicketRoutes);
+router.use('/cart', cartRoutes);
+router.use('/orders', orderRoutes);
+
+router.use(errorHandler);
 
 export default router;

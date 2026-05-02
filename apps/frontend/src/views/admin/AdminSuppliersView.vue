@@ -13,21 +13,22 @@
           إضافة وتعديل بيانات الموردين
         </p>
       </div>
-      <div class="flex items-center gap-3">
-        <select
-          v-model="categoryFilter"
-          class="form-select"
-        >
-          <option value="">جميع الفئات</option>
-          <option value="automotive">قطع الغيار سيارات</option>
-          <option value="pharmaceutical">أدوية</option>
-          <option value="industrial">صناعي</option>
-          <option value="other">أخرى</option>
-        </select>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+        <BaseSelect
+  v-model="categoryFilter"
+  select-class="form-select"
+  :options="[
+    { label: 'جميع الفئات', value: '' },
+    { label: 'قطع الغيار سيارات', value: 'automotive' },
+    { label: 'أدوية', value: 'pharmaceutical' },
+    { label: 'صناعي', value: 'industrial' },
+    { label: 'أخرى', value: 'other' },
+  ]"
+/>
         <div class="relative">
           <input
             v-model="search"
-            class="w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            class="w-full sm:w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             placeholder="بحث..."
           />
         </div>
@@ -67,15 +68,16 @@
           placeholder="البريد الإلكتروني"
           dir="ltr"
         />
-        <select
-          v-model="form.category"
-          class="form-select"
-        >
-          <option value="automotive">قطع الغيار سيارات</option>
-          <option value="pharmaceutical">أدوية</option>
-          <option value="industrial">صناعي</option>
-          <option value="other">أخرى</option>
-        </select>
+        <BaseSelect
+  v-model="form.category"
+  select-class="form-select"
+  :options="[
+    { label: 'قطع الغيار سيارات', value: 'automotive' },
+    { label: 'أدوية', value: 'pharmaceutical' },
+    { label: 'صناعي', value: 'industrial' },
+    { label: 'أخرى', value: 'other' },
+  ]"
+/>
         <textarea
           v-model="form.address"
           class="px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500 md:col-span-2 resize-none"
@@ -104,7 +106,7 @@
     <div
       class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
     >
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
@@ -142,7 +144,7 @@
               class="hover:bg-brand-50 dark:hover:bg-gray-700/50 transition-colors"
             >
               <td class="px-4 py-4">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                   <div
                     class="w-10 h-10 bg-brand-100 dark:bg-neutral-900/40 rounded-lg flex items-center justify-center"
                   >
@@ -265,7 +267,7 @@
 import { ref, onMounted } from "vue";
 import { adminAPI, supplierAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast } from "@/components/base";
+import { BaseToast, BaseSelect } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 
 const suppliers = ref([]);

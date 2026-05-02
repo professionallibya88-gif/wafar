@@ -79,5 +79,4 @@ const iconComponent = computed(() => {
 
 <template>
   <component v-if="iconComponent" :is="iconComponent" :class="iconClasses" />
-  <span v-else class="inline-block w-5 h-5 bg-gray-300 rounded" />
 </template>

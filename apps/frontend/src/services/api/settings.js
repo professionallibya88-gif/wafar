@@ -6,7 +6,15 @@ export const settingsAPI = {
 
   // Admin endpoints
   getAll: () => http.get("/settings"),
-  update: (data) => http.put("/settings", data),
+  update: (keyOrData, value) => {
+    if (typeof keyOrData === "string") {
+      return http.put(`/settings/${keyOrData}`, { value });
+    }
+    return http.put("/settings", keyOrData);
+  },
+  updateAll: (data) => http.put("/settings", data),
+  resetDefaults: () => http.post("/settings/reset-defaults"),
+  testEmail: () => http.post("/settings/test-email"),
   uploadImage: (file, type) => {
     const formData = new FormData();
     formData.append("image", file);

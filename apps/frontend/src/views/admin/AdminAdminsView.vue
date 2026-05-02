@@ -13,18 +13,18 @@
           عرض وإدارة حسابات الإدارة والمشرفين
         </p>
       </div>
-      <div class="flex items-center gap-3">
-        <div class="relative">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+        <div class="relative w-full sm:w-auto">
           <input
             v-model="search"
-            class="w-72 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+            class="w-full sm:w-72 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             placeholder="بحث بالاسم أو الإيميل..."
           />
         </div>
         <BaseButton
           @click="showForm = true"
           variant="primary"
-          class="inline-flex items-center gap-2"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2"
         >
           <AppIcon name="Plus" size="md" color="white" />
           إضافة مدير
@@ -35,7 +35,7 @@
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="bg-layer-stats rounded-xl p-5 border border-neutral-200/70 dark:border-neutral-800/70">
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-brand-50 dark:bg-neutral-900/50 rounded-xl flex items-center justify-center"
           >
@@ -56,7 +56,7 @@
         </div>
       </div>
       <div class="bg-layer-stats rounded-xl p-5 border border-neutral-200/70 dark:border-neutral-800/70">
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center"
           >
@@ -110,16 +110,24 @@
           class="px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 autofill:bg-transparent"
           placeholder="البريد الإلكتروني"
           dir="ltr"
-          required
         />
-        <select
-          v-model="form.role"
-          class="form-select"
-        >
-          <option value="super_admin">مدير عام</option>
-          <option value="editor">محرر</option>
-          <option value="viewer">مشاهد</option>
-        </select>
+        <input
+          v-model="form.phone"
+          type="tel"
+          autocomplete="new-password"
+          class="px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 autofill:bg-transparent"
+          placeholder="رقم الهاتف"
+          dir="ltr"
+        />
+        <BaseSelect
+  v-model="form.role"
+  select-class="form-select"
+  :options="[
+    { label: 'مدير عام', value: 'super_admin' },
+    { label: 'محرر', value: 'editor' },
+    { label: 'مشاهد', value: 'viewer' },
+  ]"
+/>
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             كلمة المرور {{ editingId ? "(اتركها فارغة للاحتفاظ بالقديمة)" : "" }}
@@ -164,7 +172,7 @@
 
     <!-- Admins Table Card -->
     <div class="panel-table mt-6">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-brand-50 dark:bg-gray-900">
             <tr>
@@ -177,6 +185,11 @@
                 class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
               >
                 البريد الإلكتروني
+              </th>
+              <th
+                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                رقم الهاتف
               </th>
               <th
                 class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
@@ -207,7 +220,7 @@
               class="hover:bg-brand-50 dark:hover:bg-gray-700/50 transition-colors"
             >
               <td class="px-4 py-4">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                   <div
                     class="w-10 h-10 bg-brand-100 dark:bg-brand-900/30 rounded-xl flex items-center justify-center flex-shrink-0"
                   >
@@ -224,6 +237,9 @@
               </td>
               <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300 font-mono" dir="ltr">
                 {{ u.email || "-" }}
+              </td>
+              <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300 font-mono" dir="ltr">
+                {{ u.phone || "-" }}
               </td>
               <td class="px-4 py-4">
                 <span
@@ -334,7 +350,7 @@
 import { ref, computed, onMounted } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseButton, BaseToast } from "@/components/base";
+import { BaseButton, BaseToast, BaseSelect } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 
 const admins = ref([]);
@@ -346,6 +362,7 @@ const showPassword = ref(false);
 const form = ref({
   full_name: "",
   email: "",
+  phone: "",
   role: "editor",
   password: "",
 });
@@ -419,6 +436,7 @@ const editAdmin = (adminItem) => {
   form.value = {
     full_name: adminItem.full_name || "",
     email: adminItem.email || "",
+    phone: adminItem.phone || "",
     role: adminItem.role || "editor",
     password: "",
   };
@@ -427,8 +445,12 @@ const editAdmin = (adminItem) => {
 };
 
 const saveAdmin = async () => {
-  if (!form.value.full_name || !form.value.email) {
-    window.$toast.error("يرجى إكمال الحقول المطلوبة");
+  if (!form.value.full_name) {
+    window.$toast.error("يرجى إدخال الاسم الكامل");
+    return;
+  }
+  if (!form.value.email && !form.value.phone) {
+    window.$toast.error("يرجى إدخال البريد الإلكتروني أو رقم الهاتف");
     return;
   }
 
@@ -436,6 +458,7 @@ const saveAdmin = async () => {
     const payload = {
       full_name: form.value.full_name,
       email: form.value.email,
+      phone: form.value.phone,
       role: form.value.role,
     };
 
@@ -473,6 +496,7 @@ const resetForm = () => {
   form.value = {
     full_name: "",
     email: "",
+    phone: "",
     role: "editor",
     password: "",
   };

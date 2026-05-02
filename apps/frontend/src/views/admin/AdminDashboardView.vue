@@ -13,7 +13,7 @@
           نظرة شاملة على أداء المنصة
         </p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
         <BaseButton
           @click="loadDashboardData"
           :disabled="loading"
@@ -354,7 +354,7 @@ const quickActions = [
   },
   {
     path: "/admin/plans",
-    label: "إدارة البالات",
+    label: "إدارة الباقات",
     iconName: "ShieldCheck",
   },
 ];

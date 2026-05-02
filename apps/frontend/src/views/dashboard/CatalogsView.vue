@@ -1,19 +1,19 @@
 <template>
-  <div class="space-y-8">
+  <div class="page-shell">
     <!-- Header -->
     <div
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
     >
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 class="page-title">
           الكتالوجات
         </h1>
-        <p class="mt-1 text-gray-500 dark:text-gray-400">
+        <p class="page-subtitle">
           جميع كتالوجات قطع الغيار المتاحة
           للبحث
         </p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
         <label
           class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer"
         >
@@ -30,9 +30,9 @@
 
     <!-- Catalogs Table Card -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"
+      class="panel-table"
     >
-      <div v-if="catalogs.length > 0" class="overflow-x-auto">
+      <div v-if="catalogs.length > 0" class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
@@ -81,7 +81,7 @@
                 @click="$router.push('/files/' + catalog.id)"
               >
                 <td class="px-4 py-4">
-                  <div class="flex items-center gap-3">
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                     <div
                       class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0"
                     >

@@ -15,6 +15,11 @@ import { AIProcessingLog } from './AIProcessingLog';
 import { SupportChannel } from './SupportChannel';
 import { SupportTicket } from './SupportTicket';
 import { SupportMessage } from './SupportMessage';
+import { ActivityLog } from './ActivityLog';
+import { Cart } from './Cart';
+import { CartItem } from './CartItem';
+import { Order } from './Order';
+import { OrderItem } from './OrderItem';
 
 // تهيئة النماذج أولاً
 User.initModel(sequelize);
@@ -33,6 +38,11 @@ AIProcessingLog.initModel(sequelize);
 SupportChannel.initModel(sequelize);
 SupportTicket.initModel(sequelize);
 SupportMessage.initModel(sequelize);
+ActivityLog.initModel(sequelize);
+Cart.initModel(sequelize);
+CartItem.initModel(sequelize);
+Order.initModel(sequelize);
+OrderItem.initModel(sequelize);
 
 // إعداد العلاقات (Relationships)
 // User -> PDFFile
@@ -91,6 +101,29 @@ SupportTicket.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 SupportTicket.hasMany(SupportMessage, { foreignKey: 'ticket_id', as: 'messages' });
 SupportMessage.belongsTo(SupportTicket, { foreignKey: 'ticket_id', as: 'ticket' });
 
+// Cart Relationships
+User.hasMany(Cart, { foreignKey: 'user_id', as: 'carts' });
+Cart.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+Cart.hasMany(CartItem, { foreignKey: 'cart_id', as: 'items' });
+CartItem.belongsTo(Cart, { foreignKey: 'cart_id', as: 'cart' });
+
+Part.hasMany(CartItem, { foreignKey: 'part_id', as: 'cartItems' });
+CartItem.belongsTo(Part, { foreignKey: 'part_id', as: 'part' });
+
+// Order Relationships
+User.hasMany(Order, { foreignKey: 'retailer_id', as: 'retailerOrders' });
+Order.belongsTo(User, { foreignKey: 'retailer_id', as: 'retailer' });
+
+Supplier.hasMany(Order, { foreignKey: 'supplier_id', as: 'supplierOrders' });
+Order.belongsTo(Supplier, { foreignKey: 'supplier_id', as: 'supplier' });
+
+Order.hasMany(OrderItem, { foreignKey: 'order_id', as: 'items' });
+OrderItem.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
+
+Part.hasMany(OrderItem, { foreignKey: 'part_id', as: 'orderItems' });
+OrderItem.belongsTo(Part, { foreignKey: 'part_id', as: 'part' });
+
 export {
   User,
   Admin,
@@ -108,4 +141,10 @@ export {
   SupportChannel,
   SupportTicket,
   SupportMessage,
+  ActivityLog,
+  Cart,
+  CartItem,
+  Order,
+  OrderItem,
+  sequelize,
 };

@@ -1,87 +1,76 @@
 <template>
-  <div class="min-h-screen flex bg-neutral-50 dark:bg-neutral-900 transition-colors duration-300">
-    <!-- Right Side - Form Content (Active View) -->
-    <div class="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 relative z-10 overflow-y-auto">
-      <div class="w-full max-w-md animate-fade-in-up">
-        <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
-      </div>
-    </div>
-
-    <!-- Left Side - Illustration / Branding -->
-    <div class="hidden lg:flex flex-1 relative items-center justify-center overflow-hidden bg-brand-700 z-0">
-      <CinematicBackground v-if="isDarkMode" />
-      <div v-else class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-40 -right-40 w-96 h-96 bg-brand-500 rounded-full opacity-20 blur-3xl animate-float" />
-        <div class="absolute -bottom-40 -left-40 w-[30rem] h-[30rem] bg-brand-500 rounded-full opacity-20 blur-3xl animate-float" style="animation-delay: -2s" />
-        <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-brand-400 rounded-full opacity-20 blur-3xl animate-float" style="animation-delay: -4s" />
+  <div
+    class="min-h-screen min-h-[100dvh] flex bg-[linear-gradient(180deg,#f8fbff_0%,#f3f7ff_45%,#eef4ff_100%)] dark:bg-[linear-gradient(180deg,#020617_0%,#0b1120_48%,#020617_100%)] transition-colors duration-300"
+  >
+    <div class="relative flex flex-1 items-start justify-center overflow-y-auto px-3 pt-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:items-center sm:p-5 md:p-6">
+      <div class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div class="absolute inset-0 auth-form-grid opacity-70 dark:opacity-30" />
+        <div class="absolute top-[-12rem] right-[-6rem] h-[28rem] w-[28rem] rounded-full bg-brand-400/18 blur-3xl dark:bg-brand-500/16" />
+        <div class="absolute bottom-[-12rem] left-[-8rem] h-[26rem] w-[26rem] rounded-full bg-sky-300/22 blur-3xl dark:bg-sky-500/12" />
       </div>
 
-      <!-- Brand Content -->
-      <div class="relative z-10 text-white text-center max-w-lg px-8 animate-fade-in-up">
-        <div class="w-20 h-20 md:w-24 md:h-24 bg-white/10 backdrop-blur-sm rounded-3xl mx-auto mb-6 md:mb-8 flex items-center justify-center border border-white/20 shadow-xl overflow-hidden">
-          <img v-if="siteSettings?.site_logo" :src="siteSettings.site_logo" class="w-full h-full object-contain" />
-          <AppIcon v-else name="Globe" size="2xl" class="md:!w-10 md:!h-10" color="white" />
-        </div>
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">
-          {{ siteSettings?.site_name ? `بوابة ${siteSettings.site_name}` : 'بوابة وفر' }}
-        </h2>
-        <p class="text-base md:text-xl text-brand-100 leading-relaxed mb-8">
-          {{ siteSettings?.site_description || 'نظام فلترة ذكي للبحث عن مئات آلاف قطع الغيار ومقارنة الأسعار من الموردين الموثوقين' }}
-        </p>
-
-        <!-- Features -->
-        <div class="space-y-4 text-right">
-          <div class="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10 transition-transform hover:scale-105">
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-              <AppIcon name="DocumentText" size="lg" />
-            </div>
-            <div>
-              <p class="font-bold text-lg">معالجة PDF ذكية</p>
-              <p class="text-sm text-brand-200">استخراج دقيق للبيانات بالذكاء الاصطناعي</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10 transition-transform hover:scale-105">
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-              <AppIcon name="ChartBar" size="lg" />
-            </div>
-            <div>
-              <p class="font-bold text-lg">مقارنة الأسعار</p>
-              <p class="text-sm text-brand-200">ابحث عن أفضل الأسعار بسرعة وسهولة</p>
-            </div>
-          </div>
+      <div class="relative z-10 w-full max-w-md xl:max-w-lg">
+        <div
+          class="rounded-[1.75rem] border border-white/70 bg-white/78 p-5 shadow-[0_28px_80px_rgba(15,23,42,0.10)] backdrop-blur-2xl sm:p-6 md:p-7 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_32px_90px_rgba(2,6,23,0.58)]"
+        >
+          <router-view v-slot="{ Component }">
+            <transition name="fade-smooth" mode="out-in">
+              <component :is="Component" />
+            </transition>
+          </router-view>
         </div>
       </div>
     </div>
+
+    <AuthVisualPanel class="animate-fade-in" />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { AppIcon } from '@/components/icons';
-import { useSiteSettings } from '@/composables/useSiteSettings';
-import CinematicBackground from '@/components/CinematicBackground.vue';
-import { useThemeStore } from '@/stores/theme';
-
-const { siteSettings } = useSiteSettings();
-const themeStore = useThemeStore();
-const isDarkMode = computed(() => themeStore.isDark());
+import AuthVisualPanel from "@/components/auth/AuthVisualPanel.vue";
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+.fade-smooth-enter-active,
+.fade-smooth-leave-active {
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.fade-enter-from {
+.fade-smooth-enter-from {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(12px);
 }
-.fade-leave-to {
+.fade-smooth-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-12px);
+}
+
+.auth-form-grid {
+  background-image:
+    linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.05) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(circle at center, black 38%, transparent 92%);
+}
+
+.animate-fade-in {
+  animation: fadeIn 1.2s ease-out forwards;
+}
+
+.float-slow {
+  animation: floatSlow 14s ease-in-out infinite;
+}
+
+.float-slow-delayed {
+  animation: floatSlow 16s ease-in-out -7s infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
 }
 </style>

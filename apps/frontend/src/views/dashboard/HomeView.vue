@@ -17,7 +17,7 @@
             {{ welcomeDescription }}
           </p>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div class="flex items-center gap-2 px-5 py-2.5 bg-layer-card rounded-full shadow-sm border border-neutral-200 dark:border-neutral-800">
             <span class="relative flex h-3 w-3">
               <span
@@ -50,8 +50,8 @@
     >
       <div class="panel-card p-6 lg:p-10 bg-gradient-to-r from-brand-600 to-brand-800 dark:from-neutral-800 dark:to-neutral-900 border-none shadow-xl rounded-3xl relative overflow-hidden">
         <!-- Decorative elements -->
-        <div class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-white/5 dark:bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute bottom-0 left-0 -mb-16 -ml-16 w-48 h-48 bg-brand-400/20 dark:bg-brand-400/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute top-0 right-0 -mt-16 -mr-16 w-full sm:w-64 h-64 bg-white/5 dark:bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 -mb-16 -ml-16 w-full sm:w-48 h-48 bg-brand-400/20 dark:bg-brand-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <h2
           class="text-2xl lg:text-3xl font-extrabold text-white mb-8 text-center relative z-10 drop-shadow-md"
@@ -192,7 +192,7 @@
                 :key="file.id"
                 class="flex items-center justify-between p-4 bg-brand-50 dark:bg-neutral-800 rounded-xl hover:bg-brand-100 dark:hover:bg-neutral-700 transition-colors"
               >
-                <div class="flex items-center gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
                   <div
                     class="w-12 h-12 bg-white dark:bg-neutral-900 rounded-lg flex items-center justify-center shadow-sm border border-neutral-200 dark:border-neutral-700"
                   >

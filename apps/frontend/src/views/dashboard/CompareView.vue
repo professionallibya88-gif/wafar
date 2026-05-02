@@ -30,13 +30,13 @@
       v-if="parts.length > 0"
       class="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-neutral-100 dark:border-neutral-700 overflow-hidden"
     >
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-neutral-50 dark:bg-neutral-900">
             <!-- Header Row -->
             <tr>
               <th
-                class="px-4 py-4 text-right text-sm font-semibold text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900 w-48 sticky right-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
+                class="px-4 py-4 text-right text-sm font-semibold text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900 w-full sm:w-48 sticky right-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
               >
                 القطعة / الكود
               </th>

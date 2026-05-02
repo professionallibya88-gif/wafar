@@ -194,21 +194,30 @@
           </div>
           <div>
             <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">الجودة</label>
-            <select v-model="filters.quality_grade" @change="applyFilters" class="form-select">
-              <option value="">الكل</option>
-              <option value="original">أصلي</option>
-              <option value="high">جيد</option>
-              <option value="medium">متوسط</option>
-              <option value="low">اقتصادي</option>
-            </select>
+            <BaseSelect
+  v-model="filters.quality_grade"
+  select-class="form-select"
+  @change="applyFilters"
+  :options="[
+    { label: 'الكل', value: '' },
+    { label: 'أصلي', value: 'original' },
+    { label: 'جيد', value: 'high' },
+    { label: 'متوسط', value: 'medium' },
+    { label: 'اقتصادي', value: 'low' },
+  ]"
+/>
           </div>
           <div>
             <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">التوفر</label>
-            <select v-model="filters.in_stock" class="form-select">
-              <option value="">الكل</option>
-              <option value="true">متوفر فقط</option>
-              <option value="false">غير متوفر</option>
-            </select>
+            <BaseSelect
+  v-model="filters.in_stock"
+  select-class="form-select"
+  :options="[
+    { label: 'الكل', value: '' },
+    { label: 'متوفر فقط', value: 'true' },
+    { label: 'غير متوفر', value: 'false' },
+  ]"
+/>
           </div>
           <div>
             <label class="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">السعر الأدنى</label>
@@ -229,7 +238,7 @@
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-neutral-50 dark:bg-neutral-900">
             <tr>
@@ -434,7 +443,7 @@
 import { ref, onMounted, watch, onBeforeUnmount, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { pdfAPI } from "@/services/api";
-import { BaseButton, BaseBadge } from "@/components/base";
+import { BaseButton, BaseBadge, BaseSelect } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { formatCurrency } from "@/utils/currency";
 import { getFileStatusLabel, getFileStatusVariant } from "@/utils/statusLabels";

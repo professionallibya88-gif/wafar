@@ -13,26 +13,27 @@
           عرض وإدارة حسابات المستخدمين
         </p>
       </div>
-      <div class="flex items-center gap-3">
-        <select
-          v-model="roleFilter"
-          class="form-select"
-        >
-          <option value="">جميع الأدوار</option>
-          <option value="retailer">تاجر</option>
-          <option value="supplier">مورد</option>
-        </select>
-        <div class="relative">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+        <BaseSelect
+  v-model="roleFilter"
+  select-class="form-select w-full sm:w-auto"
+  :options="[
+    { label: 'جميع الأدوار', value: '' },
+    { label: 'تاجر', value: 'retailer' },
+    { label: 'مورد', value: 'supplier' },
+  ]"
+/>
+        <div class="relative w-full sm:w-auto">
           <input
             v-model="search"
-            class="w-72 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+            class="w-full sm:w-72 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             placeholder="بحث بالاسم أو الهاتف..."
           />
         </div>
         <BaseButton
           @click="showForm = true"
           variant="primary"
-          class="inline-flex items-center gap-2"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2"
         >
           <AppIcon name="Plus" size="md" color="white" />
           إضافة مستخدم
@@ -43,7 +44,7 @@
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="bg-layer-stats rounded-xl p-5 border border-neutral-200/70 dark:border-neutral-800/70">
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-brand-50 dark:bg-neutral-900/50 rounded-xl flex items-center justify-center"
           >
@@ -64,7 +65,7 @@
         </div>
       </div>
       <div class="bg-layer-stats rounded-xl p-5 border border-neutral-200/70 dark:border-neutral-800/70">
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center"
           >
@@ -83,7 +84,7 @@
         </div>
       </div>
       <div class="bg-layer-stats rounded-xl p-5 border border-neutral-200/70 dark:border-neutral-800/70">
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-amber-100 dark:bg-amber-900/50 rounded-xl flex items-center justify-center"
           >
@@ -127,13 +128,14 @@
           placeholder="رقم الهاتف"
           dir="ltr"
         />
-        <select
-          v-model="form.role"
-          class="form-select"
-        >
-          <option value="retailer">تاجر</option>
-          <option value="supplier">مورد</option>
-        </select>
+        <BaseSelect
+  v-model="form.role"
+  select-class="form-select"
+  :options="[
+    { label: 'تاجر', value: 'retailer' },
+    { label: 'مورد', value: 'supplier' },
+  ]"
+/>
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             {{ editingId ? 'تغيير كلمة المرور (اختياري)' : 'كلمة المرور' }}
@@ -176,8 +178,8 @@
     </div>
 
     <!-- Users Table Card -->
-    <div class="panel-table">
-      <div class="overflow-x-auto">
+    <div class="panel-table mt-6">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-brand-50 dark:bg-gray-900">
             <tr>
@@ -220,7 +222,7 @@
               class="hover:bg-brand-50 dark:hover:bg-gray-700/50 transition-colors"
             >
               <td class="px-4 py-4">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                   <div
                     class="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-500 rounded-full flex items-center justify-center text-white font-semibold"
                   >
@@ -345,7 +347,7 @@
 import { ref, computed, onMounted } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseButton, BaseToast } from "@/components/base";
+import { BaseButton, BaseToast, BaseSelect } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 import { getUserRoleLabel } from "@/utils/roleLabels";
 

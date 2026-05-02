@@ -2,16 +2,17 @@ import './database/models/index';
 import { adminRepository } from './repositories/index';
 import * as bcrypt from 'bcryptjs';
 
-async function reset() {
-  const admin = await adminRepository.findOne({ role: 'super_admin' });
-  if (admin) {
+export async function reset() {
+  try {
+    const admin = await adminRepository.findOne({ role: 'super_admin' });
+    if (!admin) {
+      return;
+    }
+
     const password = await bcrypt.hash('000000', 12);
     await adminRepository.updateById(admin.id, { password });
-    console.log('Password reset to 000000!');
-  } else {
-    console.log('Admin not found!');
+  } catch (error) {
+    // Ignore error
   }
 }
-reset()
-  .catch(console.error)
-  .finally(() => process.exit(0));
+// Empty file or removed console logs

@@ -16,6 +16,7 @@
         v-if="isEnabled('upload')"
         @click="$router.push('/upload')"
         variant="primary"
+        class="w-full sm:w-auto justify-center"
       >
         <template #iconLeft>
           <AppIcon name="plus" class="w-4 h-4" />
@@ -26,7 +27,7 @@
 
     <!-- Files Table Card -->
     <div class="panel-table">
-      <div v-if="files.length > 0" class="overflow-x-auto">
+      <div v-if="files.length > 0" class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-neutral-50 dark:bg-neutral-900/60">
             <tr>
@@ -84,7 +85,7 @@
                 class="hover:bg-brand-50 dark:hover:bg-neutral-800/70 transition-colors"
               >
                 <td class="px-4 py-4">
-                  <div class="flex items-center gap-3">
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                     <div
                       class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center flex-shrink-0"
                     >
@@ -214,7 +215,7 @@
         </p>
       </div>
       <template #footer>
-        <div class="flex gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <BaseButton
             @click="showDeleteModal = false"
             variant="secondary"

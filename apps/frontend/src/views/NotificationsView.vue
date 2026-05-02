@@ -17,43 +17,46 @@
       <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div class="flex items-center gap-2">
           <!-- فلتر النوع -->
-          <select
-            v-model="filters.type"
-            class="form-select"
-          >
-            <option value="">جميع الأنواع</option>
-            <option value="info">معلومات</option>
-            <option value="success">نجاح</option>
-            <option value="warning">تحذير</option>
-            <option value="error">خطأ</option>
-            <option value="order">طلب</option>
-            <option value="payment">دفع</option>
-            <option value="subscription">اشتراك</option>
-            <option value="system">نظام</option>
-            <option value="message">رسالة</option>
-          </select>
+          <BaseSelect
+  v-model="filters.type"
+  select-class="form-select"
+  :options="[
+    { label: 'جميع الأنواع', value: '' },
+    { label: 'معلومات', value: 'info' },
+    { label: 'نجاح', value: 'success' },
+    { label: 'تحذير', value: 'warning' },
+    { label: 'خطأ', value: 'error' },
+    { label: 'طلب', value: 'order' },
+    { label: 'دفع', value: 'payment' },
+    { label: 'اشتراك', value: 'subscription' },
+    { label: 'نظام', value: 'system' },
+    { label: 'رسالة', value: 'message' },
+  ]"
+/>
 
           <!-- فلتر الحالة -->
-          <select
-            v-model="filters.is_read"
-            class="form-select"
-          >
-            <option value="">جميع الحالات</option>
-            <option value="false">غير مقروء</option>
-            <option value="true">مقروء</option>
-          </select>
+          <BaseSelect
+  v-model="filters.is_read"
+  select-class="form-select"
+  :options="[
+    { label: 'جميع الحالات', value: '' },
+    { label: 'غير مقروء', value: 'false' },
+    { label: 'مقروء', value: 'true' },
+  ]"
+/>
 
           <!-- فلتر الأولوية -->
-          <select
-            v-model="filters.priority"
-            class="form-select"
-          >
-            <option value="">جميع الأولويات</option>
-            <option value="urgent">عاجل</option>
-            <option value="high">عالي</option>
-            <option value="medium">متوسط</option>
-            <option value="low">منخفض</option>
-          </select>
+          <BaseSelect
+  v-model="filters.priority"
+  select-class="form-select"
+  :options="[
+    { label: 'جميع الأولويات', value: '' },
+    { label: 'عاجل', value: 'urgent' },
+    { label: 'عالي', value: 'high' },
+    { label: 'متوسط', value: 'medium' },
+    { label: 'منخفض', value: 'low' },
+  ]"
+/>
         </div>
 
         <div class="flex items-center gap-2">

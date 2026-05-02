@@ -9,16 +9,16 @@
           بحث متقدم، فلاتر دقيقة، وتعديل مباشر على قاعدة البيانات
         </p>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <BaseButton @click="loadParts" :disabled="loading" variant="secondary" size="sm">
+      <div class="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full lg:w-auto">
+        <BaseButton @click="loadParts" :disabled="loading" variant="secondary" size="sm" class="w-full sm:w-auto justify-center">
           <AppIcon name="ArrowPath" size="md" :customClass="loading ? 'animate-spin' : ''" />
           تحديث
         </BaseButton>
-        <BaseButton @click="exportResults" :disabled="exporting" variant="secondary" size="sm">
+        <BaseButton @click="exportResults" :disabled="exporting" variant="secondary" size="sm" class="w-full sm:w-auto justify-center">
           <AppIcon name="ArrowDownTray" size="md" :customClass="exporting ? 'animate-pulse' : ''" />
           تصدير
         </BaseButton>
-        <BaseButton @click="openCreateModal" variant="primary" size="sm">
+        <BaseButton @click="openCreateModal" variant="primary" size="sm" class="w-full sm:w-auto justify-center">
           <AppIcon name="Plus" size="md" />
           إضافة قطعة
         </BaseButton>
@@ -27,7 +27,7 @@
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
       <div class="bg-layer-stats rounded-2xl border border-neutral-200/70 p-5 dark:border-neutral-800/70">
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 dark:bg-neutral-900/40">
             <AppIcon name="Squares2X2" size="xl" customClass="text-brand-600 dark:text-neutral-300" />
           </div>
@@ -38,7 +38,7 @@
         </div>
       </div>
       <div class="bg-layer-stats rounded-2xl border border-neutral-200/70 p-5 dark:border-neutral-800/70">
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30">
             <AppIcon name="CheckCircle" size="xl" customClass="text-green-600 dark:text-green-300" />
           </div>
@@ -49,7 +49,7 @@
         </div>
       </div>
       <div class="bg-layer-stats rounded-2xl border border-neutral-200/70 p-5 dark:border-neutral-800/70">
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30">
             <AppIcon name="Funnel" size="xl" customClass="text-amber-600 dark:text-amber-300" />
           </div>
@@ -85,68 +85,56 @@
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
             الفئة
           </label>
-          <select
-            v-model="filters.category"
-            class="form-select"
-          >
-            <option value="">كل الفئات</option>
-            <option v-for="category in filterOptions.categories" :key="category" :value="category">
-              {{ category }}
-            </option>
-          </select>
+          <BaseSelect
+  v-model="filters.category"
+  select-class="form-select"
+  :options="[
+    { label: 'كل الفئات', value: '' },
+    ...(filterOptions.categories || []).map(category => ({ label: category, value: category })),
+  ]"
+/>
         </div>
 
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
             العلامة
           </label>
-          <select
-            v-model="filters.brand"
-            class="form-select"
-          >
-            <option value="">كل العلامات</option>
-            <option v-for="brand in filterOptions.brands" :key="brand" :value="brand">
-              {{ brand }}
-            </option>
-          </select>
+          <BaseSelect
+  v-model="filters.brand"
+  select-class="form-select"
+  :options="[
+    { label: 'كل العلامات', value: '' },
+    ...(filterOptions.brands || []).map(brand => ({ label: brand, value: brand })),
+  ]"
+/>
         </div>
 
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
             الجودة
           </label>
-          <select
-            v-model="filters.quality_grade"
-            class="form-select"
-          >
-            <option value="">كل الدرجات</option>
-            <option
-              v-for="grade in filterOptions.qualityGrades"
-              :key="grade"
-              :value="grade"
-            >
-              {{ qualityLabel(grade) }}
-            </option>
-          </select>
+          <BaseSelect
+  v-model="filters.quality_grade"
+  select-class="form-select"
+  :options="[
+    { label: 'كل الدرجات', value: '' },
+    ...(filterOptions.qualityGrades || []).map(grade => ({ label: qualityLabel(grade), value: grade })),
+  ]"
+/>
         </div>
 
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
             المورد
           </label>
-          <select
-            v-model="filters.supplier_id"
-            class="form-select"
-          >
-            <option value="">كل الموردين</option>
-            <option
-              v-for="supplier in filterOptions.suppliers"
-              :key="supplier.id"
-              :value="supplier.id"
-            >
-              {{ supplier.name }}
-            </option>
-          </select>
+          <BaseSelect
+  v-model="filters.supplier_id"
+  select-class="form-select"
+  :options="[
+    { label: 'كل الموردين', value: '' },
+    ...(filterOptions.suppliers || []).map(supplier => ({ label: supplier.name, value: supplier.id })),
+  ]"
+/>
         </div>
       </div>
 
@@ -181,44 +169,47 @@
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
             حالة التوفر
           </label>
-          <select
-            v-model="filters.in_stock"
-            class="form-select"
-          >
-            <option value="">الكل</option>
-            <option value="true">متوفر</option>
-            <option value="false">غير متوفر</option>
-          </select>
+          <BaseSelect
+  v-model="filters.in_stock"
+  select-class="form-select"
+  :options="[
+    { label: 'الكل', value: '' },
+    { label: 'متوفر', value: 'true' },
+    { label: 'غير متوفر', value: 'false' },
+  ]"
+/>
         </div>
 
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
             ترتيب حسب
           </label>
-          <select
-            v-model="filters.sort_field"
-            class="form-select"
-          >
-            <option value="created_at">الأحدث</option>
-            <option value="part_name">الاسم</option>
-            <option value="part_code">الكود</option>
-            <option value="price_cash">السعر النقدي</option>
-            <option value="brand">العلامة</option>
-            <option value="category">الفئة</option>
-          </select>
+          <BaseSelect
+  v-model="filters.sort_field"
+  select-class="form-select"
+  :options="[
+    { label: 'الأحدث', value: 'created_at' },
+    { label: 'الاسم', value: 'part_name' },
+    { label: 'الكود', value: 'part_code' },
+    { label: 'السعر النقدي', value: 'price_cash' },
+    { label: 'العلامة', value: 'brand' },
+    { label: 'الفئة', value: 'category' },
+  ]"
+/>
         </div>
 
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
             الاتجاه
           </label>
-          <select
-            v-model="filters.sort_dir"
-            class="form-select"
-          >
-            <option value="DESC">تنازلي</option>
-            <option value="ASC">تصاعدي</option>
-          </select>
+          <BaseSelect
+  v-model="filters.sort_dir"
+  select-class="form-select"
+  :options="[
+    { label: 'تنازلي', value: 'DESC' },
+    { label: 'تصاعدي', value: 'ASC' },
+  ]"
+/>
         </div>
 
         <div class="flex items-end gap-3">
@@ -231,7 +222,7 @@
     </div>
 
     <div class="panel-table overflow-hidden">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[1100px]">
           <thead class="bg-brand-50 dark:bg-neutral-900">
             <tr>
@@ -418,16 +409,14 @@
 
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">المورد</label>
-          <select v-model="form.supplier_id" class="form-select">
-            <option value="">بدون ربط</option>
-            <option
-              v-for="supplier in filterOptions.suppliers"
-              :key="supplier.id"
-              :value="supplier.id"
-            >
-              {{ supplier.name }}
-            </option>
-          </select>
+          <BaseSelect
+  v-model="form.supplier_id"
+  select-class="form-select"
+  :options="[
+    { label: 'بدون ربط', value: '' },
+    ...(filterOptions.suppliers || []).map(supplier => ({ label: supplier.name, value: supplier.id })),
+  ]"
+/>
         </div>
 
         <div>
@@ -437,15 +426,13 @@
 
         <div>
           <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">درجة الجودة</label>
-          <select v-model="form.quality_grade" class="form-select">
-            <option
-              v-for="grade in filterOptions.qualityGrades"
-              :key="grade"
-              :value="grade"
-            >
-              {{ qualityLabel(grade) }}
-            </option>
-          </select>
+          <BaseSelect
+  v-model="form.quality_grade"
+  select-class="form-select"
+  :options="[
+    ...(filterOptions.qualityGrades || []).map(grade => ({ label: qualityLabel(grade), value: grade })),
+  ]"
+/>
         </div>
 
         <div>
@@ -506,7 +493,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { adminAPI, searchAPI } from "@/services/api";
 import { formatCurrency } from "@/utils/currency";
-import { BaseBadge, BaseButton, BaseModal, BaseToast } from "@/components/base";
+import { BaseBadge, BaseButton, BaseModal, BaseToast, BaseSelect } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 

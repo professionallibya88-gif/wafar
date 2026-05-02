@@ -12,6 +12,9 @@ const siteSettings = ref({
   widget_bg_color: "#2563eb",
   widget_icon_color: "#ffffff",
   widget_shape: "circle",
+  auth_visual_badge: "REALTIME SEARCH CORE",
+  auth_visual_title: "عمق بصري حي\nيعبّر عن قوة النظام",
+  auth_visual_description: "مشهد ثلاثي الأبعاد نظيف ومتحرك بهدوء، يوحي بمحرك بحث ومعالجة بيانات يعمل في العمق بشكل متقدم واحترافي.",
 });
 
 const settingsLoaded = ref(false);
@@ -41,6 +44,7 @@ export function useSiteSettings() {
               ...siteSettings.value,
               ...data.general,
               ...data.widget,
+              ...data.auth_visual,
             };
           }
           lastError = null;

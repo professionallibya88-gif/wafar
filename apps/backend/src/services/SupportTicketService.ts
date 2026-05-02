@@ -12,7 +12,7 @@ export class SupportTicketService {
 
     const options = {
       user_id,
-      status: query.status,
+      status: typeof query.status === 'string' ? query.status : undefined,
       limit,
       offset,
     };
@@ -26,8 +26,9 @@ export class SupportTicketService {
     const offset = (page - 1) * limit;
 
     const options = {
-      status: query.status,
-      user_id: query.user_id,
+      status: typeof query.status === 'string' ? query.status : undefined,
+      user_id: typeof query.user_id === 'string' ? query.user_id : undefined,
+      search: typeof query.search === 'string' ? query.search : undefined,
       limit,
       offset,
     };

@@ -1,7 +1,8 @@
 <template>
   <div class="min-h-screen flex flex-col bg-layer-base">
     <nav
-      class="sticky top-0 z-40 overflow-visible bg-layer-navbar/95 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-800/80 safe-area-inset-top"
+      class="sticky top-0 z-40 overflow-visible bg-layer-navbar/95 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-800/80 safe-area-inset-top transition-transform duration-300 ease-in-out"
+      :class="[isNavbarHidden ? '-translate-y-full lg:translate-y-0' : 'translate-y-0']"
     >
       <div class="container-fluid overflow-visible">
         <div class="flex justify-between items-center h-[4.25rem] gap-3 overflow-visible">
@@ -122,11 +123,11 @@
       <div
         v-if="showMobileSidebar"
         @click="closeMobileSidebar"
-        class="fixed inset-0 bg-black/50 z-40 lg:hidden animate-fade-in"
+        class="fixed inset-0 bg-black/50 z-[100] lg:hidden animate-fade-in"
       />
 
       <aside
-        class="sidebar-menu bg-layer-sidebar shadow-lg overflow-hidden flex flex-col fixed inset-y-0 right-0 z-50 transition-transform duration-300 w-[19rem] max-w-[calc(100vw-3rem)] lg:sticky lg:top-[5.25rem] lg:inset-y-auto lg:right-auto lg:h-[calc(100vh-6.5rem)] lg:rounded-[1.75rem] lg:flex-shrink-0"
+        class="sidebar-menu bg-layer-sidebar shadow-lg overflow-hidden flex flex-col fixed inset-y-0 right-0 z-[110] transition-transform duration-300 w-[19rem] max-w-[calc(100vw-3rem)] lg:sticky lg:top-[5.25rem] lg:inset-y-auto lg:right-auto lg:h-[calc(100vh-6.5rem)] lg:rounded-[1.75rem] lg:flex-shrink-0"
         :class="[
           showMobileSidebar ? 'translate-x-0' : 'translate-x-full lg:translate-x-0',
           isSidebarCollapsed ? 'lg:w-24 sidebar-collapsed' : 'lg:w-[19rem]',
@@ -251,11 +252,11 @@
       </aside>
 
       <main
-        class="flex-1 min-w-0 p-4 xs:p-6 lg:p-6 xl:p-8 overflow-auto bg-layer-content transition-all duration-300"
-        :class="showMobileSidebar ? 'overflow-hidden lg:overflow-auto' : ''"
+        class="flex-1 min-w-0 p-4 xs:p-6 lg:p-6 xl:p-8 bg-layer-content transition-all duration-300"
+        :class="showMobileSidebar ? 'overflow-hidden' : ''"
       >
         <div
-          class="max-w-7xl mx-auto pb-32 lg:pb-0 lg:min-h-[calc(100vh-6.5rem)] lg:rounded-[2rem] lg:border lg:border-neutral-200/70 dark:border-neutral-800/70 lg:bg-layer-content"
+          class="max-w-7xl mx-auto pb-32 lg:p-6 xl:p-8 lg:min-h-[calc(100vh-6.5rem)] lg:rounded-[2rem] lg:border lg:border-neutral-200/70 dark:border-neutral-800/70 lg:bg-layer-content"
         >
           <router-view />
         </div>
@@ -263,24 +264,50 @@
     </div>
 
     <div
-      class="mobile-bottom-nav lg:hidden safe-area-inset-bottom transition-transform duration-300 backdrop-blur-md fixed bottom-0 inset-x-0 z-40 bg-layer-navbar/95 border-t border-neutral-200/80 dark:border-neutral-800/80"
+      class="mobile-bottom-nav lg:hidden safe-area-inset-bottom transition-transform duration-300 fixed bottom-0 inset-x-0 z-40"
       :class="showMobileSidebar ? 'translate-y-full' : 'translate-y-0'"
     >
-      <div class="grid grid-cols-5 gap-1.5 p-2 pb-safe">
-        <router-link
-          v-for="item in bottomNavItems"
-          :key="item.path"
-          :to="item.path"
-          class="flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all min-h-[60px]"
-          :class="
-            isActive(item.path)
-              ? 'text-brand-700 bg-brand-50 shadow-brand-sm dark:text-neutral-300 dark:bg-neutral-900/30'
-              : 'text-neutral-600 dark:text-neutral-400 hover:text-brand-700 dark:hover:text-neutral-100 hover:bg-brand-50 dark:hover:bg-neutral-800/80'
-          "
-        >
-          <AppIcon :name="item.icon" size="md" />
-          <span class="text-[11px] mt-1 font-medium">{{ item.label }}</span>
-        </router-link>
+      <!-- طبقة الخلفية المعزولة لتفادي مشكلة قص العناصر (overflow clipping) بسبب backdrop-filter -->
+      <div class="absolute inset-0 bg-layer-navbar/95 backdrop-blur-md border-t border-neutral-200/80 dark:border-neutral-800/80 pointer-events-none -z-10"></div>
+
+      <div class="relative grid grid-cols-5 gap-1.5 p-2 pb-safe z-10">
+        <template v-for="item in bottomNavItems" :key="item.path">
+          <!-- الزر الأوسط البارز (الملفات) -->
+          <div v-if="item.path === '/admin/files'" class="relative flex flex-col items-center justify-end pb-1.5 xs:pb-2 px-1 rounded-2xl min-h-[60px] xs:min-h-[64px]">
+            <router-link
+              :to="item.path"
+              class="absolute -top-6 flex items-center justify-center rounded-full shadow-lg transition-all active:scale-95 z-20"
+              :class="[
+                isActive(item.path)
+                  ? 'bg-brand-600 text-white shadow-brand-500/40 scale-105'
+                  : 'bg-brand-500 text-white hover:bg-brand-600 shadow-brand-500/20 dark:bg-brand-600 dark:hover:bg-brand-500',
+                'w-14 h-14 ring-[6px] ring-white dark:ring-[#121416]'
+              ]"
+            >
+              <AppIcon :name="item.icon" size="lg" color="white" />
+            </router-link>
+            
+            <span 
+              class="text-[11px] font-medium transition-colors relative z-10 pt-4" 
+              :class="isActive(item.path) ? 'text-brand-700 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400'"
+            >{{ item.label }}</span>
+          </div>
+
+          <!-- الأزرار العادية -->
+          <router-link
+            v-else
+            :to="item.path"
+            class="relative flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all min-h-[60px]"
+            :class="
+              isActive(item.path)
+                ? 'text-brand-700 bg-brand-50 shadow-brand-sm dark:text-neutral-300 dark:bg-neutral-900/30'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-brand-700 dark:hover:text-neutral-100 hover:bg-brand-50 dark:hover:bg-neutral-800/80'
+            "
+          >
+            <AppIcon :name="item.icon" size="md" />
+            <span class="text-[11px] mt-1 font-medium">{{ item.label }}</span>
+          </router-link>
+        </template>
       </div>
     </div>
   </div>
@@ -318,14 +345,69 @@ const handleClickOutside = (event) => {
   }
 };
 
+// Navbar Scroll Logic
+const isNavbarHidden = ref(false);
+let lastScrollY = 0;
+const SCROLL_THRESHOLD = 10;
+
+const handleScroll = () => {
+  if (window.innerWidth >= 1024) {
+    if (isNavbarHidden.value) isNavbarHidden.value = false;
+    return;
+  }
+
+  const scrollY = window.scrollY || document.documentElement.scrollTop;
+  
+  if (Math.abs(scrollY - lastScrollY) < SCROLL_THRESHOLD) return;
+
+  if (scrollY > lastScrollY && scrollY > 70) {
+    isNavbarHidden.value = true;
+  } else if (scrollY < lastScrollY) {
+    isNavbarHidden.value = false;
+  }
+
+  lastScrollY = scrollY <= 0 ? 0 : scrollY;
+};
+
 onMounted(() => {
   loadQuickStats();
   document.addEventListener("click", handleClickOutside);
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  
+  // Add listener to main scroll container if exists
+  setTimeout(() => {
+    const mainEls = document.querySelectorAll('main');
+    mainEls.forEach(mainEl => {
+      mainEl._navScrollHandler = (e) => {
+        if (window.innerWidth >= 1024) {
+          if (isNavbarHidden.value) isNavbarHidden.value = false;
+          return;
+        }
+        const scrollY = e.target.scrollTop;
+        if (Math.abs(scrollY - lastScrollY) < SCROLL_THRESHOLD) return;
+        if (scrollY > lastScrollY && scrollY > 70) {
+          isNavbarHidden.value = true;
+        } else if (scrollY < lastScrollY) {
+          isNavbarHidden.value = false;
+        }
+        lastScrollY = scrollY <= 0 ? 0 : scrollY;
+      };
+      mainEl.addEventListener("scroll", mainEl._navScrollHandler, { passive: true });
+    });
+  }, 100);
 });
 
 onUnmounted(() => {
   document.body.classList.remove("sidebar-open");
   document.removeEventListener("click", handleClickOutside);
+  window.removeEventListener("scroll", handleScroll);
+  const mainEls = document.querySelectorAll('main');
+  mainEls.forEach(mainEl => {
+    if (mainEl._navScrollHandler) {
+      mainEl.removeEventListener("scroll", mainEl._navScrollHandler);
+      delete mainEl._navScrollHandler;
+    }
+  });
 });
 
 const quickStats = ref({

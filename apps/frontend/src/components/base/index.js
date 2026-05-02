@@ -14,4 +14,5 @@ export { default as BaseTooltip } from "./BaseTooltip.vue";
 export { default as BaseDropdown } from "./BaseDropdown.vue";
 export { default as BaseProgress } from "./BaseProgress.vue";
 export { default as BaseAvatar } from "./BaseAvatar.vue";
+export { default as BaseSelect } from "./BaseSelect.vue";
 export { default as ThemeToggle } from "./ThemeToggle.vue";

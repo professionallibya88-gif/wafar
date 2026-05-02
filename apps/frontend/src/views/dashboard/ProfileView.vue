@@ -1,7 +1,7 @@
 <template>
   <div class="page-shell max-w-2xl mx-auto">
     <!-- Header -->
-    <div class="flex items-center gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
       <div
         class="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center shadow-brand-sm"
       >

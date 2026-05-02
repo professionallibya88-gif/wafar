@@ -22,6 +22,7 @@ const FLAG_DEFAULTS = {
   feature_email_smtp: true,
   feature_rate_limiting: true,
   feature_mvp_mode: false,
+  feature_cart: false,
 };
 
 const flags = reactive({ ...FLAG_DEFAULTS });

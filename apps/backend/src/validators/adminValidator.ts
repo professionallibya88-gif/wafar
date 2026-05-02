@@ -188,7 +188,22 @@ export const createAdminRules = [
     .withMessage('الاسم لا يمكن أن يكون فارغاً')
     .isLength({ min: 3, max: 200 })
     .withMessage('الاسم يجب أن يكون بين 3 و 200 حرف'),
-  body('email').trim().isEmail().withMessage('البريد الإلكتروني غير صالح'),
+  body('email')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isEmail()
+    .withMessage('البريد الإلكتروني غير صالح'),
+  body('phone')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ min: 8, max: 20 })
+    .withMessage('رقم الهاتف غير صالح'),
+  body().custom((value) => {
+    if (!value.email && !value.phone) {
+      throw new Error('يجب إدخال البريد الإلكتروني أو رقم الهاتف');
+    }
+    return true;
+  }),
   body('password')
     .isLength({ min: 6, max: 100 })
     .withMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
@@ -207,9 +222,18 @@ export const updateAdminRules = [
     .withMessage('الاسم لا يمكن أن يكون فارغاً')
     .isLength({ min: 3, max: 200 })
     .withMessage('الاسم يجب أن يكون بين 3 و 200 حرف'),
-  body('email').optional().trim().isEmail().withMessage('البريد الإلكتروني غير صالح'),
+  body('email')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isEmail()
+    .withMessage('البريد الإلكتروني غير صالح'),
+  body('phone')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ min: 8, max: 20 })
+    .withMessage('رقم الهاتف غير صالح'),
   body('password')
-    .optional()
+    .optional({ checkFalsy: true })
     .isLength({ min: 6, max: 100 })
     .withMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
   body('role')

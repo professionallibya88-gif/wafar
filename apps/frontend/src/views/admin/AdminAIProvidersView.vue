@@ -12,7 +12,7 @@
           إعداد وإدارة مزودي الذكاء الاصطناعي المتعددين
         </p>
       </div>
-      <div class="flex gap-3">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
         <button
           @click="seedDefaults"
           :disabled="seeding"
@@ -85,7 +85,7 @@
       <div class="p-4 border-b border-gray-200 dark:border-gray-700">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">قائمة المزودين</h2>
       </div>
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-gray-50 dark:bg-gray-700/50">
             <tr>
@@ -172,14 +172,18 @@
             </div>
             <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">النوع</label>
-              <select v-model="form.provider_type" class="form-select">
-                <option value="google">Google Gemini</option>
-                <option value="openrouter">OpenRouter</option>
-                <option value="openai">OpenAI</option>
-                <option value="anthropic">Anthropic Claude</option>
-                <option value="mistral">Mistral AI</option>
-                <option value="custom">مخصص</option>
-              </select>
+              <BaseSelect
+  v-model="form.provider_type"
+  select-class="form-select"
+  :options="[
+    { label: 'Google Gemini', value: 'google' },
+    { label: 'OpenRouter', value: 'openrouter' },
+    { label: 'OpenAI', value: 'openai' },
+    { label: 'Anthropic Claude', value: 'anthropic' },
+    { label: 'Mistral AI', value: 'mistral' },
+    { label: 'مخصص', value: 'custom' },
+  ]"
+/>
             </div>
             <div class="space-y-2 md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">مفتاح API</label>
@@ -242,6 +246,7 @@
 </template>
 
 <script setup>
+import { BaseSelect } from "@/components/base";
 import { ref, onMounted, computed } from 'vue';
 import { aiProviderAPI } from '../../services/api';
 import BaseToast from '../../components/base/BaseToast.vue';

@@ -85,6 +85,24 @@ const routes = [
         meta: { requiresAuth: true, featureFlag: "compare" },
       },
       {
+        path: "cart",
+        name: "Cart",
+        component: () => import("@/views/dashboard/CartView.vue"),
+        meta: { requiresAuth: true, featureFlag: "cart" },
+      },
+      {
+        path: "my-orders",
+        name: "MyOrders",
+        component: () => import("@/views/dashboard/MyOrdersView.vue"),
+        meta: { requiresAuth: true, featureFlag: "cart" },
+      },
+      {
+        path: "supplier-orders",
+        name: "SupplierOrders",
+        component: () => import("@/views/dashboard/SupplierOrdersView.vue"),
+        meta: { requiresAuth: true, featureFlag: "cart" },
+      },
+      {
         path: "subscriptions",
         name: "Subscriptions",
         component: () => import("@/views/dashboard/SubscriptionsView.vue"),

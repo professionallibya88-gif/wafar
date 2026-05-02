@@ -11,6 +11,14 @@ export class AdminRepository extends BaseRepository<Admin> {
     return this.model.findOne({ where: { email } });
   }
 
+  async findByEmailOrPhone(input: string): Promise<Admin | null> {
+    return this.model.findOne({
+      where: {
+        [Op.or]: [{ email: input }, { phone: input }, { email: `${input}@waffer.local` }],
+      },
+    });
+  }
+
   async findByIdSafe(id: string): Promise<Admin | null> {
     return this.model.findByPk(id, { attributes: { exclude: ['password'] } });
   }

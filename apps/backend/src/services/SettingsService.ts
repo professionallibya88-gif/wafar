@@ -67,7 +67,7 @@ export class SettingsService {
     try {
       const settings = await systemSettingRepository.findAll({
         category: {
-          [Op.in]: ['general', 'feature_flags', 'widget'],
+          [Op.in]: ['general', 'feature_flags', 'widget', 'auth_visual'],
         },
       });
 
@@ -119,6 +119,7 @@ export class SettingsService {
       rate_limiting,
       feature_flags,
       widget,
+      auth_visual,
     } = data;
     const updates: Promise<SystemSettingRecord>[] = [];
 
@@ -149,6 +150,7 @@ export class SettingsService {
     updateCategory(rate_limiting, 'rate_limiting');
     updateCategory(feature_flags, 'feature_flags');
     updateCategory(widget, 'widget');
+    updateCategory(auth_visual, 'auth_visual');
 
     await Promise.all(updates);
 

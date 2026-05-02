@@ -6,22 +6,23 @@ import { AuthenticatedRequest } from '../types';
 import { asyncHandler } from '../utils/asyncHandler';
 
 export const getUserTickets = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const result = await supportTicketService.getUserTickets(req.user!.id, req.query);
-  const meta = buildPaginationMeta({
-    total: result.count,
-    page: parseInt(req.query.page as string) || 1,
-    limit: parseInt(req.query.limit as string) || 20,
-  });
+  const userId = req.user ? req.user.id : req.admin!.id;
+  const result = await supportTicketService.getUserTickets(userId, req.query);
+  const meta = buildPaginationMeta(
+    result.count,
+    parseInt(req.query.page as string) || 1,
+    parseInt(req.query.limit as string) || 20
+  );
   return success(res, { data: result.rows, meta });
 });
 
 export const getAdminTickets = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const result = await supportTicketService.getAdminTickets(req.query);
-  const meta = buildPaginationMeta({
-    total: result.count,
-    page: parseInt(req.query.page as string) || 1,
-    limit: parseInt(req.query.limit as string) || 20,
-  });
+  const meta = buildPaginationMeta(
+    result.count,
+    parseInt(req.query.page as string) || 1,
+    parseInt(req.query.limit as string) || 20
+  );
   return success(res, { data: result.rows, meta });
 });
 
@@ -39,16 +40,18 @@ export const getTicketDetails = asyncHandler(async (req: AuthenticatedRequest, r
 export const createTicket = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { subject, content, message } = req.body;
   const finalContent = content || message;
-  const ticket = await supportTicketService.createTicket(req.user!.id, subject, finalContent);
+  const userId = req.user ? req.user.id : req.admin!.id;
+  const ticket = await supportTicketService.createTicket(userId, subject, finalContent);
   return created(res, { data: ticket, message: 'تم فتح تذكرة الدعم بنجاح' });
 });
 
 export const addReplyUser = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { content, message } = req.body;
   const finalContent = content || message;
+  const userId = req.user ? req.user.id : req.admin!.id;
   const replyMessage = await supportTicketService.addReply(
     req.params.id as string,
-    req.user!.id,
+    userId,
     'user',
     finalContent
   );

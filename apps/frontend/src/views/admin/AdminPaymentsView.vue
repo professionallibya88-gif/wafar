@@ -13,17 +13,18 @@
           مراجعة وإدارة طلبات الدفع
         </p>
       </div>
-      <div class="flex items-center gap-3">
-        <select
-          v-model="statusFilter"
-          @change="loadPayments"
-          class="form-select"
-        >
-          <option value="">جميع الحالات</option>
-          <option value="pending">معلق</option>
-          <option value="approved">مقبول</option>
-          <option value="rejected">مرفوض</option>
-        </select>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+        <BaseSelect
+  v-model="statusFilter"
+  select-class="form-select"
+  @change="loadPayments"
+  :options="[
+    { label: 'جميع الحالات', value: '' },
+    { label: 'معلق', value: 'pending' },
+    { label: 'مقبول', value: 'approved' },
+    { label: 'مرفوض', value: 'rejected' },
+  ]"
+/>
         <span
           class="text-sm text-gray-600 dark:text-gray-400 bg-brand-50 dark:bg-gray-700 px-4 py-2 rounded-full"
           >{{ pendingCount }} طلب معلق</span
@@ -36,7 +37,7 @@
       <div
         class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5"
       >
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/50 rounded-xl flex items-center justify-center"
           >
@@ -57,7 +58,7 @@
       <div
         class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5"
       >
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center"
           >
@@ -78,7 +79,7 @@
       <div
         class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5"
       >
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-red-100 dark:bg-red-900/50 rounded-xl flex items-center justify-center"
           >
@@ -99,7 +100,7 @@
       <div
         class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5"
       >
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="w-12 h-12 bg-brand-100 dark:bg-neutral-900/40 rounded-xl flex items-center justify-center"
           >
@@ -125,7 +126,7 @@
     <div
       class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
     >
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-brand-50 dark:bg-gray-900">
             <tr>
@@ -168,7 +169,7 @@
               class="hover:bg-brand-50 dark:hover:bg-gray-700/50 transition-colors"
             >
               <td class="px-4 py-4">
-                <div class="flex items-center gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                   <div
                     class="w-10 h-10 bg-brand-50 dark:bg-neutral-900/50 rounded-full flex items-center justify-center text-brand-600 dark:text-neutral-400 font-semibold"
                   >
@@ -276,7 +277,7 @@
 import { ref, computed, onMounted } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast } from "@/components/base";
+import { BaseToast, BaseSelect } from "@/components/base";
 import { getPaymentStatusLabel, getPaymentStatusVariant, getPaymentMethodLabel } from "@/utils/statusLabels";
 
 const payments = ref([]);

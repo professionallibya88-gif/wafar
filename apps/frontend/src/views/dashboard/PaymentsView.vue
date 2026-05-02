@@ -1,11 +1,11 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-4 sm:space-y-6">
     <!-- Header Section with Stats -->
-    <div class="bg-brand-700 rounded-3xl p-6 lg:p-8 text-white shadow-lg">
+    <div class="bg-brand-700 rounded-none sm:rounded-3xl p-5 sm:p-6 lg:p-8 text-white shadow-lg -mx-4 sm:mx-0">
       <div
         class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6"
       >
-        <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm animate-pulse"
           >
@@ -19,7 +19,7 @@
           </div>
         </div>
         <!-- Quick Stats -->
-        <div class="flex gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div
             class="bg-white/10 backdrop-blur-sm rounded-xl p-4 min-w-[120px]"
           >
@@ -44,7 +44,7 @@
 
     <!-- Features Section -->
     <div
-      class="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-800 p-6"
+      class="bg-white dark:bg-neutral-900 rounded-none sm:rounded-2xl shadow-sm border-y sm:border border-neutral-200 dark:border-neutral-800 p-5 sm:p-6 -mx-4 sm:mx-0"
     >
       <h2
         class="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-6 flex items-center gap-3"
@@ -126,9 +126,9 @@
 
     <!-- Payment Form Section -->
     <div
-      class="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-800 overflow-hidden"
+      class="bg-white dark:bg-neutral-900 rounded-none sm:rounded-2xl shadow-sm border-y sm:border border-neutral-200 dark:border-neutral-800 overflow-hidden -mx-4 sm:mx-0"
     >
-      <div class="p-6 lg:p-8">
+      <div class="p-5 sm:p-6 lg:p-8">
         <h2
           class="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-6 flex items-center gap-3"
         >
@@ -163,13 +163,14 @@
                 class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2"
                 >نوع الكرت</label
               >
-              <select
-                v-model="cardType"
-                class="form-select"
-              >
-                <option value="madar">كرت مدار</option>
-                <option value="libyana">كرت ليبيانا</option>
-              </select>
+              <BaseSelect
+  v-model="cardType"
+  select-class="form-select"
+  :options="[
+    { label: 'كرت مدار', value: 'madar' },
+    { label: 'كرت ليبيانا', value: 'libyana' },
+  ]"
+/>
             </div>
             <div>
               <label
@@ -258,15 +259,16 @@
                 class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2"
                 >تطلبيق التحويل</label
               >
-              <select
-                v-model="transferApp"
-                class="form-select"
-              >
-                <option value="money_transfer_sarad">سراد</option>
-                <option value="money_transfer_tadawul">تداول</option>
-                <option value="money_transfer_egypt">معرفة</option>
-                <option value="money_transfer_other">أخرى</option>
-              </select>
+              <BaseSelect
+  v-model="transferApp"
+  select-class="form-select"
+  :options="[
+    { label: 'سراد', value: 'money_transfer_sarad' },
+    { label: 'تداول', value: 'money_transfer_tadawul' },
+    { label: 'معرفة', value: 'money_transfer_egypt' },
+    { label: 'أخرى', value: 'money_transfer_other' },
+  ]"
+/>
             </div>
             <div>
               <label
@@ -336,10 +338,10 @@
 
     <!-- Payment History Section with Filter -->
     <div
-      class="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-neutral-100 dark:border-neutral-700 overflow-hidden"
+      class="bg-white dark:bg-neutral-800 rounded-none sm:rounded-2xl shadow-sm border-y sm:border border-neutral-100 dark:border-neutral-700 overflow-hidden -mx-4 sm:mx-0"
     >
       <div
-        class="px-6 py-5 border-b border-neutral-100 dark:border-neutral-700"
+        class="px-5 sm:px-6 py-5 border-b border-neutral-100 dark:border-neutral-700"
       >
         <div
           class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
@@ -373,20 +375,21 @@
             </div>
 
             <!-- Status Filter -->
-            <select
-              v-model="statusFilter"
-              class="form-select"
-            >
-              <option value="">كل الحالات</option>
-              <option value="pending">قيد المراجعة</option>
-              <option value="approved">مقبول</option>
-              <option value="rejected">مرفوض</option>
-            </select>
+            <BaseSelect
+  v-model="statusFilter"
+  select-class="form-select"
+  :options="[
+    { label: 'كل الحالات', value: '' },
+    { label: 'قيد المراجعة', value: 'pending' },
+    { label: 'مقبول', value: 'approved' },
+    { label: 'مرفوض', value: 'rejected' },
+  ]"
+/>
           </div>
         </div>
       </div>
 
-      <div class="p-6">
+      <div class="p-5 sm:p-6">
         <div v-if="filteredPayments.length > 0" class="space-y-4">
           <div
             v-for="p in filteredPayments"
@@ -488,6 +491,7 @@
 </template>
 
 <script setup>
+import { BaseSelect } from "@/components/base";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { paymentAPI } from "@/services/api";

@@ -30,15 +30,10 @@ export class AdminAuthService {
 
   async login(data: AdminLoginPayload) {
     const { password } = data;
-    let email = data.email;
-    email = email.trim().toLowerCase();
+    let input = data.email;
+    input = input.trim().toLowerCase();
 
-    // إذا كان الإدخال عبارة عن رقم هاتف محلي، نقوم بإضافة الدومين الافتراضي
-    if (/^(09|02)\d{8}$/.test(email) || /^\d{10}$/.test(email)) {
-      email = `${email}@waffer.local`;
-    }
-
-    const admin = await adminRepository.findByEmail(email);
+    const admin = await adminRepository.findByEmailOrPhone(input);
 
     if (!admin) {
       throw new UnauthorizedError('البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة');
