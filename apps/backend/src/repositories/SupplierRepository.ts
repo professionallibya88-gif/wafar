@@ -38,6 +38,10 @@ export class SupplierRepository extends BaseRepository<Supplier> {
 
     return this.findOne(where);
   }
+
+  async findByUserId(userId: string): Promise<Supplier | null> {
+    return this.findOne({ user_id: userId });
+  }
 }
 
 export const supplierRepository = new SupplierRepository();
