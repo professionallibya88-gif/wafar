@@ -13,26 +13,31 @@ export const seedAdmin = async () => {
   try {
     logger.info('بدء تهيئة البيانات الافتراضية...');
 
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin1234';
+    const adminPassword = process.env.ADMIN_PASSWORD || '000000';
+    const adminPhone = process.env.ADMIN_PHONE || '0910000000';
+    const adminEmail = process.env.ADMIN_EMAIL || `${adminPhone}@waffer.local`;
 
     const existingAdmin = await adminRepository.findOne({ role: 'super_admin' });
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
 
     if (existingAdmin) {
-      // تحديث كلمة المرور لضمان القدرة على الدخول بعد النشر (بناء على طلب المستخدم)
+      // تحديث كلمة المرور ورقم الهاتف لضمان القدرة على الدخول بعد النشر (بناء على طلب المستخدم)
       await adminRepository.updateById(existingAdmin.id, {
         password: hashedPassword,
+        phone: adminPhone,
+        email: adminEmail,
       });
-      logger.info('حساب المدير موجود مسبقاً - تم تحديث كلمة المرور لضمان الدخول.');
+      logger.info(`حساب المدير موجود مسبقاً - تم تحديث بيانات الدخول لتكون (${adminPhone}).`);
     } else {
       await adminRepository.create({
         full_name: 'المدير العام',
-        email: process.env.ADMIN_EMAIL || '0911111111@waffer.local',
+        email: adminEmail,
+        phone: adminPhone,
         password: hashedPassword,
         role: 'super_admin',
         is_active: true,
       });
-      logger.info('تم إنشاء حساب المدير بنجاح.');
+      logger.info(`تم إنشاء حساب المدير بنجاح (${adminPhone}).`);
     }
 
     if (process.env.NODE_ENV === 'development') {
