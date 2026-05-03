@@ -32,13 +32,14 @@ const logger = winston.createLogger({
   ],
 });
 
-// في بيئة التطوير، أضف console
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
-    })
-  );
-}
+// نطبع إلى console دائماً حتى تظهر الأخطاء في منصات الاستضافة مثل Railway
+logger.add(
+  new winston.transports.Console({
+    format:
+      process.env.NODE_ENV === 'production'
+        ? winston.format.combine(winston.format.timestamp(), winston.format.json())
+        : winston.format.combine(winston.format.colorize(), winston.format.simple()),
+  })
+);
 
 export default logger;

@@ -12,11 +12,26 @@ export class AdminRepository extends BaseRepository<Admin> {
   }
 
   async findByEmailOrPhone(input: string): Promise<Admin | null> {
-    return this.model.findOne({
-      where: {
-        [Op.or]: [{ email: input }, { phone: input }, { email: `${input}@waffer.local` }],
-      },
-    });
+    try {
+      return await this.model.findOne({
+        where: {
+          [Op.or]: [{ email: input }, { phone: input }, { email: `${input}@waffer.local` }],
+        },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      // توافق مع قواعد قديمة لا تحتوي عمود phone بعد
+      if (message.toLowerCase().includes('phone')) {
+        return this.model.findOne({
+          where: {
+            [Op.or]: [{ email: input }, { email: `${input}@waffer.local` }],
+          },
+        });
+      }
+
+      throw error;
+    }
   }
 
   async findByIdSafe(id: string): Promise<Admin | null> {

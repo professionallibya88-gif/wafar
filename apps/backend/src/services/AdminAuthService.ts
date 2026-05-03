@@ -4,6 +4,7 @@ import { SignOptions } from 'jsonwebtoken';
 import { adminRepository } from '../repositories';
 import { UnauthorizedError, ForbiddenError, NotFoundError } from '../errors';
 import { getJwtSecret } from '../config/auth';
+import logger from '../config/logger';
 
 type AdminLoginPayload = {
   email: string;
@@ -29,8 +30,8 @@ export class AdminAuthService {
   }
 
   async login(data: AdminLoginPayload) {
-    const { password } = data;
-    let input = data.email;
+    const password = String(data.password || '');
+    let input = String(data.email || '');
     input = input.trim().toLowerCase();
 
     const admin = await adminRepository.findByEmailOrPhone(input);
@@ -43,12 +44,39 @@ export class AdminAuthService {
       throw new ForbiddenError('الحساب معطل - يرجى التواصل مع الدعم الفني');
     }
 
-    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!admin.password || typeof admin.password !== 'string') {
+      logger.error('Admin login failed: missing password hash', {
+        adminId: admin.id,
+        loginInput: input,
+      });
+      throw new UnauthorizedError('بيانات الدخول غير صالحة لهذا الحساب');
+    }
+
+    let isMatch = false;
+    try {
+      isMatch = await bcrypt.compare(password, admin.password);
+    } catch (error) {
+      logger.error('Admin login compare failed', {
+        adminId: admin.id,
+        loginInput: input,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw new UnauthorizedError('تعذر التحقق من بيانات الدخول');
+    }
+
     if (!isMatch) {
       throw new UnauthorizedError('البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة');
     }
 
-    await adminRepository.updateById(admin.id, { last_login: new Date() });
+    try {
+      await adminRepository.updateById(admin.id, { last_login: new Date() });
+    } catch (error) {
+      logger.warn('Admin last_login update failed', {
+        adminId: admin.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
     const token = this.generateToken(admin.id);
 
     return { user: this.sanitizeAdmin(admin), token };
