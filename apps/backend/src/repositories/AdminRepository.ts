@@ -19,18 +19,23 @@ export class AdminRepository extends BaseRepository<Admin> {
         },
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-
-      // توافق مع قواعد قديمة لا تحتوي عمود phone بعد
-      if (message.toLowerCase().includes('phone')) {
-        return this.model.findOne({
-          where: {
-            [Op.or]: [{ email: input }, { email: `${input}@waffer.local` }],
-          },
-        });
+      // إذا فشل الاستعلام بسبب عدم وجود عمود phone في الإنتاج
+      try {
+        const [results]: any = await this.model.sequelize!.query(
+          `SELECT * FROM admins WHERE email = :input OR email = :localEmail LIMIT 1`,
+          {
+            replacements: { input, localEmail: `${input}@waffer.local` },
+          }
+        );
+        if (results && results.length > 0) {
+          const adminData = results[0];
+          // تمرير البيانات بدون حقل phone إذا كان غير موجود لمنع أخطاء ORM لاحقاً
+          return this.model.build(adminData, { isNewRecord: false });
+        }
+        return null;
+      } catch (sqlError) {
+        throw sqlError;
       }
-
-      throw error;
     }
   }
 

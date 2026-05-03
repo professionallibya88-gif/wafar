@@ -69,7 +69,11 @@ export class AdminAuthService {
     }
 
     try {
-      await adminRepository.updateById(admin.id, { last_login: new Date() });
+      // تحديث عبر SQL خام لتجنب مشاكل الأعمدة المفقودة مثل phone إذا كان المودل غير متزامن
+      await adminRepository.sequelize!.query(
+        `UPDATE admins SET last_login = NOW() WHERE id = :id`,
+        { replacements: { id: admin.id } }
+      );
     } catch (error) {
       logger.warn('Admin last_login update failed', {
         adminId: admin.id,
