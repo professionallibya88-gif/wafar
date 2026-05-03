@@ -20,8 +20,8 @@ class OrderService {
       throw new NotFoundError('الطلب غير موجود أو لا تملك صلاحية تعديله');
     }
 
-    order.status = status;
-    await order.save();
+    await orderRepository.updateById(orderId, { status });
+    order.status = status; // update local object before return
     return order;
   }
 }

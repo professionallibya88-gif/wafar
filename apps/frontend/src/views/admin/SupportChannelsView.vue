@@ -169,7 +169,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { supportAPI } from '@/services/api';
-import AppIcon from '@/components/icons/AppIcon.vue';
+import { AppIcon } from '@/components/icons';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseModal from '@/components/base/BaseModal.vue';
 import BaseToast from '@/components/base/BaseToast.vue';

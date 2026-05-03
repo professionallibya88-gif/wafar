@@ -7,6 +7,8 @@ import { OCRProcessor } from './OCRProcessor';
 import { HeaderMapper } from './HeaderMapper';
 import { RowNormalizer } from './RowNormalizer';
 import { pdfProcessingProfileService } from './PDFProcessingProfileService';
+import { vercelBlobService } from './VercelBlobService';
+import fs from 'fs/promises';
 import logger from '../config/logger';
 
 export class PDFProcessor {
@@ -279,6 +281,27 @@ export class PDFProcessor {
       }
 
       logger.info(`تم حفظ ${rows.length} قطعة في قاعدة البيانات للملف ${pdfFileId}`);
+
+      // Upload to Vercel Blob if enabled
+      let finalFilePath = pdfFilePath;
+      if (process.env.USE_VERCEL_BLOB === 'true') {
+        try {
+          const vercelUrl = await vercelBlobService.uploadFile(pdfFilePath, pdfFile.original_name);
+          finalFilePath = vercelUrl;
+          await pdfFileRepository.updateById(pdfFileId, { file_path: finalFilePath });
+          
+          // Try to delete the local file since it's uploaded
+          try {
+            await fs.unlink(pdfFilePath);
+            logger.info(`تم حذف الملف المحلي بعد الرفع لـ Vercel Blob: ${pdfFilePath}`);
+          } catch (unlinkErr) {
+            logger.warn(`فشل حذف الملف المحلي: ${pdfFilePath}`, unlinkErr);
+          }
+        } catch (uploadErr) {
+          logger.error(`فشل رفع الملف لـ Vercel Blob: ${pdfFileId}`, uploadErr);
+        }
+      }
+
     } catch (error: any) {
       await pdfFileRepository.updateById(pdfFileId, {
         status: 'failed',

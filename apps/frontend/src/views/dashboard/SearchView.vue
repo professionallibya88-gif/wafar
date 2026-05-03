@@ -234,8 +234,13 @@
       </Transition>
     </div>
 
+    <!-- Loading State -->
+    <div v-if="loading" class="panel-card overflow-hidden p-6">
+      <BaseSkeleton type="table" :rows="8" />
+    </div>
+
     <!-- Results -->
-    <div v-if="flatResults.length > 0" class="panel-table">
+    <div v-else-if="flatResults.length > 0" class="panel-table">
       <div
         class="p-4 lg:p-6 border-b border-neutral-200 dark:border-neutral-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
@@ -430,6 +435,26 @@
       </div>
     </div>
 
+    <!-- Empty Results -->
+    <div v-else-if="searched && results.length === 0" class="panel-card p-16 text-center">
+      <div
+        class="w-20 h-20 bg-neutral-100 dark:bg-neutral-700 rounded-2xl mx-auto mb-6 flex items-center justify-center"
+      >
+        <AppIcon
+          name="MagnifyingGlass"
+          size="2xl"
+          customClass="text-neutral-400 dark:text-neutral-500"
+        />
+      </div>
+      <h3 class="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+        لم يتم العثور على نتائج
+      </h3>
+      <p class="text-neutral-500 dark:text-neutral-400">
+        جرب تغيير كلمات البحث أو استخدام فلاتر
+        مختلفة
+      </p>
+    </div>
+
     <!-- Compare Button (Fixed) -->
     <Transition name="slide-up">
       <div
@@ -452,26 +477,6 @@
         </BaseButton>
       </div>
     </Transition>
-
-    <!-- Empty Results -->
-    <div v-if="searched && results.length === 0" class="panel-card p-16 text-center">
-      <div
-        class="w-20 h-20 bg-neutral-100 dark:bg-neutral-700 rounded-2xl mx-auto mb-6 flex items-center justify-center"
-      >
-        <AppIcon
-          name="MagnifyingGlass"
-          size="2xl"
-          customClass="text-neutral-400 dark:text-neutral-500"
-        />
-      </div>
-      <h3 class="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
-        لم يتم العثور على نتائج
-      </h3>
-      <p class="text-neutral-500 dark:text-neutral-400">
-        جرب تغيير كلمات البحث أو استخدام فلاتر
-        مختلفة
-      </p>
-    </div>
   </div>
 </template>
 
@@ -481,6 +486,7 @@ import { useRoute, useRouter } from "vue-router";
 import { formatCurrency } from "@/utils/currency";
 import { searchAPI, pdfAPI } from "@/services/api";
 import { BaseButton, BaseBadge, BaseToast, BaseSelect } from "@/components/base";
+import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import { AppIcon } from "@/components/icons";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 import { useFeatureFlags } from "@/composables/useFeatureFlags";

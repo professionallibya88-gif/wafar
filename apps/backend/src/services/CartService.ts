@@ -4,7 +4,6 @@ import { partRepository } from '../repositories/PartRepository';
 import { orderRepository } from '../repositories/OrderRepository';
 import { orderItemRepository } from '../repositories/OrderItemRepository';
 import { NotFoundError, ValidationError, BusinessError } from '../errors';
-import { sequelize } from '../database/models'; // Change back to models
 
 class CartService {
   async getCart(userId: string) {
@@ -19,8 +18,9 @@ class CartService {
 
     const existingItem = await cartItemRepository.findByCartAndPart(cart.id, partId);
     if (existingItem) {
-      existingItem.quantity += quantity;
-      await existingItem.save();
+      await cartItemRepository.updateById(existingItem.id, {
+        quantity: existingItem.quantity + quantity,
+      });
     } else {
       await cartItemRepository.create({
         cart_id: cart.id,
@@ -41,10 +41,9 @@ class CartService {
     }
 
     if (quantity <= 0) {
-      await item.destroy();
+      await cartItemRepository.deleteById(item.id);
     } else {
-      item.quantity = quantity;
-      await item.save();
+      await cartItemRepository.updateById(item.id, { quantity });
     }
 
     return await cartRepository.findActiveCartByUserId(userId);
@@ -58,7 +57,7 @@ class CartService {
       throw new NotFoundError('العنصر غير موجود في السلة');
     }
 
-    await item.destroy();
+    await cartItemRepository.deleteById(item.id);
     return await cartRepository.findActiveCartByUserId(userId);
   }
 
@@ -84,9 +83,7 @@ class CartService {
       supplierItemsMap.get(supplierId)!.push(item);
     }
 
-    const transaction = await sequelize.transaction();
-
-    try {
+    return await cartRepository.transaction(async (transaction) => {
       const createdOrders = [];
 
       for (const [supplierId, items] of Array.from(supplierItemsMap.entries())) {
@@ -119,21 +116,16 @@ class CartService {
           );
         }
 
-        order.total_amount = totalAmount;
-        await order.save({ transaction });
+        await orderRepository.updateById(order.id, { total_amount: totalAmount }, { transaction });
+        order.total_amount = totalAmount; // Update local object for return
         createdOrders.push(order);
       }
 
       // Mark cart as completed
-      cart.status = 'completed';
-      await cart.save({ transaction });
+      await cartRepository.updateById(cart.id, { status: 'completed' }, { transaction });
 
-      await transaction.commit();
       return createdOrders;
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
+    });
   }
 }
 

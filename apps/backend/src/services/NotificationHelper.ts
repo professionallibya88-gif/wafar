@@ -301,7 +301,7 @@ export class NotificationHelper {
     try {
       const statusMap: Record<string, string> = {
         open: 'مفتوحة',
-        in_progress: 'قيد المعالجة',
+        resolved: 'تم الحل',
         closed: 'مغلقة',
       };
       const statusAr = statusMap[newStatus] || newStatus;

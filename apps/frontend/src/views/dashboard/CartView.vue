@@ -7,8 +7,13 @@
       </div>
     </div>
 
-    <div v-if="cartStore.loading" class="flex justify-center p-12">
-      <AppIcon name="ArrowPath" size="xl" class="animate-spin text-brand-500" />
+    <div v-if="cartStore.loading" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-4">
+        <BaseSkeleton v-for="i in 3" :key="i" type="card" class="h-[88px]" />
+      </div>
+      <div class="lg:col-span-1">
+        <BaseSkeleton type="card" class="h-[180px]" />
+      </div>
     </div>
 
     <div v-else-if="!cartStore.itemCount" class="panel-card p-12 text-center">
@@ -60,6 +65,7 @@
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCartStore } from '@/stores/cart';
+import BaseSkeleton from '@/components/base/BaseSkeleton.vue';
 
 const router = useRouter();
 const cartStore = useCartStore();

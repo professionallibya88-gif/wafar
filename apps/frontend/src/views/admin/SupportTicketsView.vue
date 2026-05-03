@@ -197,7 +197,7 @@
                 @change="updateStatus(selectedTicket.status)"
                 :options="[
                   { label: 'مفتوحة', value: 'open' },
-                  { label: 'قيد المعالجة', value: 'in_progress' },
+                  { label: 'تم الحل', value: 'resolved' },
                   { label: 'مغلقة', value: 'closed' },
                 ]"
               />
@@ -342,11 +342,11 @@
               <div class="text-[10px] text-gray-500 uppercase tracking-wider">تذاكر مفتوحة</div>
             </div>
             <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-              <div class="text-amber-600 dark:text-amber-400 font-bold text-lg mb-1">{{ stats.in_progress || 0 }}</div>
-              <div class="text-[10px] text-gray-500 uppercase tracking-wider">قيد المعالجة</div>
+                  <div class="text-green-600 dark:text-green-400 font-bold text-lg mb-1">{{ stats.resolved || 0 }}</div>
+                  <div class="text-[10px] text-gray-500 uppercase tracking-wider">تم الحل</div>
             </div>
             <div class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
-              <div class="text-green-600 dark:text-green-400 font-bold text-lg mb-1">{{ stats.closed || 0 }}</div>
+                  <div class="text-gray-600 dark:text-gray-300 font-bold text-lg mb-1">{{ stats.closed || 0 }}</div>
               <div class="text-[10px] text-gray-500 uppercase tracking-wider">تذاكر مغلقة</div>
             </div>
           </div>
@@ -359,11 +359,12 @@
 <script setup>
 import { BaseSelect } from "@/components/base";
 import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
-import AppIcon from '@/components/icons/AppIcon.vue';
+import { AppIcon } from '@/components/icons';
 import { supportAPI } from '@/services/api';
 import { useNotificationStore } from '@/stores/notification';
 import { useAuthStore } from '@/stores/auth';
 import { getSocket } from '@/services/socket';
+import { preferenceStorage } from '@/services/storage';
 
 const notificationStore = useNotificationStore();
 const authStore = useAuthStore();
@@ -385,14 +386,14 @@ const pagination = ref({
 
 const stats = ref({
   open: 0,
-  in_progress: 0,
+  resolved: 0,
   closed: 0
 });
 
 const statusFilters = [
   { label: 'الكل', value: '' },
   { label: 'مفتوحة', value: 'open' },
-  { label: 'قيد المعالجة', value: 'in_progress' },
+  { label: 'تم الحل', value: 'resolved' },
   { label: 'مغلقة', value: 'closed' },
 ];
 
@@ -424,20 +425,12 @@ const getMuteStorageKey = () => {
 };
 
 const loadMutePreference = () => {
-  try {
-    isMuted.value = localStorage.getItem(getMuteStorageKey()) === '1';
-  } catch {
-    isMuted.value = false;
-  }
+  isMuted.value = preferenceStorage.getItem(getMuteStorageKey(), false) === true;
 };
 
 const toggleMute = () => {
   isMuted.value = !isMuted.value;
-  try {
-    localStorage.setItem(getMuteStorageKey(), isMuted.value ? '1' : '0');
-  } catch {
-    // تجاهل
-  }
+  preferenceStorage.setItem(getMuteStorageKey(), isMuted.value);
 };
 
 const playNotificationSound = () => {
@@ -497,7 +490,7 @@ const updateStatsLocally = () => {
   const counts = tickets.value.reduce((acc, t) => {
     acc[t.status] = (acc[t.status] || 0) + 1;
     return acc;
-  }, { open: 0, in_progress: 0, closed: 0 });
+  }, { open: 0, resolved: 0, closed: 0 });
   
   stats.value = counts;
 };
@@ -613,7 +606,7 @@ const updateStatus = async (newStatus) => {
 const getStatusLabel = (status) => {
   const map = {
     open: 'مفتوحة',
-    in_progress: 'قيد المعالجة',
+    resolved: 'تم الحل',
     closed: 'مغلقة',
   };
   return map[status] || status;
@@ -622,7 +615,7 @@ const getStatusLabel = (status) => {
 const getStatusClass = (status) => {
   const map = {
     open: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-    in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    resolved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
     closed: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400',
   };
   return map[status] || 'bg-gray-100 text-gray-800';

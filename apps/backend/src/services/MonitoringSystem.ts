@@ -3,7 +3,7 @@ import * as winston from 'winston';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { sequelize } from '../database';
+import { systemRepository } from '../repositories/SystemRepository';
 
 export class MonitoringSystem extends EventEmitter {
   private static instance: MonitoringSystem | null = null;
@@ -254,7 +254,7 @@ export class MonitoringSystem extends EventEmitter {
     checks.disk = { status: 'healthy', value: 'N/A' };
 
     try {
-      await sequelize.authenticate();
+      await systemRepository.checkDatabaseConnection();
       checks.database = { status: 'healthy', value: 'connected' };
     } catch (error: any) {
       checks.database = { status: 'unhealthy', value: error.message };

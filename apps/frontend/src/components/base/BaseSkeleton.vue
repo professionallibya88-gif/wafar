@@ -5,7 +5,7 @@
       <div
         v-for="i in lines"
         :key="i"
-        class="skeleton rounded"
+        :class="['rounded', skeletonClass]"
         :style="{ height: '1rem', width: i === lines ? lastLineWidth : '100%' }"
       />
     </template>
@@ -13,7 +13,7 @@
     <!-- Avatar Skeleton -->
     <template v-else-if="type === 'avatar'">
       <div
-        class="rounded-full skeleton"
+        :class="['rounded-full', skeletonClass]"
         :style="{ width: size, height: size }"
       />
     </template>
@@ -21,7 +21,7 @@
     <!-- Image Skeleton -->
     <template v-else-if="type === 'image'">
       <div
-        class="rounded-lg skeleton"
+        :class="['rounded-lg', skeletonClass]"
         :style="{ width: width || '100%', height: height || '200px' }"
       />
     </template>
@@ -29,10 +29,10 @@
     <!-- Card Skeleton -->
     <template v-else-if="type === 'card'">
       <div class="space-y-3">
-        <div class="skeleton rounded h-40" />
+        <div :class="['rounded h-40', skeletonClass]" />
         <div class="space-y-2">
-          <div class="skeleton rounded h-4 w-3/4" />
-          <div class="skeleton rounded h-4 w-1/2" />
+          <div :class="['rounded h-4 w-3/4', skeletonClass]" />
+          <div :class="['rounded h-4 w-1/2', skeletonClass]" />
         </div>
       </div>
     </template>
@@ -44,14 +44,14 @@
           <div
             v-for="i in columns"
             :key="i"
-            class="skeleton rounded h-8 flex-1"
+            :class="['rounded h-8 flex-1', skeletonClass]"
           />
         </div>
         <div v-for="row in rows" :key="row" class="flex gap-4">
           <div
             v-for="i in columns"
             :key="i"
-            class="skeleton rounded h-6 flex-1"
+            :class="['rounded h-6 flex-1', skeletonClass]"
           />
         </div>
       </div>
@@ -116,30 +116,13 @@ const props = defineProps({
 });
 
 const wrapperClass = computed(() => {
-  return props.animated ? "" : "";
+  return props.type === "text" ? "space-y-2" : "";
+});
+
+const skeletonClass = computed(() => {
+  return [
+    "bg-gray-200 dark:bg-gray-700",
+    props.animated ? "animate-pulse" : "",
+  ];
 });
 </script>
-
-<style scoped>
-.skeleton {
-  background-color: rgb(229 231 235);
-  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.dark .skeleton {
-  background-color: rgb(31 41 55);
-  background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
-  background-size: 200% 100%;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>

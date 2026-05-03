@@ -1,7 +1,7 @@
 import { getRedisClient } from '../config/redis';
 import { getPDFQueue } from '../queues/pdfQueue';
 import { adminService } from './AdminService';
-import { testConnection } from '../database';
+import { systemRepository } from '../repositories/SystemRepository';
 import { toError } from '../utils/errors';
 
 export interface SystemHealthCheck {
@@ -93,7 +93,7 @@ export class SystemStatusService {
 
     // Database check
     try {
-      await testConnection();
+      await systemRepository.checkDatabaseConnection();
       health.checks.database = { status: 'healthy', message: 'اتصال قاعدة البيانات سليم' };
     } catch (error: unknown) {
       health.checks.database = { status: 'unhealthy', message: toError(error).message };

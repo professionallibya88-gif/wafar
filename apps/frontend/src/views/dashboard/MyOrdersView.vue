@@ -5,8 +5,8 @@
       <p class="text-neutral-500 dark:text-neutral-400 mt-1">متابعة حالة طلباتك من الموردين</p>
     </div>
 
-    <div v-if="loading" class="flex justify-center p-12">
-      <AppIcon name="ArrowPath" size="xl" class="animate-spin text-brand-500" />
+    <div v-if="loading" class="space-y-4">
+      <BaseSkeleton v-for="i in 3" :key="i" type="card" />
     </div>
 
     <div v-else-if="!orders.length" class="panel-card p-12 text-center">
@@ -38,6 +38,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { orderAPI } from '@/services/api';
+import BaseSkeleton from '@/components/base/BaseSkeleton.vue';
 
 const orders = ref([]);
 const loading = ref(false);

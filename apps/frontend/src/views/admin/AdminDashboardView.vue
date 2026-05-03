@@ -40,53 +40,58 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div
-        v-for="(stat, index) in statCards"
-        :key="stat.label"
-        class="group bg-layer-stats rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-900/50 transition-all duration-300 animate-fade-in-up cursor-pointer"
-        :style="{ animationDelay: `${index * 100}ms` }"
-        @click="stat.action"
-      >
-        <div class="flex items-start justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-              {{ stat.label }}
-            </p>
-            <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
-              {{ stat.value }}
-            </p>
+      <template v-if="loading">
+        <BaseSkeleton v-for="i in 4" :key="`skeleton-stat-${i}`" type="card" />
+      </template>
+      <template v-else>
+        <div
+          v-for="(stat, index) in statCards"
+          :key="stat.label"
+          class="group bg-layer-stats rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-900/50 transition-all duration-300 animate-fade-in-up cursor-pointer"
+          :style="{ animationDelay: `${index * 100}ms` }"
+          @click="stat.action"
+        >
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                {{ stat.label }}
+              </p>
+              <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+                {{ stat.value }}
+              </p>
+            </div>
+            <div
+              :class="[
+                'w-12 h-12 rounded-xl flex items-center justify-center',
+                stat.bgColor,
+              ]"
+            >
+              <AppIcon
+                :name="stat.iconName"
+                size="xl"
+                :customClass="stat.iconColor"
+              />
+            </div>
           </div>
-          <div
-            :class="[
-              'w-12 h-12 rounded-xl flex items-center justify-center',
-              stat.bgColor,
-            ]"
-          >
-            <AppIcon
-              :name="stat.iconName"
-              size="xl"
-              :customClass="stat.iconColor"
-            />
+          <div class="mt-4 flex items-center gap-2">
+            <span
+              :class="[
+                'text-sm font-medium',
+                stat.trend > 0
+                  ? 'text-green-600 dark:text-green-400'
+                  : stat.trend < 0
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-gray-500 dark:text-gray-400',
+              ]"
+            >
+              {{ stat.trend > 0 ? "+" : "" }}{{ stat.trend }}%
+            </span>
+            <span class="text-sm text-gray-400 dark:text-gray-500"
+              >من الشهر الماضي</span
+            >
           </div>
         </div>
-        <div class="mt-4 flex items-center gap-2">
-          <span
-            :class="[
-              'text-sm font-medium',
-              stat.trend > 0
-                ? 'text-green-600 dark:text-green-400'
-                : stat.trend < 0
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-gray-500 dark:text-gray-400',
-            ]"
-          >
-            {{ stat.trend > 0 ? "+" : "" }}{{ stat.trend }}%
-          </span>
-          <span class="text-sm text-gray-400 dark:text-gray-500"
-            >من الشهر الماضي</span
-          >
-        </div>
-      </div>
+      </template>
     </div>
 
     <!-- Charts م Activity -->
@@ -106,36 +111,50 @@
           >
         </div>
         <div class="space-y-4">
-          <div
-            v-for="user in recentUsers"
-            :key="user.id"
-            class="flex items-center gap-4 p-3 bg-brand-50 dark:bg-gray-700/50 hover:bg-brand-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-          >
+          <template v-if="loading">
+            <BaseSkeleton v-for="i in 5" :key="i" type="custom">
+              <div class="flex items-center gap-4 p-3 bg-brand-50 dark:bg-gray-700/50 rounded-xl">
+                <div class="w-10 h-10 rounded-xl bg-gray-200 dark:bg-gray-600 animate-pulse"></div>
+                <div class="flex-1 space-y-2">
+                  <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/3 animate-pulse"></div>
+                  <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded w-1/4 animate-pulse"></div>
+                </div>
+                <div class="w-16 h-6 rounded-full bg-gray-200 dark:bg-gray-600 animate-pulse"></div>
+              </div>
+            </BaseSkeleton>
+          </template>
+          <template v-else>
             <div
-              class="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center text-white font-bold"
+              v-for="user in recentUsers"
+              :key="user.id"
+              class="flex items-center gap-4 p-3 bg-brand-50 dark:bg-gray-700/50 hover:bg-brand-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
             >
-              {{ user.full_name?.charAt(0) || "م" }}
+              <div
+                class="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center text-white font-bold"
+              >
+                {{ user.full_name?.charAt(0) || "م" }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-gray-900 dark:text-white">
+                  {{ user.full_name }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ user.phone }}
+                </p>
+              </div>
+              <BaseBadge
+                :variant="getUserRoleBadgeVariant(user.role)"
+                size="sm"
+              >
+                {{ getUserRoleLabel(user.role) }}
+              </BaseBadge>
             </div>
-            <div class="flex-1 min-w-0">
-              <p class="font-medium text-gray-900 dark:text-white">
-                {{ user.full_name }}
-              </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ user.phone }}
+            <div v-if="recentUsers.length === 0" class="text-center py-8">
+              <p class="text-gray-400 dark:text-gray-500">
+                لا يوجد مستخدمون حتى الآن
               </p>
             </div>
-            <BaseBadge
-              :variant="getUserRoleBadgeVariant(user.role)"
-              size="sm"
-            >
-              {{ getUserRoleLabel(user.role) }}
-            </BaseBadge>
-          </div>
-          <div v-if="recentUsers.length === 0" class="text-center py-8">
-            <p class="text-gray-400 dark:text-gray-500">
-              لا يوجد مستخدمون حتى الآن
-            </p>
-          </div>
+          </template>
         </div>
       </div>
 
@@ -187,46 +206,62 @@
             >عرض الكل</router-link
           >
         </div>
-        <div v-if="pendingPayments.length > 0" class="space-y-3">
-          <div
-            v-for="payment in pendingPayments.slice(0, 3)"
-            :key="payment.id"
-            class="flex items-center gap-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-100 dark:border-yellow-800"
-          >
+        <template v-if="loading">
+          <div class="mt-4 space-y-3">
+            <BaseSkeleton v-for="i in 3" :key="i" type="custom">
+              <div class="flex items-center gap-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-100 dark:border-yellow-800">
+                <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/50 rounded-xl flex items-center justify-center animate-pulse"></div>
+                <div class="flex-1 space-y-2">
+                  <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/3 animate-pulse"></div>
+                  <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded w-1/4 animate-pulse"></div>
+                </div>
+                <div class="w-16 h-6 rounded-full bg-gray-200 dark:bg-gray-600 animate-pulse"></div>
+              </div>
+            </BaseSkeleton>
+          </div>
+        </template>
+        <template v-else>
+          <div v-if="pendingPayments.length > 0" class="space-y-3">
             <div
-              class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/50 rounded-xl flex items-center justify-center"
+              v-for="payment in pendingPayments.slice(0, 3)"
+              :key="payment.id"
+              class="flex items-center gap-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-100 dark:border-yellow-800"
+            >
+              <div
+                class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/50 rounded-xl flex items-center justify-center"
+              >
+                <AppIcon
+                  name="CurrencyDollar"
+                  size="lg"
+                  customClass="text-yellow-600 dark:text-yellow-400"
+                />
+              </div>
+              <div class="flex-1">
+                <p class="font-medium text-gray-900 dark:text-white">
+                  {{ payment.user?.full_name || "مستخدم" }}
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ payment.amount }} د. - {{ payment.payment_method }}
+                </p>
+              </div>
+              <BaseBadge variant="warning" size="sm">معلق</BaseBadge>
+            </div>
+          </div>
+          <div v-else class="text-center py-8">
+            <div
+              class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl mx-auto mb-4 flex items-center justify-center"
             >
               <AppIcon
-                name="CurrencyDollar"
-                size="lg"
-                customClass="text-yellow-600 dark:text-yellow-400"
+                name="CheckCircle"
+                size="2xl"
+                customClass="text-green-500 dark:text-green-400"
               />
             </div>
-            <div class="flex-1">
-              <p class="font-medium text-gray-900 dark:text-white">
-                {{ payment.user?.full_name || "مستخدم" }}
-              </p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ payment.amount }} د. - {{ payment.payment_method }}
-              </p>
-            </div>
-            <BaseBadge variant="warning" size="sm">معلق</BaseBadge>
+            <p class="text-gray-500 dark:text-gray-400">
+              لا توجد مدفوعات معلقة
+            </p>
           </div>
-        </div>
-        <div v-else class="text-center py-8">
-          <div
-            class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-          >
-            <AppIcon
-              name="CheckCircle"
-              size="2xl"
-              customClass="text-green-500 dark:text-green-400"
-            />
-          </div>
-          <p class="text-gray-500 dark:text-gray-400">
-            لا توجد مدفوعات معلقة
-          </p>
-        </div>
+        </template>
       </div>
 
       <!-- Recent Files -->
@@ -243,39 +278,55 @@
             >عرض الكل</router-link
           >
         </div>
-        <div v-if="recentFiles.length > 0" class="space-y-3">
-          <div
-            v-for="file in recentFiles.slice(0, 3)"
-            :key="file.id"
-            class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl"
-          >
-            <div
-              class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center"
-            >
-              <AppIcon
-                name="Document"
-                size="lg"
-                customClass="text-red-600 dark:text-red-400"
-              />
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="font-medium text-gray-900 dark:text-white truncate">
-                {{ file.original_name }}
-              </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                {{ formatDate(file.createdAt) }}
-              </p>
-            </div>
-            <BaseBadge :variant="getFileStatusVariant(file.status)" size="sm">
-            {{ getFileStatusLabel(file.status) }}
-          </BaseBadge>
+        <template v-if="loading">
+          <div class="mt-4 space-y-3">
+            <BaseSkeleton v-for="i in 3" :key="i" type="custom">
+              <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center animate-pulse"></div>
+                <div class="flex-1 space-y-2">
+                  <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/3 animate-pulse"></div>
+                  <div class="h-3 bg-gray-200 dark:bg-gray-600 rounded w-1/4 animate-pulse"></div>
+                </div>
+                <div class="w-16 h-6 rounded-full bg-gray-200 dark:bg-gray-600 animate-pulse"></div>
+              </div>
+            </BaseSkeleton>
           </div>
-        </div>
-        <div v-else class="text-center py-8">
-          <p class="text-gray-400 dark:text-gray-500">
-            لا توجد ملفات حتى الآن
-          </p>
-        </div>
+        </template>
+        <template v-else>
+          <div v-if="recentFiles.length > 0" class="space-y-3">
+            <div
+              v-for="file in recentFiles.slice(0, 3)"
+              :key="file.id"
+              class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl"
+            >
+              <div
+                class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center"
+              >
+                <AppIcon
+                  name="Document"
+                  size="lg"
+                  customClass="text-red-600 dark:text-red-400"
+                />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-gray-900 dark:text-white truncate">
+                  {{ file.original_name }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ formatDate(file.createdAt) }}
+                </p>
+              </div>
+              <BaseBadge :variant="getFileStatusVariant(file.status)" size="sm">
+              {{ getFileStatusLabel(file.status) }}
+            </BaseBadge>
+            </div>
+          </div>
+          <div v-else class="text-center py-8">
+            <p class="text-gray-400 dark:text-gray-500">
+              لا توجد ملفات حتى الآن
+            </p>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -285,7 +336,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { adminAPI } from "@/services/api";
-import { BaseBadge, BaseButton, BaseToast } from "@/components/base";
+import { BaseBadge, BaseButton, BaseToast, BaseSkeleton } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { getUserRoleBadgeVariant, getUserRoleLabel } from "@/utils/roleLabels";
 import { getFileStatusLabel, getFileStatusVariant } from "@/utils/statusLabels";

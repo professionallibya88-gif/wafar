@@ -47,14 +47,6 @@
       </div>
     </Transition>
 
-    <div
-      v-if="debugOtp"
-      class="mb-6 p-4 rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/10 text-sm text-amber-800 dark:text-amber-400 transition-colors"
-    >
-      رمز التحقيق الحالي:
-      <span class="font-bold tracking-[0.3em]" dir="ltr">{{ debugOtp }}</span>
-    </div>
-
     <!-- Step 1: Request OTP -->
     <form v-if="step === 1" @submit.prevent="requestOtp" class="space-y-5">
       <div class="space-y-2">
@@ -221,7 +213,6 @@ const confirmPassword = ref("");
 const loading = ref(false);
 const message = ref("");
 const messageType = ref("success");
-const debugOtp = ref("");
 
 const stepLabels = [
   "طلب رمز التحقق",
@@ -244,7 +235,6 @@ const requestOtp = async () => {
       phone: normalizedPhone,
     });
     phone.value = normalizedPhone;
-    debugOtp.value = response.data?.data?.debug_otp || "";
     setMessage(
       response.data?.message ||
         "إذا كان رقم الهاتف مسجلاً فستتم إرسال رمز التحقق إليك",

@@ -14,16 +14,22 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { success } from '../utils/ApiResponse';
 import { ValidationError } from '../errors';
 import { AuthenticatedRequest } from '../types';
+import { runValidators } from '../utils/validate';
+import {
+  createSettingRules,
+  updateAllSettingsRules,
+  updateSettingRules,
+} from '../validators/settingsValidator';
 
 const router = Router();
 
 router.get('/', adminAuth, adminOnly, getAllSettings);
 router.get('/public', getPublicSettings);
-router.put('/', adminAuth, adminOnly, updateAllSettings);
-router.post('/', adminAuth, adminOnly, createSetting);
+router.put('/', adminAuth, adminOnly, runValidators(updateAllSettingsRules), updateAllSettings);
+router.post('/', adminAuth, adminOnly, runValidators(createSettingRules), createSetting);
 router.post('/reset-defaults', adminAuth, adminOnly, resetToDefaults);
 router.post('/test-email', adminAuth, adminOnly, testEmailSettings);
-router.put('/:key', adminAuth, adminOnly, updateSetting);
+router.put('/:key', adminAuth, adminOnly, runValidators(updateSettingRules), updateSetting);
 
 // مسار رفع الصور للإعدادات (شعار، أيقونة، الخ)
 router.post(

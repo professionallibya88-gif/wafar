@@ -25,7 +25,8 @@ const startServer = async () => {
       await syncDatabase();
     } catch (dbError) {
       const message = dbError instanceof Error ? dbError.message : String(dbError);
-      logger.error('Failed to initialize database (continuing anyway):', message);
+      logger.error('فشل تهيئة قاعدة البيانات، سيتم إيقاف التشغيل:', message);
+      throw dbError;
     }
 
     // بيانات تلقائية (حساب المدير فقط)
@@ -65,8 +66,8 @@ const startServer = async () => {
     setupGracefulShutdown(server);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    logger.error('Failed to start server:', message);
-    // process.exit(1); // Do not exit, try to keep the server running if possible
+    logger.error('فشل تشغيل الخادم:', message);
+    process.exit(1);
   }
 };
 

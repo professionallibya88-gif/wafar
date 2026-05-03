@@ -24,12 +24,14 @@
     >
       <div
         v-if="isOpen"
-        class="absolute z-50 sm:mb-2 w-full sm:w-96 bg-white dark:bg-gray-800 sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[85vh] sm:h-[600px] bottom-0 sm:max-h-[85vh] rounded-t-3xl"
+        @click.stop
+        class="absolute z-50 sm:mb-2 w-full sm:w-96 bg-white dark:bg-gray-800 sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[85dvh] sm:h-[600px] bottom-0 sm:max-h-[85vh] rounded-t-3xl"
         :style="isDesktop ? {
           bottom: '100%',
           left: widgetPositionX === 'left' ? '0' : 'auto',
           right: widgetPositionX === 'right' ? '0' : 'auto',
-        } : { left: '0' }"
+          touchAction: 'manipulation'
+        } : { left: '0', touchAction: 'manipulation' }"
       >
         <div 
           class="p-4 text-center shrink-0 relative sm:pt-4"
@@ -138,7 +140,7 @@
             <form @submit.prevent="submitNewTicket" class="p-4 space-y-4 flex-1 flex flex-col">
               <div class="flex-1 relative">
                 <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">كيف يمكننا مساعدتك؟</label>
-                <textarea v-model="newTicketForm.message" required rows="8" placeholder="اكتب استفسارك هنا وسنرد عليك في أقرب وقت..." class="block w-full p-4 rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm resize-none"></textarea>
+                <textarea v-model="newTicketForm.message" required rows="8" placeholder="اكتب استفسارك هنا وسنرد عليك في أقرب وقت..." class="block w-full p-4 rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm resize-none select-text"></textarea>
                 <p class="absolute bottom-3 left-3 text-[10px]" :class="isMessageValid ? 'text-green-500' : 'text-gray-400'">
                   {{ newTicketForm.message.trim().length }} / 10 حرف كحد أدنى
                 </p>
@@ -203,7 +205,7 @@
                   type="text"
                   placeholder="اكتب ردك هنا..."
                   :disabled="activeTicket?.status === 'closed'"
-                  class="flex-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm py-2.5 px-4"
+                  class="flex-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm py-2.5 px-4 select-text"
                 />
                 <button
                   type="submit"
@@ -256,10 +258,11 @@
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
 import { useRoute } from "vue-router";
 import { supportAPI } from "@/services/api";
-import AppIcon from "@/components/icons/AppIcon.vue";
+import { AppIcon } from "@/components/icons";
 import { useAuthStore } from "@/stores/auth";
 import { useSiteSettings } from "@/composables/useSiteSettings";
 import { getSocket } from "@/services/socket";
+import { preferenceStorage } from "@/services/storage";
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -360,20 +363,12 @@ const getMuteStorageKey = () => {
 };
 
 const loadMutePreference = () => {
-  try {
-    isMuted.value = localStorage.getItem(getMuteStorageKey()) === '1';
-  } catch {
-    isMuted.value = false;
-  }
+  isMuted.value = preferenceStorage.getItem(getMuteStorageKey(), false) === true;
 };
 
 const toggleMute = () => {
   isMuted.value = !isMuted.value;
-  try {
-    localStorage.setItem(getMuteStorageKey(), isMuted.value ? '1' : '0');
-  } catch {
-    // تجاهل فشل التخزين المحلي
-  }
+  preferenceStorage.setItem(getMuteStorageKey(), isMuted.value);
 };
 
 const playNotificationSound = () => {
@@ -410,7 +405,9 @@ const toggleOpen = () => {
 
 const closeMenu = (e) => {
   if (isOpen.value) {
-    const path = e.composedPath();
+    if (!isDesktop.value) return; // On mobile, overlay click handles closing
+
+    const path = e.composedPath ? e.composedPath() : [];
     const isInsideWidget = path.some(el => el.classList && el.classList.contains('support-widget'));
     
     if (!isInsideWidget) {
@@ -604,7 +601,7 @@ const scrollToBottom = async () => {
 const getStatusLabel = (status) => {
   const map = {
     open: 'مفتوحة',
-    in_progress: 'قيد المعالجة',
+    resolved: 'تم الحل',
     closed: 'مغلقة',
   };
   return map[status] || status;
@@ -613,7 +610,7 @@ const getStatusLabel = (status) => {
 const getStatusClass = (status) => {
   const map = {
     open: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-    in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+    resolved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
     closed: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
   };
   return map[status] || 'bg-gray-100 text-gray-800';

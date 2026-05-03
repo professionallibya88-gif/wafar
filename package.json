@@ -16,6 +16,7 @@
     "build:frontend": "nx build frontend",
     "test": "nx run-many -t test --parallel",
     "lint": "nx run-many -t lint --parallel",
+    "ci:verify": "nx run-many -t lint --projects=backend,frontend && nx run-many -t build --projects=backend,frontend && nx test backend",
     "start": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "start:all": "concurrently \"nx run backend:dev:all\" \"npm run dev:frontend\"",
     "install:all": "npm install && cd apps/backend && npm install && cd ../frontend && npm install",

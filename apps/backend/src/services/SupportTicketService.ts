@@ -113,7 +113,7 @@ export class SupportTicketService {
       content,
     });
 
-    const newStatus = sender_type === 'admin' ? 'in_progress' : 'open';
+    const newStatus = sender_type === 'admin' ? 'open' : 'open';
 
     // Update ticket updated_at by performing a dummy update or status change if needed
     await supportTicketRepository.updateById(ticket_id, {
@@ -146,7 +146,7 @@ export class SupportTicketService {
     return message;
   }
 
-  async updateTicketStatus(ticket_id: string, status: 'open' | 'closed' | 'in_progress') {
+  async updateTicketStatus(ticket_id: string, status: 'open' | 'closed' | 'resolved') {
     const ticket = await supportTicketRepository.findById(ticket_id);
     if (!ticket) {
       throw new NotFoundError('التذكرة غير موجودة');

@@ -64,7 +64,7 @@ cd /var/www/waffer
 npm run install:all
 
 # تثبيت تبعيات Python
-cd backend/python-service
+cd apps/backend/python-service
 pip install -r requirements.txt
 cd ../..
 ```
@@ -72,7 +72,7 @@ cd ../..
 ### 4. إعداد ملف البيئة
 
 ```bash
-cd backend
+cd apps/backend
 cp .env.example .env
 nano .env
 ```
@@ -91,12 +91,11 @@ PYTHON_SERVICE_URL=http://localhost:5051
 PYTHON_SERVICE_PORT=5051
 ```
 
-### 5. بناء Frontend
+### 5. بناء التطبيقات
 
 ```bash
-cd frontend
+cd /var/www/waffer
 npm run build
-cd ..
 ```
 
 ### 6. إعداد Nginx
@@ -114,7 +113,7 @@ server {
 
     # Frontend
     location / {
-        root /var/www/waffer/frontend/dist;
+        root /var/www/waffer/apps/frontend/dist;
         try_files $uri $uri/ /index.html;
     }
 
@@ -156,7 +155,7 @@ module.exports = {
   apps: [
     {
       name: 'waffer-backend',
-      script: 'backend/src/server.js',
+      script: 'apps/backend/dist/server.js',
       instances: 1,
       autorestart: true,
       watch: false,
@@ -168,7 +167,7 @@ module.exports = {
     },
     {
       name: 'waffer-python',
-      script: 'backend/python-service/app.py',
+      script: 'apps/backend/python-service/app.py',
       interpreter: 'python3',
       instances: 1,
       autorestart: true,
@@ -183,6 +182,7 @@ module.exports = {
 EOF
 
 # تشغيل التطبيقات
+npm run build
 pm2 start ecosystem.config.js
 
 # حفظ التكوين
@@ -219,7 +219,7 @@ mkdir -p \$BACKUP_DIR
 pg_dump -U waffer libya_spare_parts > \$BACKUP_DIR/db_\$DATE.sql
 
 # نسخ الملفات المرفوعة
-tar -czf \$BACKUP_DIR/uploads_\$DATE.tar.gz /var/www/waffer/backend/uploads
+tar -czf \$BACKUP_DIR/uploads_\$DATE.tar.gz /var/www/waffer/apps/backend/uploads
 
 # حذف النسخ القديمة (أكثر من 7 أيام)
 find \$BACKUP_DIR -name "*.sql" -mtime +7 -delete
@@ -292,7 +292,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 cd /var/www/waffer
 git pull origin main
 npm run install:all
-cd frontend && npm run build && cd ..
+cd apps/frontend && npm run build && cd ../..
 pm2 restart all
 ```
 

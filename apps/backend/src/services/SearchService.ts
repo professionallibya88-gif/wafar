@@ -1,6 +1,46 @@
 import ExcelJS from 'exceljs';
 import { partRepository, searchHistoryRepository } from '../repositories';
 import { SmartSearch } from './SmartSearch';
+import { Part } from '../database/models/Part';
+
+export interface SearchFilters {
+  q?: string;
+  category?: string;
+  brand?: string;
+  quality_grade?: string;
+  supplier_id?: string | number;
+  pdf_file_id?: string | number;
+  min_price?: string | number;
+  max_price?: string | number;
+  in_stock?: string | boolean;
+  [key: string]: unknown;
+}
+
+export interface LegacySearchParams {
+  userId?: string | number;
+  query?: string;
+  filters?: SearchFilters;
+  pagination: {
+    limit: number;
+    offset: number;
+  };
+  sort?: {
+    field?: string;
+    order?: string;
+  };
+}
+
+export interface HistorySearchParams {
+  userId: string;
+  limit: number;
+  offset: number;
+}
+
+export interface ExportPart extends Part {
+  supplier?: {
+    name: string;
+  };
+}
 
 const ALLOWED_SORT_FIELDS = ['part_name', 'part_code', 'price', 'quality_grade', 'created_at'];
 
@@ -11,14 +51,14 @@ class SearchService {
   /**
    * البحث الذكي
    */
-  async smartSearch(q: any, filters: any) {
+  async smartSearch(q: string, filters: SearchFilters = {}) {
     return SmartSearch.search(q, filters);
   }
 
   /**
    * البحث المشتق
    */
-  async derivedSearch(criteria: any, filters: any) {
+  async derivedSearch(criteria: Record<string, unknown>, filters: SearchFilters = {}) {
     const results = await SmartSearch.searchByDerived(criteria, filters);
     return { results, total: results.length };
   }
@@ -26,13 +66,15 @@ class SearchService {
   /**
    * البحث القديم مع ترقيم وتسجيل في السجل
    */
-  async legacySearch({ userId, query, filters, pagination, sort }: any) {
+  async legacySearch({ userId, query, filters, pagination, sort }: LegacySearchParams) {
     const where = partRepository.buildWhereFromFilters({ q: query, ...filters });
 
-    const sortField = ALLOWED_SORT_FIELDS.includes(sort?.field) ? sort.field : 'part_name';
-    const sortDir = ['ASC', 'DESC'].includes(sort?.order?.toUpperCase())
-      ? sort.order.toUpperCase()
-      : 'ASC';
+    const sortField =
+      sort?.field && ALLOWED_SORT_FIELDS.includes(sort.field) ? sort.field : 'part_name';
+    const sortDir =
+      sort?.order && ['ASC', 'DESC'].includes(sort.order.toUpperCase())
+        ? sort.order.toUpperCase()
+        : 'ASC';
 
     const { rows, count } = await partRepository.searchWithPagination({
       where,
@@ -58,14 +100,14 @@ class SearchService {
   /**
    * مقارنة قطع
    */
-  async compare(partIds: any) {
+  async compare(partIds: string[]) {
     return partRepository.findManyByIds(partIds);
   }
 
   /**
    * سجل البحث
    */
-  async getHistory({ userId, limit, offset }: any) {
+  async getHistory({ userId, limit, offset }: HistorySearchParams) {
     return searchHistoryRepository.findByUserWithPagination({ userId, limit, offset });
   }
 
@@ -74,7 +116,7 @@ class SearchService {
    */
   async getCategories() {
     const records = await partRepository.findDistinctCategories();
-    return records.map((r: any) => r.category);
+    return records.map((r: Part) => r.category);
   }
 
   /**
@@ -82,15 +124,15 @@ class SearchService {
    */
   async getBrands() {
     const records = await partRepository.findDistinctBrands();
-    return records.map((r: any) => r.brand);
+    return records.map((r: Part) => r.brand);
   }
 
   /**
    * تصدير نتائج البحث إلى Excel
    */
-  async exportToExcel(filters: any) {
+  async exportToExcel(filters: SearchFilters = {}) {
     const where = partRepository.buildWhereFromFilters(filters);
-    const parts = await partRepository.findForExport(where);
+    const parts = (await partRepository.findForExport(where)) as ExportPart[];
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('قطع الغيار');
@@ -109,7 +151,7 @@ class SearchService {
       { header: 'التوفر', key: 'stock' },
     ];
 
-    parts.forEach((p: any) => {
+    parts.forEach((p: ExportPart) => {
       worksheet.addRow({
         code: p.part_code,
         name: p.part_name,

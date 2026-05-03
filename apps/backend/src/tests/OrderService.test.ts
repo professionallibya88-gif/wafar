@@ -46,14 +46,13 @@ describe('OrderService', () => {
         id: mockOrderId,
         supplier_id: mockSupplierId,
         status: 'pending',
-        save: jest.fn(),
       };
       (orderRepository.findById as jest.Mock).mockResolvedValue(validOrder);
 
       const result = await orderService.updateOrderStatus(mockOrderId, mockSupplierId, 'ready');
 
       expect(validOrder.status).toBe('ready');
-      expect(validOrder.save).toHaveBeenCalled();
+      expect(orderRepository.updateById).toHaveBeenCalledWith(mockOrderId, { status: 'ready' });
       expect(result).toBe(validOrder);
     });
   });

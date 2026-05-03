@@ -54,7 +54,7 @@ export class BaseRepository<M extends Model> {
   async updateById(
     id: string | number,
     data: Record<string, unknown>,
-    options?: UpdateOptions
+    options?: Omit<UpdateOptions, 'where'>
   ): Promise<M | null> {
     const record = await this.model.findByPk(id);
     if (!record) return null;
@@ -96,6 +96,13 @@ export class BaseRepository<M extends Model> {
 
   async sum(field: string, where: WhereOptions = {}): Promise<number | null> {
     return this.model.sum(field, { where });
+  }
+
+  async transaction<T>(callback: (t: any) => Promise<T>): Promise<T> {
+    if (!this.model.sequelize) {
+      throw new Error('Sequelize instance not found on model');
+    }
+    return this.model.sequelize.transaction(callback);
   }
 
   get sequelize() {

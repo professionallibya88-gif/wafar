@@ -13,20 +13,6 @@ jest.mock('../repositories/PartRepository');
 jest.mock('../repositories/OrderRepository');
 jest.mock('../repositories/OrderItemRepository');
 
-// Mock Sequelize Transaction inside the CartService
-jest.mock('../database/models', () => ({
-  sequelize: {
-    transaction: jest.fn(),
-  },
-  Cart: {},
-  CartItem: {},
-  Part: {},
-  Order: {},
-  OrderItem: {},
-  Supplier: {},
-  User: {},
-}));
-
 describe('CartService', () => {
   const mockUserId = 'user-123';
   const mockPartId = 'part-123';
@@ -69,7 +55,7 @@ describe('CartService', () => {
     it('should increment quantity if item already exists in cart', async () => {
       const mockPart = { id: mockPartId, supplier_id: mockSupplierId };
       const mockCart = { id: mockCartId, user_id: mockUserId };
-      const existingItem = { id: 'item-1', quantity: 1, save: jest.fn() };
+      const existingItem = { id: 'item-1', quantity: 1 };
 
       (partRepository.findById as jest.Mock).mockResolvedValue(mockPart);
       (cartRepository.getOrCreateActiveCart as jest.Mock).mockResolvedValue(mockCart);
@@ -81,8 +67,9 @@ describe('CartService', () => {
 
       await cartService.addItem(mockUserId, mockPartId, 1);
 
-      expect(existingItem.quantity).toBe(2);
-      expect(existingItem.save).toHaveBeenCalled();
+      expect(cartItemRepository.updateById).toHaveBeenCalledWith(existingItem.id, {
+        quantity: 2,
+      });
     });
   });
 
@@ -97,17 +84,17 @@ describe('CartService', () => {
       const mockCart = {
         id: mockCartId,
         status: 'active',
-        save: jest.fn(),
         items: [
           { quantity: 2, part_id: 'part-1', part: { supplier_id: 'supp-1', price_cash: 10 } },
           { quantity: 1, part_id: 'part-2', part: { supplier_id: 'supp-2', price_cash: 20 } },
         ],
       };
 
-      const mockTransaction = { commit: jest.fn(), rollback: jest.fn() };
-      const { sequelize } = require('../database/models');
-      (sequelize.transaction as jest.Mock).mockResolvedValue(mockTransaction);
+      const mockTransaction = { id: 'tx-1' };
       (cartRepository.findActiveCartByUserId as jest.Mock).mockResolvedValue(mockCart);
+      (cartRepository.transaction as jest.Mock).mockImplementation(async (callback) =>
+        callback(mockTransaction)
+      );
       (orderRepository.generateOrderNumber as jest.Mock).mockResolvedValue('ORD-TEST');
       (orderRepository.create as jest.Mock).mockResolvedValue({ id: 'ord-1', save: jest.fn() });
 
@@ -115,9 +102,12 @@ describe('CartService', () => {
 
       expect(orderRepository.create).toHaveBeenCalledTimes(2); // One for supp-1, one for supp-2
       expect(orderItemRepository.create).toHaveBeenCalledTimes(2); // Two items total
-      expect(mockCart.status).toBe('completed');
-      expect(mockCart.save).toHaveBeenCalledWith({ transaction: mockTransaction });
-      expect(mockTransaction.commit).toHaveBeenCalled();
+      expect(orderRepository.updateById).toHaveBeenCalledTimes(2);
+      expect(cartRepository.updateById).toHaveBeenCalledWith(
+        mockCartId,
+        { status: 'completed' },
+        { transaction: mockTransaction }
+      );
     });
   });
 });

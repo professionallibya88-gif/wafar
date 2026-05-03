@@ -89,7 +89,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { supportAPI } from '@/services/api';
-import AppIcon from '@/components/icons/AppIcon.vue';
+import { AppIcon } from '@/components/icons';
 
 const loadingChannels = ref(false);
 const channels = ref([]);

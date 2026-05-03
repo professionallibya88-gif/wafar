@@ -28,7 +28,7 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "echo 'No lint configured for frontend'",
+        "command": "npm run lint",
         "cwd": "apps/frontend"
       }
     }

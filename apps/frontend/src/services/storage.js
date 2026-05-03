@@ -96,4 +96,23 @@ const themeStorage = {
   setTheme: (theme) => localStorage.setItem(STORAGE_KEYS.THEME, theme),
 };
 
-export { STORAGE_KEYS, authStorage, themeStorage };
+const preferenceStorage = {
+  getItem: (key, fallback = null) => {
+    try {
+      const raw = localStorage.getItem(`pref_${key}`);
+      return raw !== null ? JSON.parse(raw) : fallback;
+    } catch {
+      return fallback;
+    }
+  },
+  setItem: (key, value) => {
+    try {
+      localStorage.setItem(`pref_${key}`, JSON.stringify(value));
+    } catch {
+      // تجاهل أخطاء التخزين المحلي في البيئات المقيدة
+    }
+  },
+  removeItem: (key) => localStorage.removeItem(`pref_${key}`),
+};
+
+export { STORAGE_KEYS, authStorage, themeStorage, preferenceStorage };
