@@ -10,7 +10,8 @@ export const migrateAdmins = async () => {
       CREATE TABLE IF NOT EXISTS admins (
         id UUID PRIMARY KEY,
         full_name VARCHAR(200) NOT NULL,
-        email VARCHAR(255) NOT NULL UNIQUE,
+        email VARCHAR(255) UNIQUE,
+        phone VARCHAR(20),
         password VARCHAR(255) NOT NULL,
         role VARCHAR(50) DEFAULT 'admin',
         is_active BOOLEAN DEFAULT true,
@@ -35,12 +36,12 @@ export const migrateAdmins = async () => {
     if (existingAdmins && existingAdmins.length > 0) {
       logger.info(`نقل ${existingAdmins.length} مدراء من جدول users إلى admins...`);
       for (const admin of existingAdmins) {
-        // we map phone to email just to have a placeholder, or maybe use phone@waffer.local
+        // نحافظ على التوافق مع البيانات القديمة عبر بريد بديل مع حفظ الهاتف إن وجد
         const email = admin.email || `${admin.phone}@waffer.local`;
         await sequelize.query(
           `
-          INSERT INTO admins (id, full_name, email, password, role, is_active, created_at, updated_at)
-          VALUES (:id, :full_name, :email, :password, 'super_admin', :is_active, :created_at, :updated_at)
+          INSERT INTO admins (id, full_name, email, phone, password, role, is_active, created_at, updated_at)
+          VALUES (:id, :full_name, :email, :phone, :password, 'super_admin', :is_active, :created_at, :updated_at)
           ON CONFLICT (email) DO NOTHING;
         `,
           {
@@ -48,6 +49,7 @@ export const migrateAdmins = async () => {
               id: admin.id,
               full_name: admin.full_name,
               email: email,
+              phone: admin.phone || null,
               password: admin.password,
               is_active: admin.is_active,
               created_at: admin.created_at || new Date(),

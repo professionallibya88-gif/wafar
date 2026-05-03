@@ -5,6 +5,7 @@ import logger from './config/logger';
 import { validateAuthConfig } from './config/auth';
 import { createApp } from './app';
 import { testConnection, syncDatabase } from './database';
+import { migrateAdminsPhone } from './database/migrate_admins_phone';
 import { initRateLimiters } from './middleware/rateLimiter';
 import { initializeServices } from './bootstrap/services';
 import { setupGracefulShutdown } from './bootstrap/gracefulShutdown';
@@ -23,6 +24,7 @@ const startServer = async () => {
     try {
       await testConnection();
       await syncDatabase();
+      await migrateAdminsPhone();
     } catch (dbError) {
       const message = dbError instanceof Error ? dbError.message : String(dbError);
       logger.error('فشل تهيئة قاعدة البيانات، سيتم إيقاف التشغيل:', message);

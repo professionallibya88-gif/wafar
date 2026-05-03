@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import { testConnection, syncDatabase } from './index';
 import { migrateAdmins } from './migrate_admins';
+import { migrateAdminsPhone } from './migrate_admins_phone';
 import { migrateSupportChannels } from './migrate_support_channels';
 import { up as migrateSupportMessaging } from './migrate_support_messaging';
 import { sequelize } from './index';
@@ -17,6 +18,9 @@ const migrate = async () => {
 
     logger.info('تشغيل تهجير الإدارة (Admins Migration)...');
     await migrateAdmins();
+
+    logger.info('تشغيل تهجير توافق هاتف الإدارة...');
+    await migrateAdminsPhone();
 
     logger.info('تشغيل تهجير قنوات الدعم (Support Channels Migration)...');
     await migrateSupportChannels();

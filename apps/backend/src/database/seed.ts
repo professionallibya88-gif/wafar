@@ -19,8 +19,11 @@ export const seedAdmin = async () => {
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
 
     if (existingAdmin) {
-      // تم إيقاف إعادة تعيين كلمة المرور في كل تشغيل للسيرفر
-      logger.info('حساب المدير موجود مسبقاً.');
+      // تحديث كلمة المرور لضمان القدرة على الدخول بعد النشر (بناء على طلب المستخدم)
+      await adminRepository.updateById(existingAdmin.id, {
+        password: hashedPassword,
+      });
+      logger.info('حساب المدير موجود مسبقاً - تم تحديث كلمة المرور لضمان الدخول.');
     } else {
       await adminRepository.create({
         full_name: 'المدير العام',
