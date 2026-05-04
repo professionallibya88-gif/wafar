@@ -217,6 +217,17 @@
 
                 <div class="flex flex-wrap items-center gap-2">
                   <button
+                    v-if="canRetryItem(item)"
+                    class="rounded-lg px-3 py-2 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/30"
+                    :disabled="uploading || item.extractingMetadata || item.uploading"
+                    @click="retryItem(item)"
+                  >
+                    <span class="flex items-center gap-2">
+                      <AppIcon name="ArrowPath" size="sm" />
+                      <span>إعادة المحاولة</span>
+                    </span>
+                  </button>
+                  <button
                     class="rounded-lg px-3 py-2 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                     :disabled="uploading || item.extractingMetadata || !!item.validationError"
                     @click="extractItemMetadata(item)"
@@ -322,16 +333,59 @@
               </div>
 
               <div
-                v-if="item.uploaded && item.fileId"
-                class="flex flex-wrap items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-300"
+                v-if="item.fileId"
+                class="space-y-3 rounded-xl border px-3 py-3 text-sm"
+                :class="processingPanelClass(item)"
               >
-                <span>تم إرسال الملف للمعالجة بنجاح.</span>
-                <button
-                  class="font-semibold text-green-700 underline-offset-4 hover:underline dark:text-green-300"
-                  @click="router.push(`/files/${item.fileId}`)"
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p class="font-semibold">
+                      {{ processingStatusLabel(item.processingStatus) }}
+                    </p>
+                    <p class="mt-1 text-xs opacity-80">
+                      {{ item.processingMessage || "تم إرسال الملف وهو بانتظار المعالجة." }}
+                    </p>
+                  </div>
+                  <div class="text-sm font-bold">
+                    {{ item.processingProgress }}%
+                  </div>
+                </div>
+
+                <div class="h-2 overflow-hidden rounded-full bg-white/60 dark:bg-neutral-800/70">
+                  <div
+                    class="h-2 rounded-full transition-all duration-300 ease-out"
+                    :class="processingBarClass(item)"
+                    :style="{ width: `${item.processingProgress}%` }"
+                  ></div>
+                </div>
+
+                <div
+                  v-if="item.partsCount > 0 || item.processingError"
+                  class="flex flex-wrap items-center gap-3 text-xs"
                 >
-                  فتح الملف
-                </button>
+                  <span v-if="item.partsCount > 0">
+                    عدد القطع المستخرجة: {{ item.partsCount }}
+                  </span>
+                  <span v-if="item.processingError">
+                    {{ item.processingError }}
+                  </span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3">
+                  <button
+                    class="font-semibold underline-offset-4 hover:underline"
+                    @click="router.push(`/files/${item.fileId}`)"
+                  >
+                    فتح الملف
+                  </button>
+                  <button
+                    v-if="item.processingStatus === 'failed'"
+                    class="font-semibold underline-offset-4 hover:underline"
+                    @click="retryItem(item)"
+                  >
+                    إعادة المعالجة
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -494,73 +548,6 @@
           v-for="file in recentFiles"
           :key="file.id"
           class="flex items-center gap-4 p-3 bg-brand-50 dark:bg-neutral-700/50 rounded-xl border border-neutral-100 dark:border-neutral-600 hover:bg-brand-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-          @click="$router.push('/files/' + file.id)"
-        >
-          <div
-            class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center flex-shrink-0"
-          >
-            <AppIcon
-              name="document"
-              class="w-5 h-5 text-red-600 dark:text-red-400"
-            />
-          </div>
-          <div class="flex-1 min-w-0">
-            <p
-              class="font-medium text-neutral-900 dark:text-white truncate text-sm"
-            >
-              {{ file.original_name }}
-            </p>
-            <p class="text-xs text-neutral-500 dark:text-neutral-400">
-              {{ formatDate(file.createdAt) }} ⬢
-              {{ file.parts_count || 0 }} قطعة ⬢
-              {{ formatSize(file.file_size) }}
-            </p>
-          </div>
-          <BaseBadge :variant="statusVariant(file.status)" size="xs">
-            {{ statusLabel(file.status) }}
-          </BaseBadge>
-        </div>
-      </TransitionGroup>
-
-        <div v-if="recentFiles.length === 0" class="text-center py-8">
-          <div
-            class="w-16 h-16 bg-neutral-100 dark:bg-neutral-700 rounded-xl mx-auto mb-4 flex items-center justify-center"
-          >
-            <AppIcon
-              name="FolderOpen"
-              class="w-8 h-8 text-neutral-400 dark:text-neutral-500"
-            />
-          </div>
-          <p class="text-neutral-500 dark:text-neutral-400 text-sm">
-            لم يتم رفع أي ملفات بعد
-          </p>
-        </div>
-    </div>
-  </div>
-    </TransitionGroup>
-
-    <!-- Recent Files -->
-    <div
-      class="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-700"
-    >
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">
-          آخر الملفات المرفوعة
-        </h3>
-        <router-link
-          v-if="recentFiles.length > 0"
-          to="/files"
-          class="text-sm text-brand-600 dark:text-neutral-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium"
-        >
-          عرض الكل
-        </router-link>
-      </div>
-
-      <TransitionGroup name="list" tag="div" class="space-y-3">
-        <div
-          v-for="file in recentFiles"
-          :key="file.id"
-          class="flex items-center gap-4 p-3 bg-brand-50 dark:bg-neutral-700/50 rounded-xl border border-neutral-100 dark:border-neutral-600 hover:bg-brand-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
           @click="router.push('/files/' + file.id)"
         >
           <div
@@ -607,7 +594,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onBeforeUnmount, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { pdfAPI, settingsAPI, supplierAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
@@ -659,6 +646,7 @@ const isDragging = ref(false);
 const uploadProgress = ref(0);
 const uploadProgressMessage = ref("");
 let uploadItemCounter = 0;
+const itemPollTimers = new Map();
 
 const methodOptions = [
   { label: "استخدام الإعداد الافتراضي", value: "" },
@@ -768,14 +756,28 @@ const buildUploadItem = (file) => ({
   uploaded: false,
   uploading: false,
   fileId: "",
+  processingStatus: "",
+  processingProgress: 0,
+  processingMessage: "",
+  processingError: "",
+  partsCount: 0,
 });
 
 const itemStatus = (item) => {
   if (item.validationError) {
     return { label: "غير صالح", variant: "error" };
   }
-  if (item.uploadError) {
+  if (item.uploadError || item.processingError || item.processingStatus === "failed") {
     return { label: "به خطأ", variant: "error" };
+  }
+  if (item.processingStatus === "completed") {
+    return { label: "مكتمل", variant: "success" };
+  }
+  if (item.processingStatus === "processing") {
+    return { label: "جاري المعالجة", variant: "info" };
+  }
+  if (item.processingStatus === "pending") {
+    return { label: "في الانتظار", variant: "warning" };
   }
   if (item.uploaded) {
     return { label: "تم الإرسال", variant: "success" };
@@ -886,7 +888,132 @@ const handleSupplierNameInput = (item) => {
   item.uploadError = "";
   item.uploaded = false;
   item.fileId = "";
+  item.processingStatus = "";
+  item.processingProgress = 0;
+  item.processingMessage = "";
+  item.processingError = "";
+  item.partsCount = 0;
 };
+
+const isTerminalProcessingStatus = (status) =>
+  status === "completed" || status === "failed";
+
+const processingStatusLabel = (status) =>
+  ({
+    pending: "بانتظار بدء المعالجة",
+    processing: "جاري معالجة الملف",
+    completed: "اكتملت المعالجة",
+    failed: "فشلت المعالجة",
+  })[status] || "تم إرسال الملف";
+
+const processingPanelClass = (item) => {
+  if (item.processingStatus === "failed") {
+    return "border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300";
+  }
+  if (item.processingStatus === "completed") {
+    return "border-green-200 bg-green-50 text-green-700 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-300";
+  }
+  return "border-brand-200 bg-brand-50 text-brand-700 dark:border-neutral-700 dark:bg-neutral-800/60 dark:text-neutral-200";
+};
+
+const processingBarClass = (item) => {
+  if (item.processingStatus === "failed") {
+    return "bg-red-500";
+  }
+  if (item.processingStatus === "completed") {
+    return "bg-green-500";
+  }
+  return "bg-brand-600";
+};
+
+const clearPollTimer = (itemId) => {
+  const timerId = itemPollTimers.get(itemId);
+  if (timerId) {
+    clearTimeout(timerId);
+    itemPollTimers.delete(itemId);
+  }
+};
+
+const schedulePoll = (item) => {
+  clearPollTimer(item.id);
+  const timerId = window.setTimeout(() => pollItemStatus(item), 2000);
+  itemPollTimers.set(item.id, timerId);
+};
+
+const applyProcessingState = (item, data = {}) => {
+  const status = data.status || item.processingStatus || "pending";
+  item.processingStatus = status;
+  item.processingProgress =
+    typeof data.progress_percent === "number"
+      ? data.progress_percent
+      : status === "completed"
+        ? 100
+        : item.processingProgress || 0;
+  item.processingMessage =
+    data.progress_message ||
+    (status === "completed"
+      ? "تم إنهاء المعالجة وحفظ البيانات."
+      : status === "failed"
+        ? "تعذر إكمال المعالجة لهذا الملف."
+        : "تم إرسال الملف وهو بانتظار المعالجة.");
+  item.partsCount =
+    typeof data.parts_count === "number" ? data.parts_count : item.partsCount || 0;
+  item.processingError = data.error_message || (status === "failed" ? item.processingError : "");
+
+  if (status === "completed") {
+    item.uploaded = true;
+    item.uploadError = "";
+    item.processingError = "";
+    item.processingProgress = 100;
+  }
+
+  if (status === "failed" && data.error_message) {
+    item.processingError = data.error_message;
+  }
+};
+
+const pollItemStatus = async (item) => {
+  if (!item?.fileId) {
+    return;
+  }
+
+  try {
+    const response = await pdfAPI.getJobStatus(item.fileId);
+    const data = response.data?.data || {};
+    applyProcessingState(item, data);
+
+    if (!isTerminalProcessingStatus(item.processingStatus)) {
+      schedulePoll(item);
+      return;
+    }
+
+    clearPollTimer(item.id);
+    await refreshFilesAndStats();
+  } catch (error) {
+    item.processingError =
+      error?.response?.data?.message || "تعذر تحديث حالة المعالجة حالياً";
+    clearPollTimer(item.id);
+  }
+};
+
+const startPollingItem = (item) => {
+  if (!item?.fileId) {
+    return;
+  }
+
+  if (isTerminalProcessingStatus(item.processingStatus)) {
+    clearPollTimer(item.id);
+    return;
+  }
+
+  schedulePoll(item);
+};
+
+const canRetryItem = (item) =>
+  !item.validationError &&
+  !item.extractingMetadata &&
+  !item.uploading &&
+  ((!!item.uploadError && !item.fileId) || item.processingStatus === "failed");
 
 const extractItemMetadata = async (item) => {
   if (!item || item.validationError) return;
@@ -927,10 +1054,12 @@ const extractItemMetadata = async (item) => {
 };
 
 const removeItem = (itemId) => {
+  clearPollTimer(itemId);
   uploadItems.value = uploadItems.value.filter((item) => item.id !== itemId);
 };
 
 const clearAll = () => {
+  uploadItems.value.forEach((item) => clearPollTimer(item.id));
   uploadItems.value = [];
   uploadSuccessMessage.value = "";
   uploadError.value = "";
@@ -953,8 +1082,8 @@ const extractBatchResults = (payload) => {
   return candidates.find((candidate) => Array.isArray(candidate)) || [];
 };
 
-const uploadFiles = async () => {
-  if (readyItems.value.length === 0) {
+const uploadSelectedItems = async (itemsToUpload) => {
+  if (itemsToUpload.length === 0) {
     uploadError.value = "لا توجد ملفات جاهزة للإرسال حالياً";
     return;
   }
@@ -973,10 +1102,16 @@ const uploadFiles = async () => {
   try {
     const preparedUploads = [];
 
-    for (const item of readyItems.value) {
+    for (const item of itemsToUpload) {
       try {
         const supplierId = await ensureSupplierForUpload(item);
         item.uploading = true;
+        item.uploadError = "";
+        item.processingError = "";
+        item.processingMessage = "";
+        item.processingStatus = "";
+        item.processingProgress = 0;
+        item.partsCount = 0;
         preparedUploads.push({
           item,
           payload: {
@@ -1030,7 +1165,7 @@ const uploadFiles = async () => {
       const result = results[index];
       const fileError =
         result?.success === false || result?.status === "failed"
-          ? result?.error || result?.message || "تعذر رفع الملف"
+          ? result?.error?.message || result?.error || result?.message || "تعذر رفع الملف"
           : "";
 
       if (fileError) {
@@ -1046,6 +1181,13 @@ const uploadFiles = async () => {
           result?.data?.id ||
           payload?.id ||
           "";
+        applyProcessingState(item, {
+          status:
+            result?.data?.status || result?.status || "pending",
+          progress_percent: 0,
+          progress_message: "تم إرسال الملف وهو بانتظار المعالجة.",
+        });
+        startPollingItem(item);
         successCount += 1;
       }
 
@@ -1074,6 +1216,48 @@ const uploadFiles = async () => {
     });
   }
 };
+
+const uploadFiles = async () => {
+  await uploadSelectedItems(readyItems.value);
+};
+
+const retryItem = async (item) => {
+  if (!item) {
+    return;
+  }
+
+  if (item.fileId && item.processingStatus === "failed") {
+    try {
+      item.uploadError = "";
+      item.processingError = "";
+      item.processingStatus = "pending";
+      item.processingProgress = 0;
+      item.processingMessage = "تمت إعادة جدولة الملف للمعالجة.";
+      const response = await pdfAPI.reprocessFile(item.fileId, {
+        ...(item.method ? { method: item.method } : {}),
+      });
+      applyProcessingState(item, {
+        status: response.data?.data?.status || "pending",
+        progress_percent: 0,
+        progress_message: "تمت إعادة جدولة الملف للمعالجة.",
+      });
+      startPollingItem(item);
+      await refreshFilesAndStats();
+      return;
+    } catch (error) {
+      item.processingStatus = "failed";
+      item.processingError =
+        error?.response?.data?.message || "تعذر إعادة معالجة الملف حالياً";
+      return;
+    }
+  }
+
+  await uploadSelectedItems([item]);
+};
+
+onBeforeUnmount(() => {
+  uploadItems.value.forEach((item) => clearPollTimer(item.id));
+});
 </script>
 
 <style scoped>

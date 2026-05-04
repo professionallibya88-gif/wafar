@@ -9,7 +9,7 @@
           ملفاتي المرفوعة
         </h1>
         <p class="page-subtitle">
-          إدارة وتتبع ملفات PDF المرفوعة
+          إدارة وتتبع ملفات PDF المرفوعة مع تمييز الملفات الجديدة لمدة 48 ساعة
         </p>
       </div>
       <BaseButton
@@ -85,7 +85,12 @@
               <tr
                 v-for="file in files"
                 :key="file.id"
-                class="hover:bg-brand-50 dark:hover:bg-neutral-800/70 transition-colors"
+                class="transition-colors"
+                :class="
+                  isNewFile(file)
+                    ? 'bg-brand-50/60 hover:bg-brand-50 dark:bg-brand-900/10 dark:hover:bg-brand-900/20'
+                    : 'hover:bg-brand-50 dark:hover:bg-neutral-800/70'
+                "
               >
                 <td class="px-4 py-4">
                   <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
@@ -97,10 +102,19 @@
                         class="w-5 h-5 text-red-600 dark:text-red-400"
                       />
                     </div>
-                    <span
-                      class="font-medium text-neutral-900 dark:text-neutral-100 truncate lg:max-w-[150px]"
-                      >{{ file.original_name }}</span
-                    >
+                    <div class="min-w-0 space-y-1">
+                      <span
+                        class="block font-medium text-neutral-900 dark:text-neutral-100 truncate lg:max-w-[150px]"
+                        >{{ file.original_name }}</span
+                      >
+                      <BaseBadge
+                        v-if="isNewFile(file)"
+                        variant="info"
+                        size="xs"
+                      >
+                        جديد
+                      </BaseBadge>
+                    </div>
                   </div>
                 </td>
                 <td class="table-cell">
@@ -260,6 +274,7 @@ const formatSize = (b) =>
   b < 1024 * 1024
     ? (b / 1024).toFixed(1) + " KB"
     : (b / 1024 / 1024).toFixed(1) + " MB";
+const NEW_FILE_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 
 const { isEnabled } = useFeatureFlags();
@@ -271,6 +286,20 @@ const pageSize = ref(20);
 const showDeleteModal = ref(false);
 const fileToDelete = ref(null);
 const deleting = ref(false);
+
+const isNewFile = (file) => {
+  const createdAt = file?.createdAt || file?.created_at;
+  if (!createdAt) {
+    return false;
+  }
+
+  const createdAtMs = new Date(createdAt).getTime();
+  if (Number.isNaN(createdAtMs)) {
+    return false;
+  }
+
+  return Date.now() - createdAtMs <= NEW_FILE_WINDOW_MS;
+};
 
 const loadFiles = async () => {
   try {
