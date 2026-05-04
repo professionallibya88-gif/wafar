@@ -12,7 +12,7 @@ type SubscriptionPlanPermissions = {
 };
 
 interface SubscriptionPlanRecord {
-  get(_options: { plain: true }): Record<string, any>;
+  get(_options: { plain: true }): Record<string, unknown>;
 }
 
 const DEFAULT_PLAN_PERMISSIONS: SubscriptionPlanPermissions = {
@@ -204,35 +204,32 @@ export class SubscriptionService {
   /**
    * جلب الاشتراك النشط للمستخدم
    */
-  async getMyActiveSubscription(userId: any) {
+  async getMyActiveSubscription(userId: string) {
     return subscriptionRepository.findActiveByUser(userId);
   }
 
   /**
    * جلب جميع اشتراكات المستخدم
    */
-  async listMySubscriptions(userId: any) {
+  async listMySubscriptions(userId: string) {
     return subscriptionRepository.findAllByUser(userId);
   }
 
   /**
    * إنشاء باقة (للإدارة)
    */
-  async createPlan(data: any) {
-    const plan = await subscriptionPlanRepository.create(normalizePlanPayload(data as PlanPayload));
+  async createPlan(data: PlanPayload) {
+    const plan = await subscriptionPlanRepository.create(normalizePlanPayload(data));
     return serializePlan(plan);
   }
 
   /**
    * تحديث باقة (للإدارة)
    */
-  async updatePlan(id: any, data: any) {
+  async updatePlan(id: string, data: PlanPayload) {
     const plan = await subscriptionPlanRepository.findById(id);
     if (!plan) throw new NotFoundError('الباقة غير موجودة');
-    const updatedPlan = await subscriptionPlanRepository.updateById(
-      id,
-      normalizePlanPayload(data as PlanPayload)
-    );
+    const updatedPlan = await subscriptionPlanRepository.updateById(id, normalizePlanPayload(data));
     if (!updatedPlan) throw new NotFoundError('الباقة غير موجودة');
     return serializePlan(updatedPlan);
   }
@@ -240,7 +237,7 @@ export class SubscriptionService {
   /**
    * حذف باقة (للإدارة)
    */
-  async deletePlan(id: any) {
+  async deletePlan(id: string) {
     const plan = await subscriptionPlanRepository.findById(id);
     if (!plan) throw new NotFoundError('الباقة غير موجودة');
     await subscriptionPlanRepository.deleteById(id);

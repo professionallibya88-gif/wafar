@@ -6,6 +6,8 @@ import { ExternalServiceError } from '../errors';
 import { aiProviderRepository, systemSettingRepository } from '../repositories';
 
 const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:5051';
+const PYTHON_SERVICE_API_KEY =
+  process.env.PYTHON_SERVICE_API_KEY || 'wafar_internal_secret_key_2025';
 
 interface PythonTableOptions {
   engine?: string;
@@ -38,7 +40,10 @@ export class PythonPDFProcessor {
     }
 
     const response = await axios.post(`${PYTHON_SERVICE_URL}${endpoint}`, formData, {
-      headers: formData.getHeaders(),
+      headers: {
+        ...formData.getHeaders(),
+        'X-API-Key': PYTHON_SERVICE_API_KEY,
+      },
       timeout,
     });
 
@@ -51,7 +56,10 @@ export class PythonPDFProcessor {
     timeout = 180000
   ) {
     const response = await axios.post(`${PYTHON_SERVICE_URL}${endpoint}`, payload, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': PYTHON_SERVICE_API_KEY,
+      },
       timeout,
     });
 

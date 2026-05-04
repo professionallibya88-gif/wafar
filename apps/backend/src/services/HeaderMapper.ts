@@ -1,5 +1,43 @@
 import * as synonyms from '../config/column_synonyms.json';
 
+export type HeaderMatchField =
+  | 'serial'
+  | 'item_number'
+  | 'part_code'
+  | 'part_name'
+  | 'item_name'
+  | 'oem_number'
+  | 'brand'
+  | 'origin'
+  | 'quality'
+  | 'price_cash'
+  | 'price_bank'
+  | 'price_wholesale'
+  | 'price_wholesale_small'
+  | 'price_retail'
+  | 'stock'
+  | 'supplier_name'
+  | 'car_model'
+  | string;
+
+export type HeaderMappingEntry = {
+  column: number;
+  originalName?: unknown;
+  confidence?: number;
+};
+
+export type HeaderMapping = Partial<Record<HeaderMatchField, HeaderMappingEntry>>;
+
+type HeaderMatch = {
+  field: HeaderMatchField;
+  confidence: number;
+};
+
+type ContainsMatch = HeaderMatch & { n: string };
+type SimilarityMatch = HeaderMatch & { similarity: number };
+
+const synonymsMap = synonyms as Record<string, unknown>;
+
 /**
  * خدمة تعيين الأعمدة
  * تحول أسماء الأعمدة من PDF إلى الحقول الموحدة في قاعدة البيانات
@@ -10,14 +48,14 @@ class HeaderMapper {
    * @param {Array} headers - مصفوفة عناوين الأعمدة
    * @returns {Object} - خريطة {field: {column, originalName, confidence}}
    */
-  static map(headers: any) {
-    const mapping = {};
-    const used = new Set();
+  static map(headers: unknown[]): HeaderMapping {
+    const mapping: HeaderMapping = {};
+    const used = new Set<HeaderMatchField>();
 
-    headers.forEach((header: any, index: any) => {
+    headers.forEach((header, index) => {
       const result = this.matchHeader(header);
       if (result && !used.has(result.field)) {
-        (mapping as any)[result.field] = {
+        mapping[result.field] = {
           column: index,
           originalName: header,
           confidence: result.confidence,
@@ -34,7 +72,7 @@ class HeaderMapper {
    * @param {String} header - عنوان العمود
    * @returns {Object|null} - {field, confidence} أو null
    */
-  static matchHeader(header: any) {
+  static matchHeader(header: unknown): HeaderMatch | SimilarityMatch | ContainsMatch | null {
     const clean = this.normalize(header);
     if (!clean || clean.length === 0) return null;
 
@@ -42,18 +80,18 @@ class HeaderMapper {
     if (ruleBasedMatch) return ruleBasedMatch;
 
     // محاولة 1: مطابقة مباشرة
-    for (const [field, names] of Object.entries(synonyms)) {
+    for (const [field, names] of Object.entries(synonymsMap)) {
       if (!Array.isArray(names)) continue;
-      if ((names as any).map((n: any) => this.normalize(n)).includes(clean)) {
+      if (names.map((name) => this.normalize(name)).includes(clean)) {
         return { field, confidence: 100 };
       }
     }
 
     // محاولة 2: احتواء (مع تفضيل الأطول لتجنب التشابك)
-    let bestContains = null;
-    for (const [field, names] of Object.entries(synonyms)) {
+    let bestContains: ContainsMatch | null = null;
+    for (const [field, names] of Object.entries(synonymsMap)) {
       if (!Array.isArray(names)) continue;
-      for (const name of names as any) {
+      for (const name of names) {
         const n = this.normalize(name);
         if (!n) continue;
         if (clean.includes(n) || n.includes(clean)) {
@@ -67,10 +105,10 @@ class HeaderMapper {
     if (bestContains) return bestContains;
 
     // محاولة 3: تشابه بسيط (بدون مكتبة خارجية)
-    let best = null;
-    for (const [field, names] of Object.entries(synonyms)) {
+    let best: SimilarityMatch | null = null;
+    for (const [field, names] of Object.entries(synonymsMap)) {
       if (!Array.isArray(names)) continue;
-      for (const name of names as any) {
+      for (const name of names) {
         const normalizedName = this.normalize(name);
         if (!normalizedName) continue;
         const similarity = this.calculateSimilarity(clean, normalizedName);
@@ -87,7 +125,7 @@ class HeaderMapper {
    * @param {String} text - النص الأصلي
    * @returns {String} - النص المطبع
    */
-  static normalize(text: any) {
+  static normalize(text: unknown): string {
     if (!text) return '';
     return text
       .toString()
@@ -99,12 +137,12 @@ class HeaderMapper {
       .replace(/ة/g, 'ه')
       .replace(/ـ/g, '')
       .replace(/[\u064B-\u065F]/g, '') // حذف التشكيل
-      .replace(/[٠١٢٣٤٥٦٧٨٩]/g, (d: any) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48)) // تحويل أرقام هندية
+      .replace(/[٠١٢٣٤٥٦٧٨٩]/g, (digit) => String.fromCharCode(digit.charCodeAt(0) - 1632 + 48)) // تحويل أرقام هندية
       .replace(/\s+/g, ' ') // دمج المسافات المتعددة
       .replace(/[^a-z0-9\u0600-\u06FF]/g, ''); // حذف الرموز
   }
 
-  static getRuleBasedMatch(clean: string) {
+  static getRuleBasedMatch(clean: string): HeaderMatch | null {
     if (clean === '#' || clean === 'no') {
       return { field: 'serial', confidence: 100 };
     }
@@ -155,7 +193,7 @@ class HeaderMapper {
    * @param {String} b - النص الثاني
    * @returns {Number} - نسبة التشابه (0-1)
    */
-  static calculateSimilarity(a: any, b: any) {
+  static calculateSimilarity(a: string, b: string): number {
     if (!a || !b) return 0;
     if (a === b) return 1;
 
@@ -189,22 +227,25 @@ class HeaderMapper {
    * @param {Object} mapping - خريطة التعيين
    * @returns {Object} - {isValid, score, missingFields}
    */
-  static validateMapping(mapping: any) {
+  static validateMapping(mapping: HeaderMapping) {
     // الحقول الإلزامية: يجب توفر معرف (رقم أو OEM أو كود) واسم وسعر
     const hasId = mapping.item_number || mapping.oem_number || mapping.part_code;
     const hasName = mapping.item_name || mapping.part_name;
     const hasPrice = mapping.price_cash || mapping.price_wholesale || mapping.price_bank;
 
-    const missingFields = [];
+    const missingFields: string[] = [];
     if (!hasId) missingFields.push('identifier');
     if (!hasName) missingFields.push('name');
     if (!hasPrice) missingFields.push('price');
 
-    const score = Object.values(mapping).reduce((sum: any, m: any) => sum + (m.confidence || 0), 0);
+    const score = Object.values(mapping).reduce(
+      (sum, mapValue) => sum + (mapValue?.confidence || 0),
+      0
+    );
 
     return {
       isValid: missingFields.length === 0,
-      score: Math.round((score as any) / (Object.keys(mapping).length || 1)),
+      score: Math.round(score / (Object.keys(mapping).length || 1)),
       missingFields,
     };
   }

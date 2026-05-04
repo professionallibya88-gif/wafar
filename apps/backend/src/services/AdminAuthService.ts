@@ -5,11 +5,7 @@ import { adminRepository } from '../repositories';
 import { UnauthorizedError, ForbiddenError, NotFoundError, BusinessError } from '../errors';
 import { getJwtSecret } from '../config/auth';
 import logger from '../config/logger';
-import {
-  SINGLE_ADMIN_EMAIL,
-  SINGLE_ADMIN_PHONE,
-  SINGLE_ADMIN_PASSWORD,
-} from '../repositories/AdminRepository';
+import type { AdminInfo } from '../types';
 
 type AdminLoginPayload = {
   email: string;
@@ -19,6 +15,10 @@ type AdminLoginPayload = {
 type ChangePasswordPayload = {
   current_password: string;
   new_password: string;
+};
+
+type SanitizableAdmin = Partial<AdminInfo> & {
+  toJSON?: () => Record<string, unknown>;
 };
 
 export class AdminAuthService {
@@ -39,30 +39,14 @@ export class AdminAuthService {
     let input = String(data.email || '');
     input = input.trim().toLowerCase();
 
-    if (!adminRepository.isSingleAdminLoginInput(input)) {
-      throw new UnauthorizedError('بيانات دخول الإدارة محصورة بالحساب 0910000000');
-    }
-
-    if (password !== SINGLE_ADMIN_PASSWORD) {
-      throw new UnauthorizedError('بيانات دخول الإدارة محصورة بالحساب 0910000000 / 000000');
-    }
-
     const admin = await adminRepository.findByEmailOrPhone(input);
 
     if (!admin) {
-      throw new UnauthorizedError('حساب الإدارة الوحيد غير مهيأ بعد');
-    }
-
-    if (admin.role !== 'super_admin') {
-      throw new ForbiddenError('تم تقييد الدخول على حساب super_admin الوحيد');
-    }
-
-    if (admin.phone !== SINGLE_ADMIN_PHONE || admin.email !== SINGLE_ADMIN_EMAIL) {
-      throw new ForbiddenError('بيانات حساب الإدارة الحالي لا تطابق الحساب الإجباري');
+      throw new UnauthorizedError('البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة');
     }
 
     if (!admin.is_active) {
-      throw new ForbiddenError('الحساب معطل - يرجى التواصل مع الدعم الفني');
+      throw new ForbiddenError('الحساب معطل - يرجى التواصل مع الإدارة');
     }
 
     if (!admin.password || typeof admin.password !== 'string') {
@@ -111,19 +95,43 @@ export class AdminAuthService {
       throw new NotFoundError('المدير غير موجود');
     }
 
-    if (admin.role !== 'super_admin') {
-      throw new ForbiddenError('تم تقييد هذه العملية على حساب super_admin الوحيد');
+    const isMatch = await bcrypt.compare(current_password, admin.password);
+    if (!isMatch) {
+      throw new UnauthorizedError('كلمة المرور الحالية غير صحيحة');
     }
 
-    if (current_password !== SINGLE_ADMIN_PASSWORD || new_password !== SINGLE_ADMIN_PASSWORD) {
-      throw new BusinessError('كلمة مرور حساب الإدارة الوحيد ثابتة ولا يمكن تغييرها');
-    }
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+    await adminRepository.updateById(adminId, { password: hashedPassword });
   }
 
-  sanitizeAdmin(admin: any) {
-    const withToJSON = admin as { toJSON?: () => unknown };
-    const raw = withToJSON.toJSON ? withToJSON.toJSON() : admin;
-    const record = raw as Record<string, unknown>;
+  async updateProfile(adminId: string, data: { full_name?: string; email?: string }) {
+    const admin = await adminRepository.findById(adminId);
+    if (!admin) {
+      throw new NotFoundError('المدير غير موجود');
+    }
+
+    if (data.email && data.email !== admin.email) {
+      const existingEmail = await adminRepository.findByEmail(data.email);
+      if (existingEmail) throw new BusinessError('البريد الإلكتروني مسجل مسبقا');
+    }
+
+    const updates: { full_name?: string; email?: string } = {};
+    if (data.full_name !== undefined) updates.full_name = data.full_name;
+    if (data.email !== undefined) updates.email = data.email;
+
+    const updatedAdmin =
+      Object.keys(updates).length > 0 ? await adminRepository.updateById(adminId, updates) : admin;
+
+    return this.sanitizeAdmin(updatedAdmin);
+  }
+
+  sanitizeAdmin(admin: SanitizableAdmin | null | undefined): Record<string, unknown> {
+    if (!admin) {
+      return {};
+    }
+
+    const raw = admin.toJSON ? admin.toJSON() : ({ ...admin } as Record<string, unknown>);
+    const record = { ...raw };
     delete record.password;
     return record;
   }

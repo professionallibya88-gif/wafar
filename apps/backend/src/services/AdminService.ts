@@ -7,7 +7,30 @@ import {
   subscriptionRepository,
   adminRepository,
 } from '../repositories';
+import {} from // Removed single admin configs
+'../repositories/AdminRepository';
 import { BusinessError, NotFoundError } from '../errors';
+import bcrypt from 'bcryptjs';
+import type { AdminAttributes } from '../database/models/Admin';
+
+type AdminRole = AdminAttributes['role'];
+
+type CreateAdminPayload = {
+  full_name: string;
+  email?: string;
+  phone?: string;
+  password: string;
+  role?: AdminRole;
+};
+
+type UpdateAdminPayload = {
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  password?: string;
+  role?: AdminRole;
+  is_active?: boolean;
+};
 
 export class AdminService {
   async getDashboardStats() {
@@ -71,7 +94,6 @@ export class AdminService {
 
   async listAdmins(options: { limit: number; offset: number; search?: string }) {
     const { rows, count } = await adminRepository.searchWithPagination({
-      role: 'super_admin',
       search: options.search,
       limit: options.limit,
       offset: options.offset,
@@ -86,33 +108,60 @@ export class AdminService {
     return { admins: safeRows, count };
   }
 
-  async createAdmin() {
-    throw new BusinessError(
-      'تم تعطيل إنشاء المديرين يدوياً لأن النظام يدعم حساب super_admin واحد فقط'
-    );
+  async createAdmin(payload: CreateAdminPayload) {
+    if (payload.email) {
+      const existingEmail = await adminRepository.findByEmail(payload.email);
+      if (existingEmail) throw new BusinessError('البريد الإلكتروني مسجل مسبقا');
+    }
+
+    if (payload.phone) {
+      const existingPhone = await adminRepository.findByPhone(payload.phone);
+      if (existingPhone) throw new BusinessError('رقم الهاتف مسجل مسبقا');
+    }
+
+    const hashedPassword = await bcrypt.hash(payload.password, 10);
+
+    const admin = await adminRepository.create({
+      full_name: payload.full_name,
+      email: payload.email,
+      phone: payload.phone,
+      password: hashedPassword,
+      role: payload.role || 'admin',
+      is_active: true,
+    } as never);
+
+    const data = admin.toJSON();
+    delete data.password;
+
+    return data;
   }
 
-  async updateAdmin(adminId: string, payload: any) {
+  async updateAdmin(adminId: string, payload: UpdateAdminPayload) {
     const admin = await adminRepository.findById(adminId);
 
     if (!admin) {
       throw new NotFoundError('المدير غير موجود');
     }
 
-    if (admin.role !== 'super_admin') {
-      throw new BusinessError('يمكن تعديل حساب super_admin الوحيد فقط');
+    if (payload.email && payload.email !== admin.email) {
+      const existingEmail = await adminRepository.findByEmail(payload.email);
+      if (existingEmail) throw new BusinessError('البريد الإلكتروني مسجل مسبقا');
     }
 
-    const forbiddenFields = ['email', 'phone', 'password', 'role', 'is_active'].filter((field) =>
-      Object.prototype.hasOwnProperty.call(payload, field)
-    );
-    if (forbiddenFields.length > 0) {
-      throw new BusinessError('يمكن تحديث الاسم الكامل فقط. بيانات الدخول وحالة الحساب ثابتة');
+    if (payload.phone && payload.phone !== admin.phone) {
+      const existingPhone = await adminRepository.findByPhone(payload.phone);
+      if (existingPhone) throw new BusinessError('رقم الهاتف مسجل مسبقا');
     }
 
-    const updates: any = {};
-    if (payload.full_name !== undefined) {
-      updates.full_name = payload.full_name;
+    const updates: UpdateAdminPayload = {};
+    if (payload.full_name !== undefined) updates.full_name = payload.full_name;
+    if (payload.email !== undefined) updates.email = payload.email;
+    if (payload.phone !== undefined) updates.phone = payload.phone;
+    if (payload.role !== undefined) updates.role = payload.role;
+    if (payload.is_active !== undefined) updates.is_active = payload.is_active;
+
+    if (payload.password) {
+      updates.password = await bcrypt.hash(payload.password, 10);
     }
 
     const updatedAdmin =
@@ -120,7 +169,7 @@ export class AdminService {
     if (!updatedAdmin) {
       throw new NotFoundError('المدير غير موجود');
     }
-    
+
     const data = updatedAdmin.toJSON();
     delete data.password;
 
@@ -134,11 +183,11 @@ export class AdminService {
       throw new NotFoundError('المدير غير موجود');
     }
 
-    if (admin.role !== 'super_admin') {
-      throw new BusinessError('تم تعطيل إدارة الحسابات الإدارية القديمة');
+    if (admin.role === 'super_admin') {
+      throw new BusinessError('لا يمكن تعطيل حساب super_admin');
     }
 
-    throw new BusinessError('لا يمكن تعطيل أو تفعيل حساب super_admin الوحيد');
+    await adminRepository.updateById(adminId, { is_active: !admin.is_active });
   }
 
   async deleteAdmin(adminId: string) {
@@ -148,11 +197,11 @@ export class AdminService {
       throw new NotFoundError('المدير غير موجود');
     }
 
-    if (admin.role !== 'super_admin') {
-      throw new BusinessError('تم تعطيل إدارة الحسابات الإدارية القديمة');
+    if (admin.role === 'super_admin') {
+      throw new BusinessError('لا يمكن حذف حساب super_admin');
     }
 
-    throw new BusinessError('لا يمكن حذف حساب super_admin الوحيد');
+    await adminRepository.deleteById(adminId);
   }
 }
 

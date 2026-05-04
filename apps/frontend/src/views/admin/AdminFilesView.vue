@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell">
-    <BaseToast />
+    
     <!-- Header -->
     <div
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
@@ -238,7 +238,7 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseBadge, BaseButton, BaseToast, BaseSelect } from "@/components/base";
+import { BaseBadge, BaseButton,  BaseSelect, BasePagination } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 import { getFileStatusLabel, getFileStatusVariant, getProcessingMethodLabel } from "@/utils/statusLabels";
 

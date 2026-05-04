@@ -6,17 +6,44 @@ import { pdfService } from '../services/PDFService';
 import { AuthenticatedRequest } from '../types';
 import { ValidationError } from '../errors';
 
+interface UploadBatchItemInput {
+  supplier_id: string;
+  method?: string;
+  document_date: string;
+}
+
+interface UploadBatchResponse {
+  summary: {
+    total: number;
+    succeeded: number;
+    failed: number;
+  };
+}
+
 export const upload = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  if (!req.file) throw new ValidationError('يرجى رفع ملف PDF');
+  const files = Array.isArray(req.files) ? req.files : [];
+  if (files.length === 0) throw new ValidationError('يرجى رفع ملف PDF واحد على الأقل');
+
   const userId = req.user ? req.user.id : undefined;
-  const data = await pdfService.uploadPDF({
+  const items = Array.isArray(req.body.items) ? (req.body.items as UploadBatchItemInput[]) : [];
+  const data = (await pdfService.uploadPDFBatch({
     userId,
-    file: req.file,
-    supplier_id: req.body.supplier_id,
-    method: req.body.method,
-    document_date: req.body.document_date,
+    files,
+    items,
+  })) as unknown as UploadBatchResponse;
+
+  if (data.summary.failed === 0) {
+    return created(res, { data, message: 'تم رفع جميع الملفات بنجاح - جاري المعالجة' });
+  }
+
+  const message =
+    data.summary.succeeded > 0 ? 'تم رفع بعض الملفات وتعذر رفع بعضها' : 'تعذر رفع جميع الملفات';
+
+  return success(res, {
+    data,
+    message,
+    statusCode: 207,
   });
-  return created(res, { data, message: 'تم رفع الملف بنجاح - جاري المعالجة' });
 });
 
 export const extractMetadata = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

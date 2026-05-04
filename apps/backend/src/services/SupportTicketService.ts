@@ -4,8 +4,16 @@ import { NotificationHelper } from './NotificationHelper';
 import { getIO } from '../socket';
 import logger from '../config/logger';
 
+type SupportTicketQuery = {
+  page?: string;
+  limit?: string;
+  status?: string;
+  user_id?: string;
+  search?: string;
+};
+
 export class SupportTicketService {
-  async getUserTickets(user_id: string, query: any) {
+  async getUserTickets(user_id: string, query: SupportTicketQuery) {
     const page = parseInt(query.page as string) || 1;
     const limit = parseInt(query.limit as string) || 20;
     const offset = (page - 1) * limit;
@@ -20,7 +28,7 @@ export class SupportTicketService {
     return supportTicketRepository.findAllWithDetails(options);
   }
 
-  async getAdminTickets(query: any) {
+  async getAdminTickets(query: SupportTicketQuery) {
     const page = parseInt(query.page as string) || 1;
     const limit = parseInt(query.limit as string) || 20;
     const offset = (page - 1) * limit;

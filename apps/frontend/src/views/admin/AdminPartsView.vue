@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell space-y-6">
-    <BaseToast />
+    
 
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
@@ -476,7 +476,7 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { adminAPI, searchAPI } from "@/services/api";
 import { formatCurrency } from "@/utils/currency";
-import { BaseBadge, BaseButton, BaseModal, BaseToast, BaseSelect, BaseSpinner, BasePagination } from "@/components/base";
+import { BaseBadge, BaseButton, BaseModal,  BaseSelect, BaseSpinner, BasePagination } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 

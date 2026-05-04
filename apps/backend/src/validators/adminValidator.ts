@@ -1,9 +1,4 @@
 import { body } from 'express-validator';
-import {
-  SINGLE_ADMIN_EMAIL,
-  SINGLE_ADMIN_PASSWORD,
-  SINGLE_ADMIN_PHONE,
-} from '../repositories/AdminRepository';
 
 /**
  * قواعد التحقق لمصادقة المديرين
@@ -12,24 +7,13 @@ export const adminLoginRules = [
   body('email')
     .trim()
     .notEmpty()
-    .withMessage('رقم هاتف الإدارة مطلوب')
+    .withMessage('البريد الإلكتروني أو رقم الهاتف مطلوب')
     .customSanitizer((value) =>
       String(value || '')
         .trim()
         .toLowerCase()
-    )
-    .custom((value) => {
-      if (value !== SINGLE_ADMIN_PHONE && value !== SINGLE_ADMIN_EMAIL) {
-        throw new Error(`تسجيل دخول الإدارة محصور بالحساب ${SINGLE_ADMIN_PHONE}`);
-      }
-      return true;
-    }),
-  body('password')
-    .trim()
-    .equals(SINGLE_ADMIN_PASSWORD)
-    .withMessage(
-      `تسجيل دخول الإدارة محصور بالبيانات ${SINGLE_ADMIN_PHONE} / ${SINGLE_ADMIN_PASSWORD}`
     ),
+  body('password').trim().notEmpty().withMessage('كلمة المرور مطلوبة'),
 ];
 
 export const updateAdminProfileRules = [
@@ -40,19 +24,14 @@ export const updateAdminProfileRules = [
     .withMessage('الاسم لا يمكن أن يكون فارغاً')
     .isLength({ min: 3, max: 200 })
     .withMessage('الاسم يجب أن يكون بين 3 و 200 حرف'),
-  body('email')
-    .not()
-    .exists()
-    .withMessage(`لا يمكن تعديل البريد الإلكتروني. الحساب الإداري مثبت على ${SINGLE_ADMIN_EMAIL}`),
+  body('email').optional().isEmail().withMessage('البريد الإلكتروني غير صالح'),
 ];
 
 export const changeAdminPasswordRules = [
-  body('current_password')
-    .equals(SINGLE_ADMIN_PASSWORD)
-    .withMessage('كلمة مرور حساب الإدارة الوحيد ثابتة ولا يمكن تغييرها'),
+  body('current_password').notEmpty().withMessage('كلمة المرور الحالية مطلوبة'),
   body('new_password')
-    .equals(SINGLE_ADMIN_PASSWORD)
-    .withMessage('كلمة مرور حساب الإدارة الوحيد ثابتة ولا يمكن تغييرها'),
+    .isLength({ min: 6 })
+    .withMessage('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل'),
 ];
 
 /**
@@ -211,9 +190,19 @@ export const updateUserRules = [
 ];
 
 export const createAdminRules = [
-  body().custom(() => {
-    throw new Error('تم تعطيل إنشاء المديرين يدوياً لأن النظام يدعم حساب super_admin واحد فقط');
-  }),
+  body('full_name')
+    .trim()
+    .notEmpty()
+    .withMessage('الاسم لا يمكن أن يكون فارغاً')
+    .isLength({ min: 3, max: 200 })
+    .withMessage('الاسم يجب أن يكون بين 3 و 200 حرف'),
+  body('email').optional().isEmail().withMessage('البريد الإلكتروني غير صالح'),
+  body('phone').optional().trim(),
+  body('password')
+    .notEmpty()
+    .withMessage('كلمة المرور مطلوبة')
+    .isLength({ min: 6, max: 100 })
+    .withMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
 ];
 
 export const updateAdminRules = [
@@ -224,19 +213,17 @@ export const updateAdminRules = [
     .withMessage('الاسم لا يمكن أن يكون فارغاً')
     .isLength({ min: 3, max: 200 })
     .withMessage('الاسم يجب أن يكون بين 3 و 200 حرف'),
-  body('email')
-    .not().exists()
-    .withMessage(
-      `لا يمكن تعديل البريد الإلكتروني. الحساب الإداري مثبت على ${SINGLE_ADMIN_EMAIL}`
-    ),
-  body('phone')
-    .not().exists()
-    .withMessage(`لا يمكن تعديل رقم الهاتف. الحساب الإداري مثبت على ${SINGLE_ADMIN_PHONE}`),
+  body('email').optional().isEmail().withMessage('البريد الإلكتروني غير صالح'),
+  body('phone').optional().trim(),
   body('password')
-    .not().exists()
-    .withMessage('لا يمكن تعديل كلمة مرور حساب الإدارة الوحيد'),
-  body('role').not().exists().withMessage('لا يمكن تعديل الدور الإداري للحساب الوحيد'),
-  body('is_active').not().exists().withMessage('لا يمكن تعديل حالة تفعيل حساب الإدارة الوحيد'),
+    .optional()
+    .isLength({ min: 6, max: 100 })
+    .withMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
+  body('role')
+    .optional()
+    .isIn(['super_admin', 'admin', 'editor', 'viewer'])
+    .withMessage('الدور غير صالح'),
+  body('is_active').optional().isBoolean().withMessage('حالة التفعيل يجب أن تكون قيمة منطقية'),
 ];
 
 export const createPartRules = [

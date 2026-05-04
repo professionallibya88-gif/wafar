@@ -1,6 +1,61 @@
 import * as carModels from '../config/car_models.json';
 import * as partTypes from '../config/part_types.json';
 import * as makerKeywords from '../config/maker_keywords.json';
+import type { HeaderMapping, HeaderMappingEntry } from './HeaderMapper';
+
+type DerivedInfo = {
+  year?: number;
+  side?: 'LH' | 'RH';
+  car_model?: string;
+  maker?: string;
+  part_type?: string;
+};
+
+export type NormalizedRow = {
+  part_code: string | null;
+  oem_number: string | null;
+  part_name: string | null;
+  brand: string | null;
+  origin_country: string | null;
+  quality_grade: string;
+  price_cash: number | null;
+  price_bank: number | null;
+  price_wholesale: number | null;
+  price_wholesale_small: number | null;
+  price_retail: number | null;
+  stock: number | null;
+  supplier_name: string | null;
+  car_model: string | null;
+  derived?: DerivedInfo;
+  search_signature?: string;
+};
+
+export type RowValidationResult = {
+  isValid: boolean;
+  score: number;
+  issues: string[];
+};
+
+type RowValidationInput = Partial<
+  Pick<
+    NormalizedRow,
+    | 'part_code'
+    | 'oem_number'
+    | 'part_name'
+    | 'price_cash'
+    | 'price_bank'
+    | 'price_wholesale'
+    | 'price_wholesale_small'
+    | 'price_retail'
+  >
+>;
+
+const partTypesMap = partTypes as Record<string, unknown>;
+const makerKeywordsMap = makerKeywords as Record<string, unknown>;
+const carModelsMap = carModels as Record<string, unknown>;
+
+const toStringArray = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 
 /**
  * خدمة تنظيف وتوحيد صفوف البيانات
@@ -13,7 +68,7 @@ class RowNormalizer {
    * @param {Object} mapping - خريطة الأعمدة من HeaderMapper
    * @returns {Object} - البيانات الموحدة
    */
-  static normalize(row: any, mapping: any) {
+  static normalize(row: unknown[], mapping: HeaderMapping): NormalizedRow {
     let rawName = this.getCell(row, mapping.item_name) || this.getCell(row, mapping.part_name);
     const rawNumber =
       this.getCell(row, mapping.item_number) || this.getCell(row, mapping.part_code);
@@ -28,7 +83,7 @@ class RowNormalizer {
       }
     }
 
-    const result = {
+    const result: NormalizedRow = {
       part_code: this.cleanCode(rawNumber),
       oem_number: oemNumber,
       part_name: rawName,
@@ -45,9 +100,9 @@ class RowNormalizer {
       car_model: this.getCell(row, mapping.car_model),
     };
 
-    this.repairMisalignedCells(result as any, row);
-    (result as any).derived = this.extractDerived(result.part_name, result.car_model);
-    (result as any).search_signature = this.makeSignature(result);
+    this.repairMisalignedCells(result, row);
+    result.derived = this.extractDerived(result.part_name, result.car_model);
+    result.search_signature = this.makeSignature(result);
 
     return result;
   }
@@ -97,7 +152,7 @@ class RowNormalizer {
    * @param {String} raw - النص الخام
    * @returns {String|null} - الكود المنظف
    */
-  static cleanCode(raw: any) {
+  static cleanCode(raw: unknown): string | null {
     if (!raw) return null;
     return String(raw)
       .trim()
@@ -111,7 +166,7 @@ class RowNormalizer {
    * @param {Object} mapInfo - معلومات التعيين
    * @returns {String|null} - القيمة
    */
-  static getCell(row: any, mapInfo: any) {
+  static getCell(row: unknown[], mapInfo: HeaderMappingEntry | undefined): string | null {
     if (!mapInfo) return null;
     const value = row[mapInfo.column];
     return value ? String(value).trim() : null;
@@ -122,7 +177,7 @@ class RowNormalizer {
    * @param {String} raw - النص الخام
    * @returns {Number|null} - السعر
    */
-  static parsePrice(raw: any) {
+  static parsePrice(raw: string | null): number | null {
     if (!raw) return null;
     const cleaned = raw.replace(/[,٬]/g, '.').replace(/[^\d.]/g, '');
     const price = parseFloat(cleaned);
@@ -136,7 +191,7 @@ class RowNormalizer {
    * @param {String} raw - النص الخام
    * @returns {Number|null} - الكمية
    */
-  static parseStock(raw: any) {
+  static parseStock(raw: string | null): number | null {
     if (!raw) return null;
     const cleaned = raw.replace(/[^\d]/g, '');
     const qty = parseInt(cleaned, 10);
@@ -145,7 +200,7 @@ class RowNormalizer {
     return qty;
   }
 
-  static repairMisalignedCells(result: any, row: any[]) {
+  static repairMisalignedCells(result: NormalizedRow, row: unknown[]) {
     const cells = Array.isArray(row)
       ? row.map((cell) => (cell ? String(cell).trim() : '')).filter((cell) => !!cell)
       : [];
@@ -207,7 +262,7 @@ class RowNormalizer {
     }
   }
 
-  static isCodeLike(value: any) {
+  static isCodeLike(value: unknown): boolean {
     if (!value) return false;
     const cleaned = this.cleanCode(value);
     if (!cleaned) return false;
@@ -215,7 +270,7 @@ class RowNormalizer {
     return /[0-9.\-/]/.test(cleaned) && /^[A-Z0-9][A-Z0-9.\-/]{4,}$/i.test(cleaned);
   }
 
-  static isLikelyPartNumber(value: any) {
+  static isLikelyPartNumber(value: unknown): boolean {
     if (!value) return false;
     const cleaned = String(value).trim();
     if (!/^\d{3,6}$/.test(cleaned)) return false;
@@ -223,7 +278,7 @@ class RowNormalizer {
     return number >= 100 && number < 100000;
   }
 
-  static looksLikePartName(value: any) {
+  static looksLikePartName(value: unknown): boolean {
     if (!value) return false;
     const cleaned = String(value).trim();
     if (cleaned.length < 4) return false;
@@ -232,7 +287,7 @@ class RowNormalizer {
     return /[\u0600-\u06FF]/.test(cleaned) && /[A-Za-z\u0600-\u06FF]{3,}/.test(cleaned);
   }
 
-  static looksLikeBrand(value: any) {
+  static looksLikeBrand(value: unknown): boolean {
     if (!value) return false;
     const cleaned = String(value).trim();
     if (cleaned.length < 2 || cleaned.length > 20) return false;
@@ -246,45 +301,45 @@ class RowNormalizer {
    * @param {String} name - اسم القطعة
    * @returns {Object} - {year, side, car_model, maker, part_type}
    */
-  static extractDerived(name: any, explicitCarModel: any) {
+  static extractDerived(name: string | null, explicitCarModel: string | null): DerivedInfo {
     if (!name && !explicitCarModel) return {};
-    const derived = {};
+    const derived: DerivedInfo = {};
 
     const text = name || '';
 
     // السنة
     const yearMatch = text.match(/\b(19|20)\d{2}\b/);
-    if (yearMatch) (derived as any).year = parseInt(yearMatch[0], 10);
+    if (yearMatch) derived.year = parseInt(yearMatch[0], 10);
 
     // الجهة
-    if (/\bLH\b|يسار/i.test(text)) (derived as any).side = 'LH';
-    else if (/\bRH\b|يمين/i.test(text)) (derived as any).side = 'RH';
+    if (/\bLH\b|يسار/i.test(text)) derived.side = 'LH';
+    else if (/\bRH\b|يمين/i.test(text)) derived.side = 'RH';
 
     // نوع القطعة
-    for (const [type, keywords] of Object.entries(partTypes)) {
-      if (Array.isArray(keywords) && keywords.some((k: any) => text.includes(k))) {
-        (derived as any).part_type = type;
+    for (const [type, keywords] of Object.entries(partTypesMap)) {
+      if (toStringArray(keywords).some((keyword) => text.includes(keyword))) {
+        derived.part_type = type;
         break;
       }
     }
 
     // الصانع
-    for (const [maker, keywords] of Object.entries(makerKeywords)) {
-      if (Array.isArray(keywords) && keywords.some((k: any) => text.includes(k))) {
-        (derived as any).maker = maker;
+    for (const [maker, keywords] of Object.entries(makerKeywordsMap)) {
+      if (toStringArray(keywords).some((keyword) => text.includes(keyword))) {
+        derived.maker = maker;
         break;
       }
     }
 
     // الموديل: إذا وُفر كعمود منفصل نستخدمه، وإلا نستخرجه من الاسم
     if (explicitCarModel) {
-      (derived as any).car_model = explicitCarModel;
-    } else if ((derived as any).maker) {
-      const models = (carModels as any)[(derived as any).maker];
-      if (Array.isArray(models)) {
+      derived.car_model = explicitCarModel;
+    } else if (derived.maker) {
+      const models = toStringArray(carModelsMap[derived.maker]);
+      if (models.length) {
         for (const model of models) {
           if (text.includes(model)) {
-            (derived as any).car_model = model;
+            derived.car_model = model;
             break;
           }
         }
@@ -299,7 +354,7 @@ class RowNormalizer {
    * @param {Object} data - البيانات الموحدة
    * @returns {String} - توقيع البحث
    */
-  static makeSignature(data: any) {
+  static makeSignature(data: NormalizedRow): string {
     const parts = [
       data.part_code,
       data.oem_number,
@@ -322,8 +377,8 @@ class RowNormalizer {
    * @param {Object} normalized - البيانات الموحدة
    * @returns {Object} - {isValid, score, issues}
    */
-  static validateRow(normalized: any) {
-    const issues = [];
+  static validateRow(normalized: RowValidationInput): RowValidationResult {
+    const issues: string[] = [];
 
     if (!normalized.part_code && !normalized.oem_number) {
       issues.push('missing_identifier');

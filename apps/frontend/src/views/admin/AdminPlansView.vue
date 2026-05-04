@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell-content">
-    <BaseToast />
+    
 
     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
       <div>
@@ -757,7 +757,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseModal, BaseSelect } from "@/components/base";
+import {  BaseModal, BaseSelect } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 import { formatCurrency } from "@/utils/currency";
 

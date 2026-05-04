@@ -1,30 +1,31 @@
-﻿import { ref } from "vue";
-import { settingsAPI } from "@/services/api";
-import { applyFont, DEFAULT_FONT_KEY } from "./useSiteFont";
+import { ref } from 'vue';
+import { settingsAPI } from '@/services/api';
+import { applyFont, DEFAULT_FONT_KEY } from './useSiteFont';
+import { preferenceStorage } from '@/services/storage';
 
-const SPINNER_STORAGE_KEY = "wafar-spinner-settings";
+const SPINNER_STORAGE_KEY = 'spinner-settings';
 
 const defaultSiteSettings = {
-  site_name: "منصة وفر",
-  site_slogan: "الخيار الول لقطع الغيار",
-  site_description: "منصة متخصصة في قطع غيار السيارات",
-  site_logo: "",
-  site_favicon: "",
+  site_name: 'منصة وفر',
+  site_slogan: 'الخيار الول لقطع الغيار',
+  site_description: 'منصة متخصصة في قطع غيار السيارات',
+  site_logo: '',
+  site_favicon: '',
   site_font_family: DEFAULT_FONT_KEY,
-  landing_hero_title: "اكتشف منصة وفر لقطع الغيار",
+  landing_hero_title: 'اكتشف منصة وفر لقطع الغيار',
   landing_hero_description:
-    "المنصة الذكية الولى في ليبيا للبحث المتقدم ومقارنة سعار قطع غيار السيارات. قم بنشاء حسابك الآن لتجربة بحث لا مثيل لها.",
-  widget_bg_color: "#2563eb",
-  widget_icon_color: "#ffffff",
-  widget_shape: "circle",
-  auth_visual_badge: "REALTIME SEARCH CORE",
-  auth_visual_title: "عمق بصري حي\nيعبر عن قوة النظام",
+    'المنصة الذكية الولى في ليبيا للبحث المتقدم ومقارنة سعار قطع غيار السيارات. قم بنشاء حسابك الآن لتجربة بحث لا مثيل لها.',
+  widget_bg_color: '#2563eb',
+  widget_icon_color: '#ffffff',
+  widget_shape: 'circle',
+  auth_visual_badge: 'REALTIME SEARCH CORE',
+  auth_visual_title: 'عمق بصري حي\nيعبر عن قوة النظام',
   auth_visual_description:
-    "مشهد ثلاثي البعاد نظيف ومتحرك بهدوء يوحي بمحرك بحث ومعالجة بيانات يعمل في العمق بشكل متقدم واحترافي.",
-  loader_spinner_variant: "arc-gradient",
-  loader_spinner_size: "md",
-  loader_spinner_color: "primary",
-  loader_spinner_speed: "normal",
+    'مشهد ثلاثي البعاد نظيف ومتحرك بهدوء يوحي بمحرك بحث ومعالجة بيانات يعمل في العمق بشكل متقدم واحترافي.',
+  loader_spinner_variant: 'arc-gradient',
+  loader_spinner_size: 'md',
+  loader_spinner_color: 'primary',
+  loader_spinner_speed: 'normal',
 };
 
 const siteSettings = ref({ ...defaultSiteSettings });
@@ -41,7 +42,7 @@ const sanitizeSpinnerSettings = (settings = {}) => ({
 const persistSpinnerSettings = (settings) => {
   try {
     const payload = sanitizeSpinnerSettings(settings);
-    window.localStorage.setItem(SPINNER_STORAGE_KEY, JSON.stringify(payload));
+    preferenceStorage.setItem(SPINNER_STORAGE_KEY, payload);
     window.__WAFAR_BOOTSTRAP__?.setSpinnerSettings?.(payload);
   } catch {
     // تجاهل مشاكل التخزين حتى لا تتعطل الواجهة.
@@ -128,8 +129,8 @@ const applyDeferredSettings = (settings) => {
   if (settings.site_favicon) {
     let link = document.querySelector('link[rel~="icon"]');
     if (!link) {
-      link = document.createElement("link");
-      link.rel = "icon";
+      link = document.createElement('link');
+      link.rel = 'icon';
       document.head.appendChild(link);
     }
     link.href = settings.site_favicon;
@@ -138,8 +139,8 @@ const applyDeferredSettings = (settings) => {
   if (settings.site_description) {
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
-      meta = document.createElement("meta");
-      meta.name = "description";
+      meta = document.createElement('meta');
+      meta.name = 'description';
       document.head.appendChild(meta);
     }
     meta.content = settings.site_description;
@@ -155,7 +156,7 @@ export function useSiteSettings() {
       applyDeferredSettings(resolvedSettings);
     } catch (error) {
       applyCriticalSettings(siteSettings.value);
-      console.error("Failed to load public settings", error);
+      console.error('Failed to load public settings', error);
     } finally {
       settingsLoaded.value = true;
     }

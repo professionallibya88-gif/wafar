@@ -69,63 +69,58 @@ class TableExtractor:
 
     def extract(self, pdf_path):
         try:
-            doc = fitz.open(pdf_path)
             all_data = []
             headers = None
 
-            for page_num, page in enumerate(doc, start=1):
-                tables = page.find_tables()
-                if not tables:
-                    continue
-
-                for tab in tables:
-                    extracted = tab.extract()
-                    if not extracted or len(extracted) < 2:
+            with fitz.open(pdf_path) as doc:
+                for page_num, page in enumerate(doc, start=1):
+                    tables = page.find_tables()
+                    if not tables:
                         continue
 
-                    # تنظيف الخلايا
-                    cleaned = [[self._clean(c) for c in row]
-                               for row in extracted]
-                    # إزالة الصفوف الفارغة
-                    cleaned = [r for r in cleaned if any(c.strip() for c in r)]
-                    if not cleaned:
-                        continue
+                    for tab in tables:
+                        extracted = tab.extract()
+                        if not extracted or len(extracted) < 2:
+                            continue
 
-                    # فحص ما إذا كان الجدول جدول قطع غيار عبر الكلمات المفتاحية
-                    if not self._is_part_table(cleaned):
-                        # print("Skipped table, score too low")
-                        continue
+                        # تنظيف الخلايا
+                        cleaned = [[self._clean(c) for c in row]
+                                   for row in extracted]
+                        # إزالة الصفوف الفارغة
+                        cleaned = [r for r in cleaned if any(c.strip() for c in r)]
+                        if not cleaned:
+                            continue
 
-                    # إذا كان هذا أول جدول نأخذ العناوين منه
-                    if headers is None:
-                        # نبحث عن صف العناوين الفعلي
-                        header_idx = 0
-                        for i, r in enumerate(cleaned[:15]):
-                            row_text = ' '.join(r).lower()
-                            # إذا كان الصف يحتوي على كلمات دلالية للعناوين
-                            if any(
-                                    kw.lower() in row_text for kw in self.PART_TABLE_KEYWORDS['ar'] +
-                                    self.PART_TABLE_KEYWORDS['en']):
-                                header_idx = i
-                                break
+                        # فحص ما إذا كان الجدول جدول قطع غيار عبر الكلمات المفتاحية
+                        if not self._is_part_table(cleaned):
+                            continue
 
-                        headers = cleaned[header_idx]
-                        all_data.extend(cleaned[header_idx + 1:])
-                    else:
-                        # قد يتكرر صف العناوين في الصفحات التالية، نتجاهله إذا طابق أو كان مشابهاً
-                        # ببساطة نضع البيانات في DataFrame ونسقط المكررات
-                        # لاحقاً
-                        all_data.extend(cleaned)
+                        # إذا كان هذا أول جدول نأخذ العناوين منه
+                        if headers is None:
+                            header_idx = 0
+                            for i, r in enumerate(cleaned[:15]):
+                                row_text = ' '.join(r).lower()
+                                if any(
+                                        kw.lower() in row_text for kw in self.PART_TABLE_KEYWORDS['ar'] +
+                                        self.PART_TABLE_KEYWORDS['en']):
+                                    header_idx = i
+                                    break
+
+                            headers = cleaned[header_idx]
+                            all_data.extend(cleaned[header_idx + 1:])
+                        else:
+                            all_data.extend(cleaned)
 
             if not all_data or not headers:
                 return []
 
             return self._process_dataframe(all_data, headers, 'pymupdf_pandas')
 
-        except Exception:
-            logger.exception(
-                'فشل استخراج الجداول باستخدام PyMuPDF للملف %s',
-                pdf_path)
+        except (OSError, RuntimeError, ValueError) as e:
+            logger.error('خطأ تشغيلي أثناء استخراج الجداول باستخدام PyMuPDF: %s', str(e))
+            return []
+        except Exception as e:
+            logger.exception('فشل غير متوقع لاستخراج الجداول باستخدام PyMuPDF للملف %s: %s', pdf_path, str(e))
             return []
 
     def _is_part_table(self, rows):
@@ -313,11 +308,15 @@ class CamelotExtractor(TableExtractor):
 
 
 def save_temp(file):
-    """حفظ الملف مؤقتاً"""
+    """حفظ الملف مؤقتاً بطريقة آمنة"""
     import tempfile
     import os
+    from werkzeug.utils import secure_filename
     tmp_dir = tempfile.gettempdir()
-    tmp_path = os.path.join(tmp_dir, file.filename)
+    filename = secure_filename(file.filename)
+    if not filename:
+        filename = "temp_pdf_file.pdf"
+    tmp_path = os.path.join(tmp_dir, filename)
     file.save(tmp_path)
     return tmp_path
 

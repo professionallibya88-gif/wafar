@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 import { BaseRepository } from './BaseRepository';
 import { Part, PartAttributes, PartCreationAttributes } from '../database/models/Part';
 import { Supplier } from '../database/models/Supplier';
@@ -30,12 +30,38 @@ const fileDetailPartAttributes = [
   'mapping_confidence',
 ] as const;
 
+type PartFilters = {
+  q?: string;
+  category?: string;
+  brand?: string;
+  quality_grade?: string;
+  supplier_id?: string | number;
+  pdf_file_id?: string | number;
+  min_price?: string | number;
+  max_price?: string | number;
+  in_stock?: boolean | string;
+  maker?: string;
+  car_model?: string;
+  part_type?: string;
+  year?: string | number;
+  side?: string;
+};
+
+type PartSearchWhere = WhereOptions<PartAttributes>;
+type JsonDerivedFilter = {
+  maker?: string;
+  car_model?: string;
+  part_type?: string;
+  year?: string | number;
+  side?: string;
+};
+
 export class PartRepository extends BaseRepository<Part> {
   constructor() {
     super(Part);
   }
 
-  buildWhereFromFilters(filters: any = {}): any {
+  buildWhereFromFilters(filters: PartFilters = {}): PartSearchWhere {
     const {
       q,
       category,
@@ -47,7 +73,7 @@ export class PartRepository extends BaseRepository<Part> {
       max_price,
       in_stock,
     } = filters;
-    const where: any = {};
+    const where: Record<string | symbol, unknown> = {};
 
     if (q) {
       where[Op.or] = [
@@ -72,23 +98,24 @@ export class PartRepository extends BaseRepository<Part> {
     }
 
     if (min_price || max_price) {
-      where[Op.or] = where[Op.or] || [];
-      const priceWhere: any = {};
-      if (min_price) priceWhere[Op.gte] = parseFloat(min_price);
-      if (max_price) priceWhere[Op.lte] = parseFloat(max_price);
-      where[Op.or].push(
+      const disjunction = ((where[Op.or] as object[] | undefined) || []).slice();
+      const priceWhere: Record<string | symbol, number> = {};
+      if (min_price) priceWhere[Op.gte] = parseFloat(String(min_price));
+      if (max_price) priceWhere[Op.lte] = parseFloat(String(max_price));
+      disjunction.push(
         { price_cash: priceWhere },
         { price_bank: priceWhere },
         { price_wholesale: priceWhere },
         { price_wholesale_small: priceWhere }
       );
+      where[Op.or] = disjunction;
     }
 
-    return where;
+    return where as PartSearchWhere;
   }
 
   async searchWithPagination(options: {
-    where: any;
+    where: PartSearchWhere;
     sortField: string;
     sortDir: string;
     limit: number;
@@ -117,7 +144,7 @@ export class PartRepository extends BaseRepository<Part> {
     pdfFileId: string;
     limit: number;
     offset: number;
-    filters?: any;
+    filters?: PartFilters;
   }): Promise<{ rows: Part[]; count: number }> {
     const { pdfFileId, limit, offset, filters = {} } = options;
 
@@ -144,7 +171,7 @@ export class PartRepository extends BaseRepository<Part> {
     return this.model.findAll({
       attributes: ['category'],
       group: ['category'],
-      where: { category: { [Op.not]: null as any } },
+      where: { category: { [Op.ne]: null } } as unknown as PartSearchWhere,
       order: [['category', 'ASC']],
     });
   }
@@ -153,12 +180,12 @@ export class PartRepository extends BaseRepository<Part> {
     return this.model.findAll({
       attributes: ['brand'],
       group: ['brand'],
-      where: { brand: { [Op.not]: null as any } },
+      where: { brand: { [Op.ne]: null } } as unknown as PartSearchWhere,
       order: [['brand', 'ASC']],
     });
   }
 
-  async findForExport(where: any): Promise<Part[]> {
+  async findForExport(where: PartSearchWhere): Promise<Part[]> {
     return this.model.findAll({
       where,
       include: [{ model: Supplier, as: 'supplier', attributes: ['id', 'name'] }],
@@ -167,8 +194,9 @@ export class PartRepository extends BaseRepository<Part> {
     });
   }
 
-  applySmartSearchFilters(filters: any): any {
-    const where: any = {};
+  applySmartSearchFilters(filters: PartFilters): PartSearchWhere {
+    const where: Record<string | symbol, unknown> = {};
+    const derivedContains: JsonDerivedFilter = {};
 
     if (filters.supplier_id) {
       where.supplier_id = filters.supplier_id;
@@ -191,32 +219,34 @@ export class PartRepository extends BaseRepository<Part> {
     }
 
     if (filters.max_price !== undefined) {
-      if (where.price_cash) {
-        where.price_cash[Op.lte] = filters.max_price;
+      const priceCashFilter =
+        (where.price_cash as Record<string | symbol, string | number | undefined> | undefined) ||
+        {};
+      if (Object.keys(priceCashFilter).length > 0) {
+        priceCashFilter[Op.lte] = filters.max_price;
+        where.price_cash = priceCashFilter;
       } else {
         where.price_cash = { [Op.lte]: filters.max_price };
       }
     }
 
     if (filters.maker) {
-      where.derived = {
-        [Op.contains]: { maker: filters.maker },
-      };
+      derivedContains.maker = filters.maker;
     }
 
     if (filters.car_model) {
-      if (where.derived) {
-        where.derived[Op.contains].car_model = filters.car_model;
-      } else {
-        where.derived = { [Op.contains]: { car_model: filters.car_model } };
-      }
+      derivedContains.car_model = filters.car_model;
     }
 
-    return where;
+    if (Object.keys(derivedContains).length > 0) {
+      where.derived = { [Op.contains]: derivedContains };
+    }
+
+    return where as PartSearchWhere;
   }
 
-  async smartSearchUnified(query: string, filters: any): Promise<Part[]> {
-    const where = this.applySmartSearchFilters(filters);
+  async smartSearchUnified(query: string, filters: PartFilters): Promise<Part[]> {
+    const where = this.applySmartSearchFilters(filters) as Record<string | symbol, unknown>;
 
     // Split query into terms for better matching
     const terms = query.split(/\s+/).filter(Boolean);
@@ -244,7 +274,7 @@ export class PartRepository extends BaseRepository<Part> {
     }
 
     return this.model.findAll({
-      where,
+      where: where as PartSearchWhere,
       include: [
         {
           model: Supplier,
@@ -262,8 +292,15 @@ export class PartRepository extends BaseRepository<Part> {
     });
   }
 
-  async smartSearchExactMatch(field: string, value: string, filters: any): Promise<Part[]> {
-    const where = { [field]: value, ...this.applySmartSearchFilters(filters) };
+  async smartSearchExactMatch(
+    field: keyof Pick<
+      PartAttributes,
+      'part_code' | 'oem_number' | 'item_number' | 'part_name' | 'search_signature' | 'brand'
+    >,
+    value: string,
+    filters: PartFilters
+  ): Promise<Part[]> {
+    const where = { [field]: value, ...this.applySmartSearchFilters(filters) } as PartSearchWhere;
 
     return this.model.findAll({
       where,
@@ -284,8 +321,12 @@ export class PartRepository extends BaseRepository<Part> {
     });
   }
 
-  async smartSearchByName(name: string, filters: any, isTrigram: boolean = false): Promise<Part[]> {
-    const where = this.applySmartSearchFilters(filters);
+  async smartSearchByName(
+    name: string,
+    filters: PartFilters,
+    isTrigram: boolean = false
+  ): Promise<Part[]> {
+    const where = this.applySmartSearchFilters(filters) as Record<string | symbol, unknown>;
 
     if (isTrigram) {
       where[Op.or] = [
@@ -297,7 +338,7 @@ export class PartRepository extends BaseRepository<Part> {
     }
 
     return this.model.findAll({
-      where,
+      where: where as PartSearchWhere,
       include: [
         {
           model: Supplier,
@@ -315,49 +356,38 @@ export class PartRepository extends BaseRepository<Part> {
     });
   }
 
-  async smartSearchByDerived(criteria: any, filters: any): Promise<Part[]> {
-    const where: any = {};
+  async smartSearchByDerived(criteria: JsonDerivedFilter, filters: PartFilters): Promise<Part[]> {
+    const where: Record<string | symbol, unknown> = {};
+    const derivedContains: JsonDerivedFilter = {};
 
     if (criteria.maker) {
-      where.derived = { [Op.contains]: { maker: criteria.maker } };
+      derivedContains.maker = criteria.maker;
     }
 
     if (criteria.car_model) {
-      if (where.derived) {
-        where.derived[Op.contains].car_model = criteria.car_model;
-      } else {
-        where.derived = { [Op.contains]: { car_model: criteria.car_model } };
-      }
+      derivedContains.car_model = criteria.car_model;
     }
 
     if (criteria.part_type) {
-      if (where.derived) {
-        where.derived[Op.contains].part_type = criteria.part_type;
-      } else {
-        where.derived = { [Op.contains]: { part_type: criteria.part_type } };
-      }
+      derivedContains.part_type = criteria.part_type;
     }
 
     if (criteria.year) {
-      if (where.derived) {
-        where.derived[Op.contains].year = criteria.year;
-      } else {
-        where.derived = { [Op.contains]: { year: criteria.year } };
-      }
+      derivedContains.year = criteria.year;
     }
 
     if (criteria.side) {
-      if (where.derived) {
-        where.derived[Op.contains].side = criteria.side;
-      } else {
-        where.derived = { [Op.contains]: { side: criteria.side } };
-      }
+      derivedContains.side = criteria.side;
+    }
+
+    if (Object.keys(derivedContains).length > 0) {
+      where.derived = { [Op.contains]: derivedContains };
     }
 
     Object.assign(where, this.applySmartSearchFilters(filters));
 
     return this.model.findAll({
-      where,
+      where: where as PartSearchWhere,
       include: [
         {
           model: Supplier,

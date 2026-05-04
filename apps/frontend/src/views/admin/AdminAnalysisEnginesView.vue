@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell space-y-6">
-    <BaseToast ref="toast" />
+
 
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
@@ -276,7 +276,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { aiProviderAPI, pdfAPI, settingsAPI } from "@/services/api";
-import { BaseBadge, BaseButton, BaseDrawer, BaseDropdown, BaseToast, BaseSelect, BaseSpinner } from "@/components/base";
+import { BaseBadge, BaseButton, BaseDrawer, BaseDropdown,  BaseSelect, BaseSpinner } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 
 const router = useRouter();

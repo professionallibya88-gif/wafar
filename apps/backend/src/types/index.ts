@@ -43,6 +43,7 @@ export interface AuthenticatedRequest extends Request {
   user?: UserInfo;
   admin?: AdminInfo;
   file?: UploadedFile;
+  files?: UploadedFile[] | { [fieldname: string]: UploadedFile[] };
 }
 
 export interface PaginationOptions {

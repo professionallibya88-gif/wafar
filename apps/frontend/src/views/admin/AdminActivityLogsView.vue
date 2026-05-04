@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <BaseToast />
+    
     <!-- Header -->
     <div
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
@@ -172,7 +172,7 @@
 import { ref, onMounted } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseSelect } from "@/components/base";
+import {  BaseSelect } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 
 const logs = ref([]);
@@ -208,8 +208,8 @@ const loadLogs = async () => {
     if (actionFilter.value) params.action = actionFilter.value;
     const res = await adminAPI.getActivityLogs(params);
     logs.value = res.data?.data?.logs || [];
-    totalLogs.value = res.data?.data?.total || 0;
-    totalPages.value = res.data?.data?.totalPages || 1;
+    totalLogs.value = res.data?.meta?.total || res.data?.data?.total || 0;
+    totalPages.value = res.data?.meta?.totalPages || res.data?.data?.totalPages || 1;
   } catch (e) {
     window.$toast.error("خطأ في جلب السجلات");
   }

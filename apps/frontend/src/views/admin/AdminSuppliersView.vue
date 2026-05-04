@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-8">
-    <BaseToast />
+    
     <!-- Header -->
     <div
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
@@ -244,7 +244,7 @@
 import { ref, onMounted, watch } from "vue";
 import { adminAPI, supplierAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseSelect, BasePagination } from "@/components/base";
+import {  BaseSelect, BasePagination } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 
 const suppliers = ref([]);
@@ -288,8 +288,8 @@ const loadSuppliers = async () => {
     if (categoryFilter.value) params.category = categoryFilter.value;
     const response = await supplierAPI.getAll(params);
     suppliers.value = response.data?.data?.suppliers || [];
-    totalSuppliers.value = response.data?.data?.total || 0;
-    totalPages.value = response.data?.data?.totalPages || 1;
+    totalSuppliers.value = response.data?.meta?.total || response.data?.data?.total || 0;
+    totalPages.value = response.data?.meta?.totalPages || response.data?.data?.totalPages || 1;
   } catch (error) {
     window.$toast.error("خطأ في جلب الموردين");
   }

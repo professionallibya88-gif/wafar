@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell">
-    <BaseToast />
+    
     <!-- Header -->
     <div
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
@@ -324,7 +324,7 @@
 import {  ref, computed, onMounted , watch } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseButton, BaseToast, BaseSelect } from "@/components/base";
+import { BaseButton,  BaseSelect, BasePagination } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 import { getUserRoleLabel } from "@/utils/roleLabels";
 
@@ -368,8 +368,8 @@ const loadUsers = async () => {
     if (roleFilter.value) params.role = roleFilter.value;
     const response = await adminAPI.getUsers(params);
     users.value = response.data?.data?.users || [];
-    totalUsers.value = response.data?.data?.total || 0;
-    totalPages.value = response.data?.data?.totalPages || 1;
+    totalUsers.value = response.data?.meta?.total || response.data?.data?.total || 0;
+    totalPages.value = response.data?.meta?.totalPages || response.data?.data?.totalPages || 1;
   } catch (error) { /* ignore */ }
 };
 

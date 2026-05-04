@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell">
-    <BaseToast />
+    
     <!-- Header -->
     <div
       class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
@@ -341,7 +341,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { adminAPI } from "@/services/api";
-import { BaseBadge, BaseButton, BaseToast, BaseSkeleton } from "@/components/base";
+import { BaseBadge, BaseButton,  BaseSkeleton } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { getUserRoleBadgeVariant, getUserRoleLabel } from "@/utils/roleLabels";
 import { getFileStatusLabel, getFileStatusVariant } from "@/utils/statusLabels";

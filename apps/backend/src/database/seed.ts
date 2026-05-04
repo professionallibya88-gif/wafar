@@ -8,12 +8,7 @@ import {
   systemSettingRepository,
 } from '../repositories';
 import { toError } from '../utils/errors';
-import {
-  SINGLE_ADMIN_EMAIL,
-  SINGLE_ADMIN_FULL_NAME,
-  SINGLE_ADMIN_PASSWORD,
-  SINGLE_ADMIN_PHONE,
-} from '../repositories/AdminRepository';
+import { SINGLE_ADMIN_PHONE, SINGLE_ADMIN_PASSWORD } from '../repositories/AdminRepository';
 
 export const seedAdmin = async () => {
   try {

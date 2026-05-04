@@ -13,7 +13,6 @@ import { partAdminService } from '../services/PartAdminService';
 import MonitoringSystem from '../services/MonitoringSystem';
 import PerformanceMonitor from '../services/PerformanceMonitor';
 import { AuthenticatedRequest } from '../types';
-import { BusinessError, NotFoundError } from '../errors';
 import { activityLogService } from '../services/ActivityLogService';
 
 /**
@@ -111,8 +110,9 @@ export const listAdmins = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export const createAdmin = asyncHandler(async (_req: Request, res: Response) => {
-  await adminService.createAdmin();
+export const createAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const admin = await adminService.createAdmin(req.body);
+  return created(res, { data: admin, message: 'تم إضافة المدير بنجاح' });
 });
 
 export const updateAdmin = asyncHandler(async (req: Request, res: Response) => {
@@ -121,14 +121,16 @@ export const updateAdmin = asyncHandler(async (req: Request, res: Response) => {
   return success(res, { data, message: 'تم تحديث بيانات المدير بنجاح' });
 });
 
-export const toggleAdminActive = asyncHandler(async (req: Request, _res: Response) => {
+export const toggleAdminActive = asyncHandler(async (req: Request, res: Response) => {
   const adminId = req.params.id as string;
   await adminService.toggleAdminActive(adminId);
+  return success(res, { message: 'تم تحديث حالة المدير بنجاح' });
 });
 
-export const deleteAdmin = asyncHandler(async (req: Request, _res: Response) => {
+export const deleteAdmin = asyncHandler(async (req: Request, res: Response) => {
   const adminId = req.params.id as string;
   await adminService.deleteAdmin(adminId);
+  return success(res, { message: 'تم حذف المدير بنجاح' });
 });
 
 /**

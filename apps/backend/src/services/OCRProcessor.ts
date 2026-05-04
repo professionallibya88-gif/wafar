@@ -5,6 +5,37 @@ import logger from '../config/logger';
 import { NodePDFProcessor } from './NodePDFProcessor';
 import { AppError, BusinessError } from '../errors';
 
+type OCRProcessingOptions = {
+  language?: string;
+};
+
+type OCRProgressEvent = {
+  status: string;
+  progress: number;
+};
+
+type OCRProcessResult = {
+  text: string;
+  lines: string[];
+  confidence: number;
+  processingTime: number;
+  metadata: {
+    method: 'ocr';
+    language: string;
+    processingTime: number;
+  };
+};
+
+type OCRParsedPart = {
+  partCode?: string;
+  partName?: string;
+  confidence?: number;
+  [key: string]: unknown;
+};
+
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
 const toOcrProcessingError = (error: unknown): AppError => {
   if (error instanceof AppError) {
     return error;
@@ -25,9 +56,12 @@ class OCRProcessor {
   /**
    * معالجة ملف PDF باستخدام OCR
    */
-  static async process(filePath: any, options = {}) {
+  static async process(
+    filePath: string,
+    options: OCRProcessingOptions = {}
+  ): Promise<OCRProcessResult> {
     const startTime = Date.now();
-    const { language = 'ara+eng' } = options as any;
+    const { language = 'ara+eng' } = options;
 
     try {
       logger.info(`OCRProcessor: بدء معالجة الملف ${filePath}`);
@@ -39,7 +73,7 @@ class OCRProcessor {
         const pdfData = await pdf(dataBuffer);
         text = pdfData.text;
       } catch (pdfError) {
-        logger.warn(`pdf-parse failed: ${(pdfError as any).message}`);
+        logger.warn(`pdf-parse failed: ${getErrorMessage(pdfError)}`);
       }
 
       // إذا لم يتم استخراج نص، نستخدم OCR على الصفحات
@@ -47,15 +81,15 @@ class OCRProcessor {
         logger.info('No text extracted with pdf-parse, using OCR on pages');
         try {
           const result = await Tesseract.recognize(filePath, language, {
-            logger: (m: any) => {
-              if (m.status === 'recognizing text') {
-                logger.info(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+            logger: (progressEvent: OCRProgressEvent) => {
+              if (progressEvent.status === 'recognizing text') {
+                logger.info(`OCR Progress: ${Math.round(progressEvent.progress * 100)}%`);
               }
             },
           });
           text = result.data.text;
         } catch (ocrError) {
-          logger.error(`OCR failed: ${(ocrError as any).message}`);
+          logger.error(`OCR failed: ${getErrorMessage(ocrError)}`);
           throw new BusinessError(
             'الملف PDF ممسوح ضوئياً ولا يمكن استخراج النص منه. يرجى استخدام ملف PDF يحتوي على نص قابل للاستخراج.',
             { reason: 'ocr_failed' }
@@ -80,8 +114,8 @@ class OCRProcessor {
           processingTime,
         },
       };
-    } catch (error: any) {
-      logger.error(`OCRProcessor error: ${error.message}`);
+    } catch (error) {
+      logger.error(`OCRProcessor error: ${getErrorMessage(error)}`);
       throw toOcrProcessingError(error);
     }
   }
@@ -89,7 +123,7 @@ class OCRProcessor {
   /**
    * معالجة PDF واستخراج القطع باستخدام OCR
    */
-  static async processPDFWithParts(filePath: any, options = {}) {
+  static async processPDFWithParts(filePath: string, options: OCRProcessingOptions = {}) {
     const ocrResult = await this.process(filePath, options);
 
     // استخدام نفس منطق التحليل من NodePDFProcessor
@@ -97,7 +131,7 @@ class OCRProcessor {
     const rawRows = [];
 
     for (const line of ocrResult.lines) {
-      const part = NodePDFProcessor.parseLine(line);
+      const part = NodePDFProcessor.parseLine(line) as OCRParsedPart | null;
       if (part && part.partCode && part.partName) {
         part.confidence = Math.min((part.confidence || 50) + ocrResult.confidence / 10, 100);
         parts.push(part);
@@ -121,7 +155,7 @@ class OCRProcessor {
         method: 'ocr',
         processingTime: ocrResult.processingTime,
         confidence: ocrResult.confidence,
-        language: (options as any).language || 'ara+eng',
+        language: options.language || 'ara+eng',
       },
     };
   }

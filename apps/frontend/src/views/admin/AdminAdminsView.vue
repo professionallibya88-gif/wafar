@@ -1,23 +1,38 @@
 <template>
   <div class="page-shell">
-    <BaseToast />
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    
+    <!-- Header -->
+    <div
+      class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+    >
       <div>
         <h1 class="page-title">
-          الحساب الإداري الأساسي
+          إدارة المديرين
         </h1>
         <p class="page-subtitle">
-          عرض وتحديث بيانات الحساب الإداري الوحيد في النظام
+          عرض وإدارة جميع حسابات مدراء النظام
         </p>
       </div>
-      <div
-        class="inline-flex items-center justify-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-medium text-brand-700 dark:border-brand-900/60 dark:bg-brand-900/20 dark:text-brand-300"
-      >
-        <AppIcon name="ShieldCheck" size="sm" />
-        <span>وضع الحساب الإداري الوحيد</span>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+        <div class="relative w-full sm:w-auto">
+          <input
+            v-model="search"
+            class="w-full sm:w-72 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl px-4 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+            placeholder="بحث بالاسم، الهاتف، أو البريد..."
+          />
+        </div>
+        <BaseButton
+          @click="openAddForm"
+          variant="primary"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2"
+        >
+          <AppIcon name="Plus" size="md" color="white" />
+          إضافة مدير
+        </BaseButton>
       </div>
     </div>
 
+    <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="bg-layer-stats rounded-xl p-5 border border-neutral-200/70 dark:border-neutral-800/70">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
@@ -25,17 +40,17 @@
             class="w-12 h-12 bg-brand-50 dark:bg-neutral-900/50 rounded-xl flex items-center justify-center"
           >
             <AppIcon
-              name="ShieldExclamation"
+              name="ShieldCheck"
               size="xl"
               customClass="text-brand-600 dark:text-neutral-400"
             />
           </div>
           <div>
             <p class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-              {{ displayedAdminsCount }}
+              {{ totalAdmins }}
             </p>
             <p class="text-sm text-neutral-600 dark:text-neutral-300">
-              الحسابات الإدارية المعروضة
+              إجمالي المديرين
             </p>
           </div>
         </div>
@@ -52,38 +67,25 @@
             />
           </div>
           <div>
-            <p
-              class="text-2xl font-bold"
-              :class="
-                primaryAdmin?.is_active
-                  ? 'text-green-700 dark:text-green-400'
-                  : 'text-red-700 dark:text-red-400'
-              "
-            >
-              {{ primaryAdmin?.is_active ? "نشط" : "غير متوفر" }}
+            <p class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+              {{ activeCount }}
             </p>
             <p class="text-sm text-neutral-600 dark:text-neutral-300">
-              حالة الحساب الأساسي
+              المديرين النشطين
             </p>
           </div>
         </div>
       </div>
     </div>
 
-    <div
-      class="rounded-2xl border border-amber-200/80 bg-amber-50/80 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
-    >
-      تعرض هذه الصفحة الحساب الإداري الأساسي فقط. لا يمكن من هنا إضافة حسابات إدارية جديدة أو حذف
-      الحساب أو تعطيله أو تغيير نوعه إلى أدوار متعددة.
-    </div>
-
+    <!-- Add/Edit Form Card -->
     <div
       v-if="showForm"
-      class="bg-layer-card rounded-2xl p-6 shadow-sm border border-neutral-200 dark:border-neutral-700 animate-fade-in-down"
+      class="bg-layer-form rounded-2xl p-6 lg:p-8 animate-fadeIn border border-neutral-200 dark:border-neutral-800"
     >
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-bold text-neutral-900 dark:text-white">
-          تحديث بيانات الحساب الإداري
+        <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+          {{ editingId ? "تعديل بيانات" : "إضافة" }} مدير
         </h2>
         <button
           @click="resetForm"
@@ -104,181 +106,202 @@
         <input
           v-model="form.email"
           type="email"
-          class="px-4 py-3 bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-500 dark:text-neutral-400 cursor-not-allowed"
-          placeholder="البريد الإلكتروني"
+          autocomplete="new-password"
+          class="px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 autofill:bg-transparent"
+          placeholder="البريد الإلكتروني (اختياري إذا تم إدخال رقم الهاتف)"
           dir="ltr"
-          readonly
-          disabled
         />
         <input
           v-model="form.phone"
           type="tel"
-          class="px-4 py-3 bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-500 dark:text-neutral-400 cursor-not-allowed"
-          placeholder="رقم الهاتف"
+          autocomplete="new-password"
+          class="px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 autofill:bg-transparent"
+          placeholder="رقم الهاتف (اختياري إذا تم إدخال البريد)"
           dir="ltr"
-          readonly
-          disabled
         />
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-            كلمة المرور (ثابتة للحساب الأساسي ولا يمكن تغييرها من هنا)
-          </label>
-          <div class="relative">
-            <input
-              type="password"
-              class="w-full px-4 py-3 bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-500 dark:text-neutral-400 cursor-not-allowed"
-              value="******"
-              readonly
-              disabled
-            />
-          </div>
-        </div>
-        <div
-          class="md:col-span-2 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900/40 dark:text-neutral-300"
-        >
-          نوع الحساب الإداري ثابت كحساب أساسي للنظام ولا يمكن تعديله من هذه الواجهة.
+        
+        <div class="relative">
+          <input
+            v-model="form.password"
+            :type="showPassword ? 'text' : 'password'"
+            autocomplete="new-password"
+            class="w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 autofill:bg-transparent pl-12"
+            :placeholder="editingId ? 'اترك الحقل فارغاً إذا لم ترغب بتغيير كلمة المرور' : 'كلمة المرور'"
+            :required="!editingId"
+          />
+          <button
+            type="button"
+            @click="showPassword = !showPassword"
+            class="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+            title="عرض/إخفاء كلمة المرور"
+          >
+            <AppIcon :name="showPassword ? 'EyeSlash' : 'Eye'" size="sm" />
+          </button>
         </div>
       </form>
-      <div class="mt-6 flex gap-3">
+      <div class="flex gap-3 mt-6">
         <BaseButton
           @click="saveAdmin"
           variant="primary"
-          class="px-8"
+          class="inline-flex items-center gap-2"
         >
+          <AppIcon name="Check" size="sm" color="white" />
           حفظ
         </BaseButton>
         <BaseButton
           @click="resetForm"
           variant="secondary"
         >
-          إغلاق
+          إلغاء
         </BaseButton>
       </div>
     </div>
 
-    <div v-if="primaryAdmin" class="bg-layer-card mt-6 rounded-2xl border border-neutral-200 p-6 shadow-sm dark:border-neutral-700">
-      <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div class="flex items-start gap-4">
-          <div
-            class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-100 dark:bg-brand-900/30"
-          >
-            <span class="font-bold text-brand-700 dark:text-brand-300">
-              {{ primaryAdmin.full_name?.charAt(0) || "م" }}
-            </span>
-          </div>
-          <div class="space-y-2">
-            <div class="flex flex-wrap items-center gap-2">
-              <h2 class="text-xl font-bold text-neutral-900 dark:text-white">
-                {{ primaryAdmin.full_name }}
-              </h2>
-              <span
-                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
-                :class="
-                  primaryAdmin.is_active
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-                    : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
-                "
+    <!-- Admins Table Card -->
+    <div class="panel-table mt-6">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalAdmins" :totalPages="totalPages" />
+      </div>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full min-w-[800px]">
+          <thead class="bg-brand-50 dark:bg-gray-900">
+            <tr>
+              <th
+                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
               >
-                {{ primaryAdmin.is_active ? "نشط" : "معطل" }}
-              </span>
-              <span
-                class="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-300"
+                المدير
+              </th>
+              <th
+                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
               >
-                حساب أساسي
-              </span>
-            </div>
-            <p class="text-sm text-neutral-600 dark:text-neutral-300">
-              هذا الحساب هو المرجع الإداري الوحيد المعروض في لوحة التحكم.
-            </p>
-          </div>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-3">
-          <BaseButton
-            @click="editAdmin(primaryAdmin)"
-            variant="primary"
-            class="inline-flex items-center justify-center gap-2"
-          >
-            <AppIcon name="PencilSquare" size="sm" color="white" />
-            تعديل البيانات
-          </BaseButton>
-          <button
-            type="button"
-            disabled
-            class="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-neutral-200 bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-400 opacity-80 cursor-not-allowed dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-500"
-          >
-            الإضافة والحذف والتعطيل غير متاحة
-          </button>
+                البريد الإلكتروني
+              </th>
+              <th
+                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                الهاتف
+              </th>
+              <th
+                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                الحالة
+              </th>
+              <th
+                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                تاريخ التسجيل
+              </th>
+              <th
+                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              >
+                إجراءات
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr
+              v-for="admin in admins"
+              :key="admin.id"
+              class="hover:bg-brand-50 dark:hover:bg-gray-700/50 transition-colors"
+            >
+              <td class="px-4 py-4">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+                  <div
+                    class="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-500 rounded-full flex items-center justify-center text-white font-semibold"
+                  >
+                    {{ admin.full_name?.charAt(0) || "م" }}
+                  </div>
+                  <span
+                    class="text-sm font-medium text-gray-900 dark:text-white"
+                    >{{ admin.full_name }}</span
+                  >
+                </div>
+              </td>
+              <td
+                class="px-4 py-4 text-sm text-brand-700 dark:text-gray-300"
+                dir="ltr"
+              >
+                {{ admin.email }}
+              </td>
+              <td
+                class="px-4 py-4 text-sm text-gray-600 dark:text-gray-400"
+                dir="ltr"
+              >
+                {{ admin.phone || "-" }}
+              </td>
+              <td class="px-4 py-4">
+                <span
+                  :class="
+                    admin.is_active
+                      ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300'
+                      : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
+                  "
+                  class="text-xs px-3 py-1.5 rounded-full font-medium"
+                  >{{ admin.is_active ? "نشط" : "معطل" }}</span
+                >
+              </td>
+              <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
+                {{ new Date(admin.created_at || admin.createdAt).toLocaleDateString("ar-LY") }}
+              </td>
+              <td class="px-4 py-4">
+                <div class="flex items-center gap-2">
+                  <button
+                    @click="editAdmin(admin)"
+                    class="text-brand-700 dark:text-neutral-400 hover:text-brand-600 dark:hover:text-brand-300 text-sm font-medium bg-brand-50 dark:bg-neutral-900/50 hover:bg-brand-100 dark:hover:bg-brand-800 px-4 py-2 min-h-[44px] rounded-lg transition-all duration-200"
+                  >
+                    تعديل
+                  </button>
+                  <button
+                    @click="toggleActive(admin)"
+                    class="text-sm px-4 py-2 min-h-[44px] rounded-lg font-medium transition-all duration-200"
+                    :class="
+                      admin.is_active
+                        ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800 hover:text-amber-800 dark:hover:text-amber-200'
+                        : 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-800 hover:text-emerald-800 dark:hover:text-emerald-200'
+                    "
+                  >
+                    {{ admin.is_active ? "تعطيل" : "تفعيل" }}
+                  </button>
+                  <button
+                    @click="deleteAdmin(admin.id)"
+                    class="text-red-700 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 text-sm font-medium bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-800 px-4 py-2 min-h-[44px] rounded-lg transition-all duration-200"
+                  >
+                    حذف
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div v-if="admins.length === 0" class="text-center py-16">
+          <AppIcon
+            name="ShieldExclamation"
+            size="3xl"
+            customClass="text-gray-300 dark:text-gray-600 mx-auto mb-4"
+          />
+          <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">
+            لا يوجد مدراء
+          </p>
         </div>
       </div>
 
-      <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900/30">
-          <p class="mb-1 text-sm text-neutral-500 dark:text-neutral-400">
-            البريد الإلكتروني
-          </p>
-          <p class="font-medium text-neutral-900 dark:text-white" dir="ltr">
-            {{ primaryAdmin.email || "-" }}
-          </p>
-        </div>
-        <div class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900/30">
-          <p class="mb-1 text-sm text-neutral-500 dark:text-neutral-400">
-            رقم الهاتف
-          </p>
-          <p class="font-medium text-neutral-900 dark:text-white" dir="ltr">
-            {{ primaryAdmin.phone || "-" }}
-          </p>
-        </div>
-        <div class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900/30">
-          <p class="mb-1 text-sm text-neutral-500 dark:text-neutral-400">
-            نوع الحساب
-          </p>
-          <p class="font-medium text-neutral-900 dark:text-white">
-            مدير عام أساسي
-          </p>
-        </div>
-        <div class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900/30">
-          <p class="mb-1 text-sm text-neutral-500 dark:text-neutral-400">
-            تاريخ التسجيل
-          </p>
-          <p class="font-medium text-neutral-900 dark:text-white">
-            {{ formatDate(primaryAdmin.created_at || primaryAdmin.createdAt) }}
-          </p>
-        </div>
+      <!-- Pagination -->
+      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalAdmins" :totalPages="totalPages" />
       </div>
-    </div>
-
-    <div v-else class="bg-layer-card mt-6 rounded-2xl border border-neutral-200 p-8 text-center shadow-sm dark:border-neutral-700">
-      <AppIcon
-        name="ShieldExclamation"
-        size="3xl"
-        customClass="mx-auto mb-4 text-gray-300 dark:text-gray-600"
-      />
-      <p class="text-lg font-medium text-neutral-900 dark:text-white">
-        لم يتم العثور على الحساب الإداري الأساسي حالياً
-      </p>
-      <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-        تأكد من تهيئة الحساب الإداري من جهة النظام ثم أعد المحاولة.
-      </p>
-      <BaseButton
-        @click="loadAdmins"
-        variant="secondary"
-        class="mx-auto mt-6 inline-flex items-center justify-center gap-2"
-      >
-        <AppIcon name="ArrowPath" size="sm" />
-        إعادة التحميل
-      </BaseButton>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseButton, BaseToast } from "@/components/base";
+import { BaseButton,  BasePagination } from "@/components/base";
+import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 
-const primaryAdmin = ref(null);
+const admins = ref([]);
+const search = ref("");
 const showForm = ref(false);
 const editingId = ref(null);
 const showPassword = ref(false);
@@ -290,22 +313,74 @@ const form = ref({
   password: "",
 });
 
-const displayedAdminsCount = computed(() => (primaryAdmin.value ? 1 : 0));
+// Pagination
+const currentPage = ref(1);
+watch(currentPage, () => { loadAdmins(); });
+const pageSize = ref(20);
+const totalAdmins = ref(0);
+const totalPages = ref(1);
+
+watch(pageSize, () => {
+  currentPage.value = 1;
+  loadAdmins();
+});
+
+const activeCount = computed(
+  () => admins.value.filter((a) => a.is_active).length,
+);
 
 const loadAdmins = async () => {
   try {
-    const response = await adminAPI.getAdmins({
-      page: 1,
-      limit: 1,
-    });
-    primaryAdmin.value = response.data?.data?.admins?.[0] || null;
-  } catch (error) {
-    primaryAdmin.value = null;
-    window.$toast?.error("تعذر تحميل الحساب الإداري الأساسي");
-  }
+    const params = {
+      page: currentPage.value,
+      limit: pageSize.value,
+    };
+    if (search.value) params.search = search.value;
+    const response = await adminAPI.getAdmins(params);
+    admins.value = response.data?.data?.admins || [];
+    totalAdmins.value = response.data?.meta?.total || response.data?.data?.total || 0;
+    totalPages.value = response.data?.meta?.totalPages || response.data?.data?.totalPages || 1;
+  } catch (error) { /* ignore */ }
 };
 
 onMounted(() => loadAdmins());
+
+const { applyNow: applyAdminFilters } = useAutoApplyFilters(
+  () => [search.value],
+  loadAdmins,
+  {
+    delay: 450,
+    resetPage: () => {
+      currentPage.value = 1;
+    },
+  },
+);
+
+const toggleActive = async (adminItem) => {
+  try {
+    await adminAPI.toggleAdminActive(adminItem.id);
+    adminItem.is_active = !adminItem.is_active;
+  } catch (error) {
+    window.$toast.error(error.response?.data?.message || "خطأ في تحديث حالة المدير");
+  }
+};
+
+const deleteAdmin = async (id) => {
+  const confirmed = await window.$confirm?.("هل أنت متأكد من حذف هذا المدير؟") || window.confirm("هل أنت متأكد من حذف هذا المدير؟");
+  if (!confirmed) return;
+  try {
+    await adminAPI.deleteAdmin(id);
+    loadAdmins();
+    window.$toast.success("تم حذف المدير بنجاح");
+  } catch (error) {
+    window.$toast.error(error.response?.data?.message || "خطأ في حذف المدير");
+  }
+};
+
+const openAddForm = () => {
+  resetForm();
+  showForm.value = true;
+};
 
 const editAdmin = (adminItem) => {
   editingId.value = adminItem.id;
@@ -324,33 +399,43 @@ const saveAdmin = async () => {
     window.$toast.error("يرجى إدخال الاسم الكامل");
     return;
   }
+
   if (!form.value.email && !form.value.phone) {
-    window.$toast.error("يرجى إدخال البريد الإلكتروني أو رقم الهاتف");
+    window.$toast.error("يرجى إدخال البريد الإلكتروني أو رقم الهاتف على الأقل");
     return;
   }
-  if (!editingId.value) {
-    window.$toast.error("لا يمكن إنشاء حساب إداري جديد من هذه الواجهة");
+
+  if (!editingId.value && !form.value.password) {
+    window.$toast.error("يرجى إدخال كلمة المرور للحساب الجديد");
     return;
   }
 
   try {
-    const payload = {
-      full_name: form.value.full_name,
-      email: form.value.email,
-      phone: form.value.phone,
-    };
+    const payload = { ...form.value };
+    if (!payload.email) delete payload.email;
+    if (!payload.phone) delete payload.phone;
 
-    if (form.value.password) {
-      payload.password = form.value.password;
+    if (editingId.value && !payload.password) {
+      delete payload.password;
     }
 
-    await adminAPI.updateAdmin(editingId.value, payload);
-    await loadAdmins();
+    if (editingId.value) {
+      await adminAPI.updateAdmin(editingId.value, payload);
+    } else {
+      await adminAPI.createAdmin(payload);
+    }
+    
     resetForm();
-    window.$toast.success("تم تحديث بيانات الحساب الإداري بنجاح");
-  } catch (e) {
-    const msg = e.response?.data?.message || "خطأ في الحفظ";
-    window.$toast.error(msg);
+    await applyAdminFilters();
+
+    window.$toast.success(
+      editingId.value
+        ? "تم تحديث بيانات المدير بنجاح"
+        : "تم إضافة المدير بنجاح"
+    );
+  } catch (error) {
+    const message = error.response?.data?.message || "خطأ في الحفظ";
+    window.$toast.error(message);
   }
 };
 
@@ -365,17 +450,10 @@ const resetForm = () => {
   };
   showForm.value = false;
 };
-
-const formatDate = (value) => {
-  if (!value) {
-    return "-";
-  }
-
-  return new Date(value).toLocaleDateString("ar-LY");
-};
 </script>
 
 <style scoped>
+/* Fix browser autofill background in dark mode */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 

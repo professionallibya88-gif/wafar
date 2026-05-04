@@ -1,6 +1,12 @@
 import { BaseRepository } from './BaseRepository';
 import { ActivityLog } from '../database/models';
-import { Op } from 'sequelize';
+import type { ActivityLogAttributes } from '../database/models/ActivityLog';
+import { Op, WhereOptions } from 'sequelize';
+
+type ActivityLogFilters = {
+  action?: string;
+  search?: string;
+};
 
 export class ActivityLogRepository extends BaseRepository<ActivityLog> {
   constructor() {
@@ -10,19 +16,23 @@ export class ActivityLogRepository extends BaseRepository<ActivityLog> {
   /**
    * بناء شروط البحث المخصصة للسجلات
    */
-  protected buildWhereFromFilters(filters: any = {}): any {
-    const where: any = {};
+  protected buildWhereFromFilters(
+    filters: ActivityLogFilters = {}
+  ): WhereOptions<ActivityLogAttributes> {
+    const where: WhereOptions<ActivityLogAttributes> = {};
 
     if (filters.action) {
       where.action = filters.action;
     }
 
     if (filters.search) {
-      where[Op.or] = [
-        { action: { [Op.iLike]: `%${filters.search}%` } },
-        { entity_type: { [Op.iLike]: `%${filters.search}%` } },
-        { ip_address: { [Op.iLike]: `%${filters.search}%` } },
-      ];
+      Object.assign(where, {
+        [Op.or]: [
+          { action: { [Op.iLike]: `%${filters.search}%` } },
+          { entity_type: { [Op.iLike]: `%${filters.search}%` } },
+          { ip_address: { [Op.iLike]: `%${filters.search}%` } },
+        ],
+      } as WhereOptions<ActivityLogAttributes>);
     }
 
     return where;

@@ -49,7 +49,7 @@
 
     <!-- Tab Content -->
     <div class="space-y-6">
-      <BaseToast ref="toast" />
+
 
       <!-- Success Message -->
       <div
@@ -305,6 +305,18 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Spinner Settings -->
+      <div v-show="activeTab === 'spinner'" class="space-y-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          إعدادات مؤشر التحميل (Spinner)
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          تحكم في شكل وحجم ولون وسرعة مؤشر التحميل العام للمنصة.
+        </p>
+
+        <SpinnerSystemSettings v-model="settings.general" />
       </div>
 
       <!-- Auth Visual Settings -->
@@ -1198,8 +1210,6 @@
           </p>
         </div>
 
-        <SpinnerSystemSettings :settings="settings.general" />
-
         <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
           <h3 class="text-md font-medium text-gray-900 dark:text-white mb-4">
             إعدادات الجلسات
@@ -1947,7 +1957,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { settingsAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseSelect, BaseSpinner } from "@/components/base";
+import {  BaseSelect, BaseSpinner } from "@/components/base";
 import BaseTabsLayout from "@/components/base/BaseTabsLayout.vue";
 import SpinnerSystemSettings from "@/components/admin/SpinnerSystemSettings.vue";
 import { useSiteSettings } from "@/composables/useSiteSettings";
@@ -1977,6 +1987,7 @@ const uploadingFavicon = ref(false);
 
 const tabs = [
   { key: "general", label: "عام", icon: "Cog6Tooth" },
+  { key: "spinner", label: "مؤشر التحميل", icon: "ArrowPathRoundedSquare" },
   { key: "auth_visual", label: "واجهة الدخول", icon: "Photo" },
   { key: "widget", label: "ويدجت الدعم", icon: "ChatBubbleLeftRight" },
   { key: "pdf", label: "معالجة ملفات PDF", icon: "DocumentText" },
@@ -2020,7 +2031,7 @@ const loadSettings = async () => {
         site_favicon: data.general?.site_favicon || "",
         landing_hero_title: data.general?.landing_hero_title || "",
         landing_hero_description: data.general?.landing_hero_description || "",
-        loader_spinner_variant: data.general?.loader_spinner_variant || "arc-gradient",
+        loader_spinner_variant: data.general?.loader_spinner_variant || "dual-ring",
         loader_spinner_size: data.general?.loader_spinner_size || "md",
         loader_spinner_color: data.general?.loader_spinner_color || "primary",
         loader_spinner_speed: data.general?.loader_spinner_speed || "normal",

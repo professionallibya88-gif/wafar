@@ -276,8 +276,8 @@ const loadFiles = async () => {
   try {
     const res = await pdfAPI.getFiles({ page: currentPage.value, limit: pageSize.value });
     files.value = res.data?.data?.files || [];
-    totalFiles.value = res.data?.data?.pagination?.total || 0;
-    totalPages.value = res.data?.data?.pagination?.pages || 1;
+    totalFiles.value = res.data?.meta?.total || res.data?.data?.pagination?.total || 0;
+    totalPages.value = res.data?.meta?.totalPages || res.data?.data?.pagination?.pages || 1;
   } catch (error) { /* ignore */ }
 };
 

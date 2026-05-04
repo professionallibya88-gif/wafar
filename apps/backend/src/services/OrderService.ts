@@ -1,7 +1,28 @@
 import { orderRepository } from '../repositories/OrderRepository';
-import { NotFoundError } from '../errors';
+import { supplierRepository } from '../repositories/SupplierRepository';
+import { NotFoundError, ForbiddenError } from '../errors';
 
 class OrderService {
+  async getSupplierOrdersByUserId(userId: string) {
+    const supplier = await supplierRepository.findByUserId(userId);
+    if (!supplier) {
+      throw new ForbiddenError('حساب المورد غير مكتمل');
+    }
+    return this.getSupplierOrders(supplier.id);
+  }
+
+  async updateOrderStatusByUserId(
+    userId: string,
+    orderId: string,
+    status: 'pending' | 'processing' | 'ready' | 'completed' | 'cancelled'
+  ) {
+    const supplier = await supplierRepository.findByUserId(userId);
+    if (!supplier) {
+      throw new ForbiddenError('حساب المورد غير مكتمل');
+    }
+    return this.updateOrderStatus(orderId, supplier.id, status);
+  }
+
   async getRetailerOrders(retailerId: string) {
     return await orderRepository.findByRetailer(retailerId);
   }

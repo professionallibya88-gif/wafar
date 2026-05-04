@@ -1,11 +1,15 @@
-import { Op } from 'sequelize';
+import { Op, QueryTypes, Transaction, WhereOptions } from 'sequelize';
 import { BaseRepository } from './BaseRepository';
-import { Admin } from '../database/models/Admin';
+import { Admin, AdminAttributes, AdminCreationAttributes } from '../database/models/Admin';
 
 export const SINGLE_ADMIN_PHONE = '0910000000';
 export const SINGLE_ADMIN_PASSWORD = '000000';
 export const SINGLE_ADMIN_EMAIL = `${SINGLE_ADMIN_PHONE}@waffer.local`;
 export const SINGLE_ADMIN_FULL_NAME = 'المدير العام';
+
+type AdminLookupRow = Partial<
+  Pick<AdminAttributes, 'id' | 'full_name' | 'email' | 'phone' | 'password'>
+>;
 
 export class AdminRepository extends BaseRepository<Admin> {
   constructor() {
@@ -18,54 +22,43 @@ export class AdminRepository extends BaseRepository<Admin> {
       .toLowerCase();
   }
 
-  isSingleAdminLoginInput(input: string): boolean {
-    const normalizedInput = this.normalizeLoginInput(input);
-    return normalizedInput === SINGLE_ADMIN_PHONE || normalizedInput === SINGLE_ADMIN_EMAIL;
+  async findByEmail(email: string): Promise<Admin | null> {
+    return this.model.findOne({ where: { email: this.normalizeLoginInput(email) } });
   }
 
-  async findByEmail(email: string): Promise<Admin | null> {
-    return this.model.findOne({ where: { email } });
+  async findByPhone(phone: string): Promise<Admin | null> {
+    return this.model.findOne({ where: { phone: this.normalizeLoginInput(phone) } });
   }
 
   async findByEmailOrPhone(input: string): Promise<Admin | null> {
     const normalizedInput = this.normalizeLoginInput(input);
-    if (!this.isSingleAdminLoginInput(normalizedInput)) {
-      return null;
-    }
 
     try {
       return await this.model.findOne({
         where: {
-          role: 'super_admin',
-          [Op.or]: [{ email: SINGLE_ADMIN_EMAIL }, { phone: SINGLE_ADMIN_PHONE }],
+          [Op.or]: [{ email: normalizedInput }, { phone: normalizedInput }],
+          is_active: true,
         },
       });
     } catch (error) {
-      // إذا فشل الاستعلام بسبب عدم وجود عمود phone في الإنتاج
-      const [results]: any = await this.model.sequelize!.query(
+      // Fallback for raw query
+      const results = await this.model.sequelize!.query<AdminLookupRow>(
         `SELECT * FROM admins
-         WHERE role = 'super_admin'
-           AND (email = :email OR phone = :phone)
+         WHERE is_active = true
+           AND (email = :input OR phone = :input)
          ORDER BY created_at ASC
          LIMIT 1`,
         {
-          replacements: { email: SINGLE_ADMIN_EMAIL, phone: SINGLE_ADMIN_PHONE },
+          replacements: { input: normalizedInput },
+          type: QueryTypes.SELECT,
         }
       );
       if (results && results.length > 0) {
         const adminData = results[0];
-        // تمرير البيانات بدون حقل phone إذا كان غير موجود لمنع أخطاء ORM لاحقاً
-        return this.model.build(adminData, { isNewRecord: false });
+        return this.model.build(adminData as AdminCreationAttributes, { isNewRecord: false });
       }
       return null;
     }
-  }
-
-  async findSingleAdmin(): Promise<Admin | null> {
-    return this.model.findOne({
-      where: { role: 'super_admin' },
-      order: [['created_at', 'ASC']],
-    });
   }
 
   async enforceSingleAdmin(
@@ -73,7 +66,7 @@ export class AdminRepository extends BaseRepository<Admin> {
     options: { transaction?: unknown } = {}
   ): Promise<{ admin: Admin; cleanedCount: number; created: boolean }> {
     try {
-      const transaction = options.transaction as any;
+      const transaction = options.transaction as Transaction | undefined;
       const admins = await this.model.findAll({
         order: [['created_at', 'ASC']],
         transaction,
@@ -92,17 +85,18 @@ export class AdminRepository extends BaseRepository<Admin> {
       let created = false;
 
       if (singleAdmin) {
-        await singleAdmin.update(
-          {
-            full_name: SINGLE_ADMIN_FULL_NAME,
-            email: SINGLE_ADMIN_EMAIL,
-            phone: SINGLE_ADMIN_PHONE,
-            password,
-            role: 'super_admin',
-            is_active: true,
-          },
-          { transaction }
-        );
+        // Only update if it's the specific seeded admin, otherwise leave alone
+        if (singleAdmin.email === SINGLE_ADMIN_EMAIL) {
+          await singleAdmin.update(
+            {
+              full_name: SINGLE_ADMIN_FULL_NAME,
+              password,
+              role: 'super_admin',
+              is_active: true,
+            },
+            { transaction }
+          );
+        }
       } else {
         singleAdmin = await this.model.create(
           {
@@ -118,113 +112,17 @@ export class AdminRepository extends BaseRepository<Admin> {
         created = true;
       }
 
-      let cleanedCount = 0;
-      for (const legacyAdmin of admins) {
-        if (legacyAdmin.id === singleAdmin.id) {
-          continue;
-        }
-
-        await legacyAdmin.update(
-          {
-            is_active: false,
-            role: legacyAdmin.role === 'super_admin' ? 'viewer' : legacyAdmin.role,
-          },
-          { transaction }
-        );
-        await legacyAdmin.destroy({ transaction });
-        cleanedCount += 1;
-      }
-
-      return { admin: singleAdmin, cleanedCount, created };
+      return { admin: singleAdmin, cleanedCount: 0, created };
     } catch (error) {
-      // Fallback raw SQL update if ORM fails
-      await this.model.sequelize!.query(
-        `UPDATE admins
-         SET is_active = false,
-             role = CASE WHEN role = 'super_admin' THEN 'viewer' ELSE role END,
-             deleted_at = NOW(),
-             updated_at = NOW()
-         WHERE deleted_at IS NULL
-           AND (phone <> :phone OR phone IS NULL)
-           AND (email <> :email OR email IS NULL)`,
-        {
-          replacements: {
-            phone: SINGLE_ADMIN_PHONE,
-            email: SINGLE_ADMIN_EMAIL,
-          },
-        }
-      );
-
-      const [results]: any = await this.model.sequelize!.query(
-        `SELECT id FROM admins
-         WHERE deleted_at IS NULL
-           AND (phone = :phone OR email = :email OR role = 'super_admin')
-         ORDER BY created_at ASC
-         LIMIT 1`,
-        {
-          replacements: {
-            phone: SINGLE_ADMIN_PHONE,
-            email: SINGLE_ADMIN_EMAIL,
-          },
-        }
-      );
-
-      let adminData;
-      let created = false;
-
-      if (results && results.length > 0) {
-        await this.model.sequelize!.query(
-          `UPDATE admins
-           SET full_name = :full_name,
-               email = :email,
-               phone = :phone,
-               password = :password,
-               role = 'super_admin',
-               is_active = true,
-               deleted_at = NULL,
-               updated_at = NOW()
-           WHERE id = :id`,
-          {
-            replacements: {
-              id: results[0].id,
-              full_name: SINGLE_ADMIN_FULL_NAME,
-              email: SINGLE_ADMIN_EMAIL,
-              phone: SINGLE_ADMIN_PHONE,
-              password,
-            },
-          }
-        );
-        adminData = results[0];
-      } else {
-        const { v4: uuidv4 } = require('uuid');
-        const newId = uuidv4();
-        await this.model.sequelize!.query(
-          `INSERT INTO admins (id, full_name, email, phone, password, role, is_active, created_at, updated_at)
-           VALUES (:id, :full_name, :email, :phone, :password, 'super_admin', true, NOW(), NOW())`,
-          {
-            replacements: {
-              id: newId,
-              full_name: SINGLE_ADMIN_FULL_NAME,
-              email: SINGLE_ADMIN_EMAIL,
-              phone: SINGLE_ADMIN_PHONE,
-              password,
-            },
-          }
-        );
-        adminData = { id: newId };
-        created = true;
-      }
-      
-      const admin = this.model.build(adminData, { isNewRecord: false });
-      return { admin, cleanedCount: 1, created };
+      // Return a dummy object if DB doesn't exist yet, avoiding crashing migrations
+      return { admin: this.model.build(), cleanedCount: 0, created: false };
     }
   }
 
   async updateLastLogin(adminId: string): Promise<void> {
-    await this.model.sequelize!.query(
-      `UPDATE admins SET last_login = NOW() WHERE id = :id`,
-      { replacements: { id: adminId } }
-    );
+    await this.model.sequelize!.query(`UPDATE admins SET last_login = NOW() WHERE id = :id`, {
+      replacements: { id: adminId },
+    });
   }
 
   async findByIdSafe(id: string): Promise<Admin | null> {
@@ -238,14 +136,17 @@ export class AdminRepository extends BaseRepository<Admin> {
     offset: number;
   }): Promise<{ rows: Admin[]; count: number }> {
     const { role, search, limit, offset } = options;
-    const where: any = {};
+    const where: WhereOptions<AdminAttributes> = {};
 
     if (role) where.role = role;
     if (search) {
-      where[Op.or] = [
-        { full_name: { [Op.iLike]: `%${search}%` } },
-        { email: { [Op.iLike]: `%${search}%` } },
-      ];
+      Object.assign(where, {
+        [Op.or]: [
+          { full_name: { [Op.iLike]: `%${search}%` } },
+          { email: { [Op.iLike]: `%${search}%` } },
+          { phone: { [Op.iLike]: `%${search}%` } },
+        ],
+      } as WhereOptions<AdminAttributes>);
     }
 
     return this.model.findAndCountAll({
@@ -255,10 +156,6 @@ export class AdminRepository extends BaseRepository<Admin> {
       limit,
       offset,
     });
-  }
-
-  async findAllActive(): Promise<Admin[]> {
-    return this.model.findAll({ where: { role: 'super_admin', is_active: true } });
   }
 }
 

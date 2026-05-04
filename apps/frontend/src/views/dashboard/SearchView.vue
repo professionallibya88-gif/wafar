@@ -1,6 +1,6 @@
 <template>
   <div class="page-shell">
-    <BaseToast />
+    
     <!-- Header -->
     <div
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
@@ -471,7 +471,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { formatCurrency } from "@/utils/currency";
 import { searchAPI, pdfAPI } from "@/services/api";
-import { BaseButton, BaseBadge, BaseToast, BaseSelect, BasePagination } from "@/components/base";
+import { BaseButton, BaseBadge,  BaseSelect, BasePagination } from "@/components/base";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import { AppIcon } from "@/components/icons";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
@@ -488,15 +488,7 @@ const searchQuery = ref(route.query.q || "");
 const loading = ref(false);
 const searched = ref(false);
 const results = ref([]);
-const totalResults = ref(0);
 const currentPage = ref(1);
-watch(pageSize, () => {
-  totalPages.value = Math.max(1, Math.ceil(flatResults.value.length / pageSize.value));
-  if (currentPage.value > totalPages.value) {
-    currentPage.value = totalPages.value;
-  }
-});
-const totalPages = ref(1);
 const selectedParts = ref([]);
 const selectAllChecked = ref(false);
 const showFilters = ref(false);
@@ -570,8 +562,7 @@ useAutoApplyFilters(
     if (!searchQuery.value.trim()) {
       results.value = [];
       searched.value = false;
-      totalResults.value = 0;
-      totalPages.value = 1;
+      currentPage.value = 1;
       latestSearchRequestId += 1;
       return;
     }
@@ -673,14 +664,18 @@ const flatResults = computed(() => {
   return flat;
 });
 
+const totalResults = computed(() => flatResults.value.length);
+
+const totalPages = computed(() => {
+  return Math.max(1, Math.ceil(totalResults.value / pageSize.value));
+});
+
 const paginatedResults = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   return flatResults.value.slice(start, start + pageSize.value);
 });
 
-watch(flatResults, (items) => {
-  totalResults.value = items.length;
-  totalPages.value = Math.max(1, Math.ceil(items.length / pageSize.value));
+watch([flatResults, pageSize], () => {
   if (currentPage.value > totalPages.value) {
     currentPage.value = totalPages.value;
   }

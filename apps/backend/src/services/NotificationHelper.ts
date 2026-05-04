@@ -3,6 +3,12 @@ import logger from '../config/logger';
 import { adminRepository } from '../repositories/AdminRepository';
 import type { NotificationAttributes } from '../repositories/NotificationRepository';
 
+type NotificationPayload = Record<string, unknown>;
+
+const logNotificationFailure = (message: string, error: unknown) => {
+  logger.error(message, error);
+};
+
 export class NotificationHelper {
   static async sendWelcomeNotification(userId: string, userName: string): Promise<void> {
     try {
@@ -16,12 +22,15 @@ export class NotificationHelper {
           priority: 'high',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send welcome notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send welcome notification:', error);
     }
   }
 
-  static async sendLoginNotification(userId: string, deviceInfo: any = {}): Promise<void> {
+  static async sendLoginNotification(
+    userId: string,
+    deviceInfo: NotificationPayload = {}
+  ): Promise<void> {
     try {
       await notificationService.notifyUser(
         userId,
@@ -34,8 +43,8 @@ export class NotificationHelper {
           priority: 'low',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send login notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send login notification:', error);
     }
   }
 
@@ -57,8 +66,8 @@ export class NotificationHelper {
           priority: 'high',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send subscription notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send subscription notification:', error);
     }
   }
 
@@ -80,8 +89,8 @@ export class NotificationHelper {
           priority: 'high',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send subscription expiring notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send subscription expiring notification:', error);
     }
   }
 
@@ -102,8 +111,8 @@ export class NotificationHelper {
           priority: 'urgent',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send subscription expired notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send subscription expired notification:', error);
     }
   }
 
@@ -125,8 +134,8 @@ export class NotificationHelper {
           priority: 'medium',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send payment notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send payment notification:', error);
     }
   }
 
@@ -144,8 +153,8 @@ export class NotificationHelper {
           priority: 'high',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send payment approved notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send payment approved notification:', error);
     }
   }
 
@@ -163,8 +172,8 @@ export class NotificationHelper {
           priority: 'high',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send payment rejected notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send payment rejected notification:', error);
     }
   }
 
@@ -182,8 +191,8 @@ export class NotificationHelper {
           priority: 'medium',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send PDF uploaded notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send PDF uploaded notification:', error);
     }
   }
 
@@ -205,8 +214,8 @@ export class NotificationHelper {
           priority: 'medium',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send PDF processed notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send PDF processed notification:', error);
     }
   }
 
@@ -228,8 +237,8 @@ export class NotificationHelper {
           priority: 'high',
         }
       );
-    } catch (err: any) {
-      logger.error('Failed to send PDF processing failed notification:', err);
+    } catch (error) {
+      logNotificationFailure('Failed to send PDF processing failed notification:', error);
     }
   }
 
@@ -247,8 +256,8 @@ export class NotificationHelper {
           priority: 'low',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send profile updated notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send profile updated notification:', error);
     }
   }
 
@@ -264,8 +273,8 @@ export class NotificationHelper {
           priority: 'high',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send password changed notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send password changed notification:', error);
     }
   }
 
@@ -287,8 +296,8 @@ export class NotificationHelper {
           priority: 'high',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send ticket reply notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send ticket reply notification:', error);
     }
   }
 
@@ -318,8 +327,8 @@ export class NotificationHelper {
           priority: 'medium',
         }
       );
-    } catch (error: any) {
-      logger.error('Failed to send ticket status notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send ticket status notification:', error);
     }
   }
 
@@ -335,20 +344,23 @@ export class NotificationHelper {
       // in a real-world scenario, you might need a separate admin notification table.
       // But for now, we'll use the existing one to not break the schema.
       await Promise.all(
-        admins.map((admin: any) =>
+        admins.map((admin) =>
           notificationService.notifyUser(admin.id, 'system', title, message, { priority })
         )
       );
-    } catch (error: any) {
-      logger.error('Failed to send system notification:', error);
+    } catch (error) {
+      logNotificationFailure('Failed to send system notification:', error);
     }
   }
 
-  static async sendSystemErrorNotification(error: string, _details: any = {}): Promise<void> {
+  static async sendSystemErrorNotification(
+    error: string,
+    _details: NotificationPayload = {}
+  ): Promise<void> {
     try {
       await this.sendSystemNotification('خطأ في النظام', `حدث خطأ في النظام: ${error}`, 'urgent');
-    } catch (err: any) {
-      logger.error('Failed to send system error notification:', err);
+    } catch (notifyError) {
+      logNotificationFailure('Failed to send system error notification:', notifyError);
     }
   }
 }

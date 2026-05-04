@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import logger from '../config/logger';
 import { pdfFileRepository, partRepository } from '../repositories';
-import { ExternalServiceError, NotFoundError, ValidationError } from '../errors';
+import { AppError, ExternalServiceError, NotFoundError, ValidationError } from '../errors';
 import { addPDFProcessingJob, getPDFQueue } from '../queues/pdfQueue';
 import { NodePDFProcessor } from './NodePDFProcessor';
 import { PythonPDFProcessor } from './PythonPDFProcessor';
@@ -14,7 +14,57 @@ import { validatePDFMagicBytes } from '../middleware/upload';
 import { UploadedFile } from '../types';
 import { vercelBlobService } from './VercelBlobService';
 
+interface UploadPDFInput {
+  userId?: string;
+  file: UploadedFile;
+  supplier_id: string;
+  method?: string;
+  document_date: string;
+}
+
+interface UploadBatchItemInput {
+  supplier_id: string;
+  method?: string;
+  document_date: string;
+}
+
+interface CreatedPDFFileRecord {
+  id: string;
+  file_path: string;
+  original_name: string;
+  file_size: number;
+  status: string;
+  processing_method: string;
+  document_date: string;
+}
+
 export class PDFService {
+  private async cleanupUploadedFile(filePath?: string): Promise<void> {
+    if (!filePath) {
+      return;
+    }
+
+    try {
+      await fs.unlink(filePath);
+    } catch {
+      // تجاهل
+    }
+  }
+
+  private normalizeUploadError(error: unknown): { code: string; message: string } {
+    if (error instanceof AppError) {
+      return {
+        code: error.code,
+        message: error.message,
+      };
+    }
+
+    return {
+      code: 'INTERNAL_ERROR',
+      message: 'تعذر رفع الملف حالياً',
+    };
+  }
+
   private sanitizePDFFile(file: unknown): Record<string, unknown> {
     const plainFile =
       typeof (file as Record<string, unknown>)?.toJSON === 'function'
@@ -41,65 +91,157 @@ export class PDFService {
     return rows.map((row) => this.sanitizePDFFile(row));
   }
 
-  async uploadPDF(data: {
-    userId?: string;
-    file: UploadedFile;
-    supplier_id: string;
-    method?: string;
-    document_date: string;
-  }): Promise<Record<string, unknown>> {
+  async uploadPDF(data: UploadPDFInput): Promise<Record<string, unknown>> {
     const { userId, file, supplier_id, method, document_date } = data;
     if (!file) throw new ValidationError('يرجى اختيار ملف PDF');
-    if (!supplier_id) throw new ValidationError('يرجى تحديد المورد');
-    if (!document_date) throw new ValidationError('يرجى تحديد تاريخ المستند');
+    let pdfFile: CreatedPDFFileRecord | null = null;
 
-    if (!(await validatePDFMagicBytes(file.path))) {
-      try {
-        await fs.unlink(file.path);
-      } catch {
-        // تجاهل
+    try {
+      if (!supplier_id) throw new ValidationError('يرجى تحديد المورد');
+      if (!document_date) throw new ValidationError('يرجى تحديد تاريخ المستند');
+
+      if (!(await validatePDFMagicBytes(file.path))) {
+        throw new ValidationError('الملف ليس PDF صحيحاً');
       }
-      throw new ValidationError('الملف ليس PDF صحيحاً');
+
+      const profile = await pdfProcessingProfileService.getProfile(method);
+      const processingMethod = profile.requestedMethod;
+
+      const createData: Record<string, unknown> = {
+        original_name: file.originalname,
+        file_path: file.path,
+        file_size: file.size,
+        user_id: userId,
+        supplier_id: supplier_id,
+        processing_method: processingMethod,
+        status: 'pending',
+        document_date: document_date,
+      };
+
+      pdfFile = (await pdfFileRepository.create(createData)) as unknown as CreatedPDFFileRecord;
+
+      // تطبيق نظام الإصدارات
+      const previousVersions = await pdfFileRepository.findVersionsBySupplier(supplier_id);
+      const maxVersion =
+        previousVersions.length > 0
+          ? Math.max(
+              ...previousVersions.map((v: { version_number?: number }) => v.version_number || 0)
+            )
+          : 0;
+      const versionNumber = maxVersion + 1;
+
+      await pdfFileRepository.updateById(pdfFile.id, { version_number: versionNumber });
+      await pdfFileRepository.markPreviousVersionsAsOld(supplier_id, pdfFile.id);
+
+      const job = await addPDFProcessingJob(pdfFile.id, pdfFile.file_path, processingMethod);
+
+      return {
+        id: pdfFile.id,
+        original_name: pdfFile.original_name,
+        file_size: pdfFile.file_size,
+        status: pdfFile.status,
+        processing_method: pdfFile.processing_method,
+        document_date: pdfFile.document_date,
+        version_number: versionNumber,
+        job_id: job.id,
+      };
+    } catch (error) {
+      if (pdfFile?.id) {
+        try {
+          await pdfFileRepository.deleteById(pdfFile.id);
+        } catch (cleanupError) {
+          logger.error('تعذر تنظيف سجل الملف بعد فشل الرفع', {
+            message: cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
+            fileId: pdfFile.id,
+          });
+        }
+      }
+
+      await this.cleanupUploadedFile(file.path);
+      throw error;
+    }
+  }
+
+  async uploadPDFBatch(data: {
+    userId?: string;
+    files: UploadedFile[];
+    items: UploadBatchItemInput[];
+  }): Promise<Record<string, unknown>> {
+    const { userId, files, items } = data;
+
+    if (!Array.isArray(files) || files.length === 0) {
+      throw new ValidationError('يرجى رفع ملف PDF واحد على الأقل');
     }
 
-    const profile = await pdfProcessingProfileService.getProfile(method);
-    const processingMethod = profile.requestedMethod;
+    if (!Array.isArray(items) || items.length === 0) {
+      throw new ValidationError('يرجى إرسال بيانات الملفات');
+    }
 
-    const createData: Record<string, unknown> = {
-      original_name: file.originalname,
-      file_path: file.path,
-      file_size: file.size,
-      user_id: userId,
-      supplier_id: supplier_id,
-      processing_method: processingMethod,
-      status: 'pending',
-      document_date: document_date,
-    };
+    if (items.length !== files.length) {
+      throw new ValidationError('عدد العناصر لا يطابق عدد الملفات المرفوعة');
+    }
 
-    const pdfFile = await pdfFileRepository.create(createData);
+    const results: Record<string, unknown>[] = [];
 
-    // تطبيق نظام الإصدارات
-    const previousVersions = await pdfFileRepository.findVersionsBySupplier(supplier_id);
-    const maxVersion =
-      previousVersions.length > 0
-        ? Math.max(
-            ...previousVersions.map((v: { version_number?: number }) => v.version_number || 0)
-          )
-        : 0;
-    await pdfFileRepository.updateById(pdfFile.id, { version_number: maxVersion + 1 });
-    await pdfFileRepository.markPreviousVersionsAsOld(supplier_id, pdfFile.id);
+    // المعالجة المتسلسلة تمنع تعارض الإصدارات عند رفع عدة ملفات للمورد نفسه.
+    for (const [index, file] of files.entries()) {
+      const item = items[index];
 
-    const job = await addPDFProcessingJob(pdfFile.id, pdfFile.file_path, processingMethod);
+      try {
+        const uploadedFile = await this.uploadPDF({
+          userId,
+          file,
+          supplier_id: item.supplier_id,
+          method: item.method,
+          document_date: item.document_date,
+        });
+
+        results.push({
+          index,
+          success: true,
+          status: 'queued',
+          original_name: file.originalname,
+          item: {
+            supplier_id: item.supplier_id,
+            document_date: item.document_date,
+            method: item.method || null,
+          },
+          data: uploadedFile,
+        });
+      } catch (error) {
+        logger.warn('فشل رفع ملف ضمن الدفعة', {
+          index,
+          fileName: file.originalname,
+          supplierId: item.supplier_id,
+          message: error instanceof Error ? error.message : String(error),
+        });
+
+        results.push({
+          index,
+          success: false,
+          status: 'failed',
+          original_name: file.originalname,
+          item: {
+            supplier_id: item.supplier_id,
+            document_date: item.document_date,
+            method: item.method || null,
+          },
+          error: this.normalizeUploadError(error),
+        });
+      }
+    }
+
+    const succeeded = results.filter((result) => result.success === true).length;
+    const failed = results.length - succeeded;
 
     return {
-      id: pdfFile.id,
-      original_name: pdfFile.original_name,
-      file_size: pdfFile.file_size,
-      status: pdfFile.status,
-      processing_method: pdfFile.processing_method,
-      document_date: pdfFile.document_date,
-      version_number: pdfFile.version_number,
-      job_id: job.id,
+      summary: {
+        total: results.length,
+        succeeded,
+        failed,
+        partial_success: succeeded > 0 && failed > 0,
+      },
+      results,
     };
   }
 

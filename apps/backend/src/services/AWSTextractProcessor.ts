@@ -1,9 +1,21 @@
 import { promises as fs } from 'fs';
 import logger from '../config/logger';
-import { NodePDFProcessor } from './NodePDFProcessor';
+import { NodePDFProcessor, type NodePDFProcessResult, type ParsedPart } from './NodePDFProcessor';
+
+type TextractBlock = {
+  BlockType?: string;
+  Text?: string;
+};
+
+type TextractResponse = {
+  Blocks?: TextractBlock[];
+};
+
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
 
 export class AWSTextractProcessor {
-  static async process(filePath: any) {
+  static async process(filePath: string): Promise<NodePDFProcessResult> {
     const awsAccessKey = process.env.AWS_ACCESS_KEY_ID;
     const awsSecretKey = process.env.AWS_SECRET_ACCESS_KEY;
     const awsRegion = process.env.AWS_REGION || 'us-east-1';
@@ -22,7 +34,7 @@ export class AWSTextractProcessor {
         const sdk = await import('@aws-sdk/client-textract');
         TextractClientClass = sdk.TextractClient;
         DetectDocumentTextCommandClass = sdk.DetectDocumentTextCommand;
-      } catch (e) {
+      } catch {
         logger.warn('AWS SDK not installed, using fallback to Node.js processor');
         return await NodePDFProcessor.process(filePath);
       }
@@ -47,32 +59,35 @@ export class AWSTextractProcessor {
 
       const response = await client.send(command);
 
-      return AWSTextractProcessor.parseTextractResponse(response);
-    } catch (error: any) {
-      logger.error('AWS Textract processing failed:', error.message);
+      return AWSTextractProcessor.parseTextractResponse(response as TextractResponse);
+    } catch (error) {
+      logger.error('AWS Textract processing failed:', getErrorMessage(error));
       logger.warn('Falling back to Node.js processor');
       return await NodePDFProcessor.process(filePath);
     }
   }
 
-  static parseTextractResponse(data: any) {
+  static parseTextractResponse(data: TextractResponse): NodePDFProcessResult {
     const blocks = data.Blocks || [];
-    const parts = [];
+    const parts: ParsedPart[] = [];
 
-    const lines = blocks.filter((b: any) => b.BlockType === 'LINE').map((b: any) => b.Text);
+    const lines = blocks
+      .filter((block) => block.BlockType === 'LINE')
+      .map((block) => block.Text)
+      .filter((text): text is string => typeof text === 'string');
 
     for (const line of lines) {
       if (!line || line.trim().length === 0) continue;
 
-      const tabParts = line.split('\t').filter((p: any) => p.trim());
+      const tabParts = line.split('\t').filter((part) => part.trim());
       if (tabParts.length >= 2) {
-        const part = {
+        const part: ParsedPart = {
           partCode: tabParts[0].trim(),
           partName: tabParts[1].trim(),
         };
         if (tabParts.length >= 3) {
           const price = parseFloat(tabParts[2].replace(/,/g, ''));
-          if (!isNaN(price)) (part as any).price = price;
+          if (!isNaN(price)) part.price = price;
         }
         parts.push(part);
       }
@@ -80,8 +95,20 @@ export class AWSTextractProcessor {
 
     return {
       parts,
-      pageCount: Math.ceil(blocks.filter((b: any) => b.BlockType === 'PAGE').length),
-      rawData: { textractBlocks: blocks.length },
+      pageCount: Math.ceil(blocks.filter((block) => block.BlockType === 'PAGE').length) || 1,
+      rawData: {
+        fullText: lines.join('\n'),
+        totalLines: lines.length,
+        rawRows: [],
+        skippedLines: 0,
+      },
+      supplierName: null,
+      tables: [],
+      metadata: {
+        processingTime: 0,
+        batchSize: 0,
+        confidence: 0,
+      },
     };
   }
 }

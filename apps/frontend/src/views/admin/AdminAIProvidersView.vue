@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <BaseToast ref="toast" />
+
 
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -252,9 +252,10 @@
 
 <script setup>
 import { BaseSelect, BaseSpinner } from "@/components/base";
+import AppIcon from "@/components/icons/AppIcon.vue";
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { aiProviderAPI } from '../../services/api';
-import BaseToast from '../../components/base/BaseToast.vue';
+
 
 const toast = ref(null);
 const providers = ref([]);

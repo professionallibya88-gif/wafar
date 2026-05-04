@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import logger from '../config/logger';
 import { aiProviderRepository, aiProcessingLogRepository } from '../repositories';
-import { ExternalServiceError, BusinessError } from '../errors';
+import { ExternalServiceError, BusinessError, NotFoundError } from '../errors';
 
 interface AIProviderRecord {
   id: string;
@@ -49,6 +49,152 @@ export class AIProviderService {
   private static readonly FAILURE_THRESHOLD = 5;
   private static readonly CIRCUIT_COOLDOWN_MS = 120000;
   private circuitStatus: Map<string, { open: boolean; openedAt: number }> = new Map();
+
+  /**
+   * استرجاع جميع المزودين
+   */
+  async getAllProviders() {
+    return await aiProviderRepository.findAll();
+  }
+
+  /**
+   * استرجاع مزود بالمعرف
+   */
+  async getProviderById(id: string) {
+    const provider = await aiProviderRepository.findById(id);
+    if (!provider) throw new NotFoundError('المزود غير موجود');
+    return provider;
+  }
+
+  /**
+   * إنشاء مزود جديد
+   */
+  async createProvider(data: Record<string, unknown>) {
+    return await aiProviderRepository.create(data);
+  }
+
+  /**
+   * تحديث مزود
+   */
+  async updateProvider(id: string, data: Record<string, unknown>) {
+    const provider = await aiProviderRepository.updateById(id, data);
+    if (!provider) throw new NotFoundError('المزود غير موجود');
+    return provider;
+  }
+
+  /**
+   * حذف مزود
+   */
+  async deleteProvider(id: string) {
+    const deleted = await aiProviderRepository.deleteById(id);
+    if (!deleted) throw new NotFoundError('المزود غير موجود');
+    return deleted;
+  }
+
+  /**
+   * استرجاع سجلات المعالجة لمزود معين
+   */
+  async getProviderLogs(id: string, limit: number, offset: number) {
+    return await aiProcessingLogRepository.findByProvider(id, limit, offset);
+  }
+
+  /**
+   * إضافة مزودين افتراضيين (seed)
+   */
+  async seedDefaults() {
+    const defaults = [
+      {
+        name: 'Google Gemini',
+        provider_type: 'google',
+        api_key: '',
+        base_url: 'https://generativelanguage.googleapis.com/v1beta',
+        default_model: 'gemini-1.5-flash',
+        enabled: false,
+        priority: 1,
+        cost_per_1k_input_tokens: 0.0,
+        cost_per_1k_output_tokens: 0.0,
+        rate_limit_requests_per_minute: 60,
+        timeout_seconds: 60,
+        max_tokens: 4096,
+        temperature: 0.1,
+        metadata: '{}',
+      },
+      {
+        name: 'OpenRouter (Free)',
+        provider_type: 'openrouter',
+        api_key: '',
+        base_url: 'https://openrouter.ai/api/v1',
+        default_model: 'google/gemini-2.0-flash-exp:free',
+        enabled: false,
+        priority: 2,
+        cost_per_1k_input_tokens: 0.0,
+        cost_per_1k_output_tokens: 0.0,
+        rate_limit_requests_per_minute: 20,
+        timeout_seconds: 60,
+        max_tokens: 4096,
+        temperature: 0.1,
+        metadata: '{}',
+      },
+      {
+        name: 'OpenAI',
+        provider_type: 'openai',
+        api_key: '',
+        base_url: 'https://api.openai.com/v1',
+        default_model: 'gpt-4o-mini',
+        enabled: false,
+        priority: 3,
+        cost_per_1k_input_tokens: 0.00015,
+        cost_per_1k_output_tokens: 0.0006,
+        rate_limit_requests_per_minute: 60,
+        timeout_seconds: 60,
+        max_tokens: 4096,
+        temperature: 0.1,
+        metadata: '{}',
+      },
+      {
+        name: 'Anthropic Claude',
+        provider_type: 'anthropic',
+        api_key: '',
+        base_url: 'https://api.anthropic.com/v1',
+        default_model: 'claude-3-haiku-20240307',
+        enabled: false,
+        priority: 4,
+        cost_per_1k_input_tokens: 0.00025,
+        cost_per_1k_output_tokens: 0.00125,
+        rate_limit_requests_per_minute: 60,
+        timeout_seconds: 60,
+        max_tokens: 4096,
+        temperature: 0.1,
+        metadata: '{}',
+      },
+      {
+        name: 'Mistral AI',
+        provider_type: 'mistral',
+        api_key: '',
+        base_url: 'https://api.mistral.ai/v1',
+        default_model: 'mistral-small-latest',
+        enabled: false,
+        priority: 5,
+        cost_per_1k_input_tokens: 0.0002,
+        cost_per_1k_output_tokens: 0.0006,
+        rate_limit_requests_per_minute: 60,
+        timeout_seconds: 60,
+        max_tokens: 4096,
+        temperature: 0.1,
+        metadata: '{}',
+      },
+    ];
+
+    let created = 0;
+    for (const def of defaults) {
+      const exists = await aiProviderRepository.findOne({ provider_type: def.provider_type });
+      if (!exists) {
+        await aiProviderRepository.create(def);
+        created++;
+      }
+    }
+    return created;
+  }
 
   /**
    * معالجة طلب عبر أفضل مزود متاح

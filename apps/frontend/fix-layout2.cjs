@@ -4,7 +4,6 @@ const files = glob.sync('src/views/**/*.vue');
 
 files.forEach(file => {
   let content = fs.readFileSync(file, 'utf8');
-  let changed = false;
 
   // replace <div class="flex gap-3"> with <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
   const newContent = content

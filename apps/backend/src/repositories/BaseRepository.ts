@@ -7,6 +7,7 @@ import {
   DestroyOptions,
   CountOptions,
   WhereOptions,
+  Transaction,
 } from 'sequelize';
 import { ValidationError } from '../errors';
 
@@ -98,7 +99,7 @@ export class BaseRepository<M extends Model> {
     return this.model.sum(field, { where });
   }
 
-  async transaction<T>(callback: (t: any) => Promise<T>): Promise<T> {
+  async transaction<T>(callback: (t: Transaction) => Promise<T>): Promise<T> {
     if (!this.model.sequelize) {
       throw new Error('Sequelize instance not found on model');
     }

@@ -11,6 +11,67 @@ export interface NodePDFProcessorOptions {
   confidenceThreshold?: number;
 }
 
+export type ParsedPart = {
+  partCode: string;
+  partName: string;
+  price?: number;
+  confidence?: number;
+};
+
+type ParsedRawRow = {
+  line: string;
+  parsed: ParsedPart;
+};
+
+type DetectedTable = {
+  rows: string[];
+  rowCount: number;
+  columns: number;
+};
+
+export type NodePDFProcessResult = {
+  parts: ParsedPart[];
+  pageCount: number;
+  rawData: {
+    fullText: string;
+    totalLines: number;
+    rawRows: ParsedRawRow[];
+    skippedLines: number;
+  };
+  supplierName: string | null;
+  tables: DetectedTable[];
+  metadata: {
+    processingTime: number;
+    batchSize: number;
+    confidence: number;
+  };
+};
+
+type NodePDFBatchItem =
+  | {
+      path: string;
+      success: true;
+      result: NodePDFProcessResult;
+      index: number;
+      total: number;
+    }
+  | {
+      path: string;
+      success: false;
+      error: string;
+      index: number;
+      total: number;
+    };
+
+type NodePDFBatchResult = {
+  results: NodePDFBatchItem[];
+  successful: number;
+  failed: number;
+};
+
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
 export class NodePDFProcessor {
   private options: Required<NodePDFProcessorOptions>;
 
@@ -25,17 +86,20 @@ export class NodePDFProcessor {
     };
   }
 
-  static async process(filePath: string, options: NodePDFProcessorOptions = {}): Promise<any> {
+  static async process(
+    filePath: string,
+    options: NodePDFProcessorOptions = {}
+  ): Promise<NodePDFProcessResult> {
     const processor = new NodePDFProcessor(options);
-    return await processor.processFile(filePath);
+    return processor.processFile(filePath);
   }
 
   static async processBatch(
     filePaths: string[],
     options: NodePDFProcessorOptions = {}
-  ): Promise<any> {
+  ): Promise<NodePDFBatchResult> {
     const processor = new NodePDFProcessor(options);
-    const results = [];
+    const results: NodePDFBatchItem[] = [];
 
     for (let i = 0; i < filePaths.length; i++) {
       try {
@@ -47,11 +111,11 @@ export class NodePDFProcessor {
           index: i,
           total: filePaths.length,
         });
-      } catch (error: any) {
+      } catch (error) {
         results.push({
           path: filePaths[i],
           success: false,
-          error: error.message,
+          error: getErrorMessage(error),
           index: i,
           total: filePaths.length,
         });
@@ -65,7 +129,7 @@ export class NodePDFProcessor {
     };
   }
 
-  async processFile(filePath: string): Promise<any> {
+  async processFile(filePath: string): Promise<NodePDFProcessResult> {
     const startTime = Date.now();
     const dataBuffer = await fs.readFile(filePath);
     const pdfData = await pdfParse(dataBuffer);
@@ -73,8 +137,8 @@ export class NodePDFProcessor {
     const text = pdfData.text;
     const lines = text.split('\n').filter((line: string) => line.trim().length > 0);
 
-    const parts: any[] = [];
-    const rawRows: any[] = [];
+    const parts: ParsedPart[] = [];
+    const rawRows: ParsedRawRow[] = [];
     let skippedLines = 0;
 
     for (let i = 0; i < lines.length; i += this.options.batchSize) {
@@ -97,7 +161,7 @@ export class NodePDFProcessor {
       }
     }
 
-    let tables: any[] = [];
+    let tables: DetectedTable[] = [];
     if (this.options.enableTableDetection) {
       tables = this.detectTables(lines);
     }
@@ -127,7 +191,7 @@ export class NodePDFProcessor {
     };
   }
 
-  calculateConfidence(part: any, _line: string): number {
+  calculateConfidence(part: ParsedPart, _line: string): number {
     let score = 50;
 
     if (/^[A-Z0-9-.]+$/.test(part.partCode)) {
@@ -145,14 +209,14 @@ export class NodePDFProcessor {
     return Math.min(score, 100);
   }
 
-  calculateOverallConfidence(parts: any[]): number {
+  calculateOverallConfidence(parts: ParsedPart[]): number {
     if (parts.length === 0) return 0;
     const total = parts.reduce((sum, p) => sum + (p.confidence || 0), 0);
     return Math.round(total / parts.length);
   }
 
-  detectTables(lines: string[]): any[] {
-    const tables: any[] = [];
+  detectTables(lines: string[]): DetectedTable[] {
+    const tables: DetectedTable[] = [];
     let currentTable: string[] = [];
     let inTable = false;
 
@@ -207,7 +271,7 @@ export class NodePDFProcessor {
     return 0;
   }
 
-  static parseLine(line: string): any {
+  static parseLine(line: string): ParsedPart | null {
     const codeNamePricePattern = /^([A-Z0-9-.]+)\s+[-\s]+(.+?)\s+[-\s]+([\d,]+\.?\d*)\s*$/;
     const match1 = line.match(codeNamePricePattern);
     if (match1) {
@@ -220,7 +284,7 @@ export class NodePDFProcessor {
 
     const tabParts = line.split('\t').filter((p) => p.trim().length > 0);
     if (tabParts.length >= 2) {
-      const part: any = {
+      const part: ParsedPart = {
         partCode: tabParts[0].trim(),
         partName: tabParts.slice(1, -1).join(' ').trim() || tabParts[1].trim(),
       };
@@ -236,7 +300,7 @@ export class NodePDFProcessor {
 
     const pipeParts = line.split('|').filter((p) => p.trim().length > 0);
     if (pipeParts.length >= 2) {
-      const part: any = {
+      const part: ParsedPart = {
         partCode: pipeParts[0].trim(),
         partName: pipeParts[1].trim(),
       };
@@ -251,7 +315,7 @@ export class NodePDFProcessor {
 
     const semiParts = line.split(';').filter((p) => p.trim().length > 0);
     if (semiParts.length >= 2) {
-      const part: any = {
+      const part: ParsedPart = {
         partCode: semiParts[0].trim(),
         partName: semiParts[1].trim(),
       };

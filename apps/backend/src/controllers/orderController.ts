@@ -4,7 +4,6 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { success } from '../utils/ApiResponse';
 import { orderService } from '../services/OrderService';
 import { ForbiddenError } from '../errors';
-import { supplierRepository } from '../repositories/SupplierRepository';
 
 export const getMyOrders = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
@@ -20,12 +19,7 @@ export const getSupplierOrders = asyncHandler(async (req: AuthenticatedRequest, 
     throw new ForbiddenError('هذه الصفحة خاصة بالموردين فقط');
   }
 
-  const supplier = await supplierRepository.findByUserId(userId);
-  if (!supplier) {
-    throw new ForbiddenError('حساب المورد غير مكتمل');
-  }
-
-  const orders = await orderService.getSupplierOrders(supplier.id);
+  const orders = await orderService.getSupplierOrdersByUserId(userId);
   return success(res, { data: orders, message: 'تم جلب طلبات العملاء بنجاح' });
 });
 
@@ -33,17 +27,12 @@ export const updateOrderStatus = asyncHandler(async (req: AuthenticatedRequest, 
   const userId = req.user!.id;
   const role = req.user!.role;
   const { id } = req.params;
-  const { status } = req.body;
+  const status = req.body.status as 'pending' | 'processing' | 'ready' | 'completed' | 'cancelled';
 
   if (role !== 'supplier') {
     throw new ForbiddenError('هذه العملية خاصة بالموردين فقط');
   }
 
-  const supplier = await supplierRepository.findByUserId(userId);
-  if (!supplier) {
-    throw new ForbiddenError('حساب المورد غير مكتمل');
-  }
-
-  const order = await orderService.updateOrderStatus(id as string, supplier.id, status);
+  const order = await orderService.updateOrderStatusByUserId(userId, id as string, status);
   return success(res, { data: order, message: 'تم تحديث حالة الطلب بنجاح' });
 });

@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <BaseToast />
+    
     <!-- Header -->
     <div
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
@@ -271,7 +271,7 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseSelect, BasePagination } from "@/components/base";
+import {  BaseSelect, BasePagination } from "@/components/base";
 import { getPaymentStatusLabel, getPaymentStatusVariant, getPaymentMethodLabel } from "@/utils/statusLabels";
 
 const payments = ref([]);
@@ -294,8 +294,8 @@ const loadPayments = async () => {
     if (statusFilter.value) params.status = statusFilter.value;
     const res = await adminAPI.getPayments(params);
     payments.value = res.data?.data?.payments || [];
-    totalPayments.value = res.data?.data?.total || 0;
-    totalPages.value = res.data?.data?.totalPages || 1;
+    totalPayments.value = res.data?.meta?.total || res.data?.data?.total || 0;
+    totalPages.value = res.data?.meta?.totalPages || res.data?.data?.totalPages || 1;
   } catch (error) { /* ignore */ }
 };
 

@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <BaseToast ref="toast" />
+
     <!-- Header -->
     <div
       class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
@@ -296,7 +296,7 @@
 <script setup>
 import { ref } from "vue";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseSelect, BaseSpinner } from "@/components/base";
+import {  BaseSelect, BaseSpinner } from "@/components/base";
 import { useAdminMonitoring } from "@/composables/useAdminMonitoring";
 import {
   formatDateTime,

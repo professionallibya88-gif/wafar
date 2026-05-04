@@ -16,9 +16,9 @@ let isConnecting = false;
 
 const isHostedEnvironment = Boolean(
   process.env.RAILWAY_ENVIRONMENT ||
-    process.env.RAILWAY_PROJECT_ID ||
-    process.env.VERCEL ||
-    process.env.VERCEL_ENV
+  process.env.RAILWAY_PROJECT_ID ||
+  process.env.VERCEL ||
+  process.env.VERCEL_ENV
 );
 
 const resolveRedisUrl = (): string | null => {
@@ -125,4 +125,10 @@ const closeRedisClient = async () => {
   }
 };
 
-export { createRedisClient, getRedisClient, closeRedisClient, resolveRedisUrl, hasRedisConnectionConfig };
+export {
+  createRedisClient,
+  getRedisClient,
+  closeRedisClient,
+  resolveRedisUrl,
+  hasRedisConnectionConfig,
+};

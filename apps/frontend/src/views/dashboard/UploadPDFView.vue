@@ -1,61 +1,25 @@
 <template>
-  <div class="page-shell-content">
-    <!-- Header -->
-    <div
-      class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
-    >
+  <div class="page-shell-content space-y-4">
+    <div class="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">
-          رفع ملف PDF
+        <h1 class="text-2xl font-bold text-neutral-900 dark:text-white">
+          رفع ملفات PDF
         </h1>
-        <p class="mt-1 text-neutral-500 dark:text-neutral-400">
-          ارفع كتالوجات الموردين لاستخراج قطع
-          الغيار تلقائياً
+        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          أضف عدة ملفات دفعة واحدة، وحرر بيانات كل ملف بشكل مستقل قبل الإرسال.
         </p>
       </div>
     </div>
 
-    <!-- Info Card -->
     <div
-      class="bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl p-3"
+      class="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-800"
     >
-      <div class="flex items-start gap-3">
-        <div
-          class="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center flex-shrink-0"
-        >
-          <AppIcon
-            name="information-circle"
-            class="w-4 h-4 text-blue-600 dark:text-blue-400"
-          />
-        </div>
-        <div>
-          <h3
-            class="font-semibold text-neutral-900 dark:text-white mb-0.5 text-sm"
-          >
-            كيف يعمل؟
-          </h3>
-          <p
-            class="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed"
-          >
-            ارفع كتالوجات PDF لاستخراج قطع الغيار
-            تلقائيا باستخدام OCR.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Upload Card -->
-    <div
-      class="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-700"
-    >
-      <!-- Upload Area -->
       <div
-        v-if="!selectedFile"
-        class="border-2 border-dashed border-neutral-200 dark:border-neutral-600 rounded-xl p-6 text-center transition-all duration-300"
+        class="rounded-xl border-2 border-dashed p-5 text-center transition-all duration-300"
         :class="
           isDragging
             ? 'border-brand-500 bg-brand-50 dark:bg-neutral-900/50 scale-[1.01]'
-            : 'hover:border-brand-300 dark:hover:border-brand-600 hover:bg-brand-50 dark:hover:bg-neutral-700/50'
+            : 'border-neutral-200 hover:border-brand-300 hover:bg-brand-50 dark:border-neutral-600 dark:hover:border-brand-600 dark:hover:bg-neutral-700/50'
         "
         @click="fileInput?.click()"
         @dragover.prevent="isDragging = true"
@@ -63,296 +27,350 @@
         @drop.prevent="handleDrop"
       >
         <div
-          class="w-12 h-12 bg-brand-50 dark:bg-neutral-700 rounded-xl mx-auto mb-4 flex items-center justify-center transition-colors"
+          class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 transition-colors dark:bg-neutral-700"
           :class="isDragging ? 'bg-brand-100 dark:bg-neutral-900/50' : ''"
         >
           <AppIcon
             name="cloud-arrow-up"
             :class="[
-              'w-6 h-6 transition-colors',
+              'h-5 w-5 transition-colors',
               isDragging
                 ? 'text-brand-600 dark:text-neutral-400'
                 : 'text-neutral-400 dark:text-neutral-500',
             ]"
           />
         </div>
-        <p
-          class="text-sm font-medium text-neutral-700 dark:text-neutral-200 mb-1"
-        >
+        <p class="mb-1 text-sm font-medium text-neutral-700 dark:text-neutral-200">
           {{
             isDragging
-              ? "أفلت الملف هنا"
-              : "اسحب ملف PDF هنا أو اضغط للاختيار"
+              ? "أفلت الملفات هنا"
+              : "اسحب ملفات PDF هنا أو اضغط لاختيار عدة ملفات"
           }}
         </p>
         <p class="text-xs text-neutral-400 dark:text-neutral-500">
-          الحد الأقصى: 100 ميغابايت - صيغة PDF فقط
+          الحد الأقصى لكل ملف: 100 ميغابايت. سيرسل الطلب بصيغة
+          <span dir="ltr">files[] + items</span>
         </p>
         <input
           ref="fileInput"
           type="file"
+          multiple
           accept=".pdf"
           class="hidden"
           @change="handleFileSelect"
         />
       </div>
 
-      <!-- Selected File & Options -->
-      <div v-if="selectedFile" class="space-y-6 animate-fade-in-up">
-        <!-- File Info -->
-        <div
-          class="flex items-center gap-4 p-4 bg-neutral-50 dark:bg-neutral-700/50 rounded-xl border border-neutral-100 dark:border-neutral-600"
-        >
-          <div
-            class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center flex-shrink-0 relative"
-          >
-            <AppIcon
-              name="document"
-              class="w-7 h-7 text-red-600 dark:text-red-400"
-            />
-            <div v-if="extractingMetadata" class="absolute inset-0 bg-white/50 dark:bg-neutral-800/50 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <BaseSpinner size="sm" />
-            </div>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="font-semibold text-neutral-900 dark:text-white truncate">
-              {{ selectedFile.name }}
-            </p>
-            <p class="text-sm text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
-              <span>{{ formatSize(selectedFile.size) }}</span>
-              <span v-if="extractingMetadata" class="text-brand-600 dark:text-neutral-400 text-xs animate-pulse">جاري استخراج البيانات تلقائياً...</span>
-            </p>
-          </div>
-          <button
-            @click="clearFile"
-            class="p-2 text-neutral-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-          >
-            <AppIcon name="trash" class="w-5 h-5" />
-          </button>
-        </div>
-
-        <!-- Supplier Name -->
-        <div class="relative">
-          <label
-            class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2 flex items-center gap-2"
-          >
-            اسم الشركة الموردة
-            <BaseSpinner v-if="extractingMetadata" size="xs" />
-          </label>
-          <div class="relative">
-            <input
-              v-model="supplierName"
-              list="supplier-name-options"
-              type="text"
-              :disabled="extractingMetadata"
-              placeholder="اكتب اسم الشركة كما يظهر أعلى الصفحة الأولى"
-              class="w-full px-4 py-3 bg-brand-50 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded-xl text-neutral-900 dark:text-white focus:bg-white dark:focus:bg-neutral-600 focus:border-brand-500 focus:ring-4 focus:ring-brand-100 dark:focus:ring-brand-900/30 transition-all duration-200 disabled:opacity-50"
-              @input="handleSupplierNameInput"
-            />
-            <datalist id="supplier-name-options">
-              <option v-for="s in suppliers" :key="s.id" :value="s.name">
-                {{ s.name }}
-              </option>
-            </datalist>
-          </div>
-          <p class="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-            حقل إجباري. يمكنك تعديل الاسم يدوياً إذا كان الاستخراج التلقائي غير دقيق.
-          </p>
-        </div>
-
-        <!-- Document Date -->
-        <div class="relative">
-          <label
-            class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2 flex items-center gap-2"
-          >
-            تاريخ الملف (من الشركة)
-            <BaseSpinner v-if="extractingMetadata" size="xs" />
-          </label>
-          <div class="relative">
-            <input
-              v-model="documentDate"
-              type="date"
-              :disabled="extractingMetadata"
-              class="w-full px-4 py-3 bg-brand-50 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded-xl text-neutral-900 dark:text-white focus:bg-white dark:focus:bg-neutral-600 focus:border-brand-500 focus:ring-4 focus:ring-brand-100 dark:focus:ring-brand-900/30 transition-all duration-200 disabled:opacity-50"
-            />
-            <div v-if="extractingMetadata" class="absolute inset-0 bg-transparent cursor-not-allowed flex items-center px-4" title="جاري قراءة التاريخ من الملف">
-              <span class="text-sm text-neutral-500 bg-brand-50 dark:bg-neutral-700 px-2 py-1 rounded">جاري قراءة التاريخ...</span>
-            </div>
-          </div>
-          <p class="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-            حقل إجباري. أدخل التاريخ المكتوب في أعلى الصفحة الأولى إذا لم يُكتشف تلقائياً.
-          </p>
-        </div>
-
-        <div class="relative">
-          <label
-            class="mb-2 flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300"
-          >
-            طريقة التحليل
-            <span class="rounded-full bg-brand-100 px-2 py-0.5 text-xs text-brand-700 dark:bg-neutral-800 dark:text-neutral-300">
-              الافتراضي: {{ processingMethodLabel(defaultMethod) }}
-            </span>
-          </label>
-          <BaseSelect
-  v-model="selectedMethod"
-  select-class="form-select"
-  :options="[
-    { label: 'استخدام الإعداد الافتراضي', value: '' },
-    { label: 'Python PyPDF', value: 'python_pypdf' },
-    { label: 'Python AI', value: 'python_ai' },
-    { label: 'Node PDF', value: 'node_pdf' },
-    { label: 'AWS Textract', value: 'aws_textract' },
-  ]"
-/>
-          <p class="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
-            يمكنك اختيار طريقة مخصصة لهذا الملف فقط، أو ترك النظام يستخدم الإعداد الافتراضي من لوحة الإدارة.
-          </p>
-        </div>
-
-        <div
-          v-if="!extractingMetadata && (!supplierName.trim() || !documentDate)"
-          class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200"
-        >
-          يجب مراجعة اسم الشركة وتاريخ الملف وإكمالهما قبل بدء الرفع.
-        </div>
-
-        <!-- Upload Button - Smaller size -->
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
-          <button
-            @click="uploadFile"
-            :disabled="uploading || extractingMetadata || !selectedFile || !supplierName.trim() || !documentDate"
-            class="flex-1 py-3 px-6 bg-brand-600 text-white font-semibold rounded-xl shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden group text-base"
-          >
-            <span
-              class="absolute inset-0 bg-brand-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            />
-            <span class="relative flex items-center justify-center gap-2">
-              <BaseSpinner
-                v-if="uploading || extractingMetadata"
-                size="xs"
-                color="white"
-              />
-              <AppIcon v-else name="CloudArrowUp" size="sm" />
-              <span>{{
-                uploading
-                  ? "جاري الرفع والمعالجة..."
-                  : extractingMetadata
-                    ? "جاري استخراج البيانات..."
-                    : "رفع ومعالجة الملف"
-              }}</span>
-            </span>
-          </button>
-          <button
-            @click="clearFile"
-            :disabled="uploading || extractingMetadata"
-            class="px-6 py-3 bg-brand-50 dark:bg-neutral-700 text-brand-700 dark:text-neutral-300 font-semibold rounded-xl hover:bg-brand-100 dark:hover:bg-neutral-600 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            إلغاء
-          </button>
-        </div>
-
-        <!-- Progress Bar -->
-        <div v-if="uploading && progress > 0" class="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-700">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-sm font-semibold text-brand-600 dark:text-brand-400">
-              {{ progressMessage || 'جاري معالجة الملف...' }}
-            </span>
-            <span class="text-sm font-bold text-neutral-700 dark:text-neutral-300">
-              {{ progress }}%
-            </span>
-          </div>
-          <div class="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2.5 overflow-hidden">
-            <div 
-              class="bg-brand-600 h-2.5 rounded-full transition-all duration-500 ease-out"
-              :style="{ width: progress + '%' }"
-            ></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Success Message -->
       <Transition name="slide-fade">
         <div
-          v-if="uploadSuccess"
-          class="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl flex items-center gap-3 animate-bounce-in"
+          v-if="uploadSuccessMessage"
+          class="mt-4 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20"
         >
           <div
-            class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center flex-shrink-0"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/50"
           >
             <AppIcon
               name="check-circle"
-              class="w-5 h-5 text-green-600 dark:text-green-400"
+              class="h-5 w-5 text-green-600 dark:text-green-400"
             />
           </div>
           <div class="flex-1">
             <p class="font-semibold text-green-800 dark:text-green-300">
-              تم رفع الملف بنجاح
+              تم تجهيز الطلب بنجاح
             </p>
             <p class="text-sm text-green-600 dark:text-green-400">
-              جاري المعالجة في الخلفية. ستظهر
-              النتائج في صفحة ملفاتي.
+              {{ uploadSuccessMessage }}
             </p>
           </div>
           <button
-            @click="uploadSuccess = false"
-            class="p-2 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+            class="rounded-lg p-2 text-green-600 transition-colors hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900/30"
+            @click="uploadSuccessMessage = ''"
           >
-            <AppIcon name="x" class="w-4 h-4" />
+            <AppIcon name="x" class="h-4 w-4" />
           </button>
         </div>
       </Transition>
 
-      <!-- Error Message -->
       <Transition name="slide-fade">
         <div
           v-if="uploadError"
-          class="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3 animate-bounce-in"
+          class="mt-4 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
         >
           <div
-            class="w-10 h-10 bg-red-100 dark:bg-red-900/50 rounded-xl flex items-center justify-center flex-shrink-0"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/50"
           >
             <AppIcon
               name="x-circle"
-              class="w-5 h-5 text-red-600 dark:text-red-400"
+              class="h-5 w-5 text-red-600 dark:text-red-400"
             />
           </div>
-          <p class="text-sm text-red-700 dark:text-red-300 flex-1">
+          <p class="flex-1 text-sm text-red-700 dark:text-red-300">
             {{ uploadError }}
           </p>
           <button
+            class="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30"
             @click="uploadError = ''"
-            class="p-2 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
           >
-            <AppIcon name="x" class="w-4 h-4" />
+            <AppIcon name="x" class="h-4 w-4" />
           </button>
         </div>
       </Transition>
 
-    <!-- Processing Progress Modal -->
-    <ProcessingProgress
-      :visible="showProgress"
-      :title="progressTitle"
-      :subtitle="progressSubtitle"
-      :progress="progress"
-      :current-step="currentStep"
-      :steps="progressSteps"
-      :stats="progressStats"
-      :can-cancel="progressStatus === 'processing' || progressStatus === 'success'"
-      :can-close="progressStatus === 'error'"
-      :can-save="progressStatus === 'success'"
-      :can-apply="false"
-      :can-clean="false"
-      :can-fix="progressStatus === 'error'"
-      :close-text="'إغلاق'"
-      :status="progressStatus"
-      @close="closeProgress"
-      @cancel="progressStatus === 'success' ? cleanResults() : cancelProgress()"
-      @save="applyResults"
-      @apply="applyResults"
-      @clean="cleanResults"
-      @fix="fixResults"
-    />
+      <div v-if="uploadItems.length > 0" class="mt-4 space-y-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div
+            class="rounded-xl border border-neutral-100 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-900/40"
+          >
+            <p class="text-xs text-neutral-500 dark:text-neutral-400">إجمالي الملفات</p>
+            <p class="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">
+              {{ uploadItems.length }}
+            </p>
+          </div>
+          <div
+            class="rounded-xl border border-neutral-100 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-900/40"
+          >
+            <p class="text-xs text-neutral-500 dark:text-neutral-400">جاهزة للإرسال</p>
+            <p class="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">
+              {{ readyItemsCount }}
+            </p>
+          </div>
+          <div
+            class="rounded-xl border border-neutral-100 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-900/40"
+          >
+            <p class="text-xs text-neutral-500 dark:text-neutral-400">تحتاج مراجعة</p>
+            <p class="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">
+              {{ reviewItemsCount }}
+            </p>
+          </div>
+          <div
+            class="rounded-xl border border-neutral-100 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-900/40"
+          >
+            <p class="text-xs text-neutral-500 dark:text-neutral-400">بها أخطاء</p>
+            <p class="mt-1 text-2xl font-bold text-red-600 dark:text-red-400">
+              {{ erroredItemsCount }}
+            </p>
+          </div>
+        </div>
+
+        <div
+          v-if="uploading && uploadProgress > 0"
+          class="rounded-xl border border-neutral-100 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-900/40"
+        >
+          <div class="mb-2 flex items-center justify-between gap-3">
+            <span class="text-sm font-semibold text-brand-600 dark:text-brand-400">
+              {{ uploadProgressMessage }}
+            </span>
+            <span class="text-sm font-bold text-neutral-700 dark:text-neutral-300">
+              {{ uploadProgress }}%
+            </span>
+          </div>
+          <div class="h-2.5 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
+            <div
+              class="h-2.5 rounded-full bg-brand-600 transition-all duration-300 ease-out"
+              :style="{ width: uploadProgress + '%' }"
+            ></div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div
+            v-for="(item, index) in uploadItems"
+            :key="item.id"
+            class="rounded-2xl border border-neutral-100 bg-neutral-50/70 p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-900/30"
+          >
+            <div class="flex flex-col gap-4">
+              <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div class="flex min-w-0 items-start gap-3">
+                  <div
+                    class="relative flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30"
+                  >
+                    <AppIcon
+                      name="document"
+                      class="h-6 w-6 text-red-600 dark:text-red-400"
+                    />
+                    <div
+                      v-if="item.extractingMetadata"
+                      class="absolute inset-0 flex items-center justify-center rounded-xl bg-white/60 backdrop-blur-sm dark:bg-neutral-800/60"
+                    >
+                      <BaseSpinner size="sm" />
+                    </div>
+                  </div>
+
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <p class="truncate font-semibold text-neutral-900 dark:text-white">
+                        {{ index + 1 }}. {{ item.file.name }}
+                      </p>
+                      <BaseBadge :variant="itemStatus(item).variant" size="xs">
+                        {{ itemStatus(item).label }}
+                      </BaseBadge>
+                    </div>
+                    <div
+                      class="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400"
+                    >
+                      <span>{{ formatSize(item.file.size) }}</span>
+                      <span v-if="item.extractingMetadata">جاري استخراج البيانات تلقائياً</span>
+                      <span v-if="item.uploaded && item.fileId">تم إنشاء الملف بنجاح</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                  <button
+                    class="rounded-lg px-3 py-2 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                    :disabled="uploading || item.extractingMetadata || !!item.validationError"
+                    @click="extractItemMetadata(item)"
+                  >
+                    <span class="flex items-center gap-2">
+                      <BaseSpinner v-if="item.extractingMetadata" size="xs" />
+                      <AppIcon v-else name="ArrowPath" size="sm" />
+                      <span>إعادة القراءة</span>
+                    </span>
+                  </button>
+                  <button
+                    class="rounded-lg p-2 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-neutral-500 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                    :disabled="uploading"
+                    @click="removeItem(item.id)"
+                  >
+                    <AppIcon name="trash" class="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div
+                v-if="item.validationError"
+                class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300"
+              >
+                {{ item.validationError }}
+              </div>
+
+              <div
+                v-if="item.uploadError"
+                class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300"
+              >
+                {{ item.uploadError }}
+              </div>
+
+              <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div class="relative">
+                  <label
+                    class="mb-1 flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300"
+                  >
+                    اسم الشركة الموردة
+                    <BaseSpinner v-if="item.extractingMetadata" size="xs" />
+                  </label>
+                  <input
+                    v-model="item.supplierName"
+                    list="supplier-name-options"
+                    type="text"
+                    :disabled="isItemLocked(item)"
+                    placeholder="اكتب اسم الشركة كما يظهر أعلى الصفحة الأولى"
+                    class="w-full rounded-xl border border-neutral-200 bg-brand-50 px-3 py-2 text-neutral-900 transition-all duration-200 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white dark:focus:bg-neutral-600 dark:focus:ring-brand-900/30"
+                    @input="handleSupplierNameInput(item)"
+                  />
+                  <p class="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+                    حقل إجباري. يمكنك تعديله يدوياً لكل ملف.
+                  </p>
+                </div>
+
+                <div class="relative">
+                  <label
+                    class="mb-1 flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300"
+                  >
+                    تاريخ الملف
+                    <BaseSpinner v-if="item.extractingMetadata" size="xs" />
+                  </label>
+                  <input
+                    v-model="item.documentDate"
+                    type="date"
+                    :disabled="isItemLocked(item)"
+                    class="w-full rounded-xl border border-neutral-200 bg-brand-50 px-3 py-2 text-neutral-900 transition-all duration-200 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white dark:focus:bg-neutral-600 dark:focus:ring-brand-900/30"
+                  />
+                  <p class="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+                    حقل إجباري. أدخل التاريخ المكتوب على الملف إذا لم يلتقط تلقائياً.
+                  </p>
+                </div>
+              </div>
+
+              <div class="relative">
+                <label
+                  class="mb-1 flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300"
+                >
+                  طريقة التحليل
+                  <span
+                    class="rounded-full bg-brand-100 px-2 py-0.5 text-xs text-brand-700 dark:bg-neutral-800 dark:text-neutral-300"
+                  >
+                    الافتراضي: {{ processingMethodLabel(defaultMethod) }}
+                  </span>
+                </label>
+                <BaseSelect
+                  v-model="item.method"
+                  :disabled="isItemLocked(item)"
+                  select-class="form-select py-2"
+                  :options="methodOptions"
+                />
+                <p class="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+                  هذا الاختيار يطبق على هذا الملف فقط.
+                </p>
+              </div>
+
+              <div
+                v-if="!item.validationError && !item.extractingMetadata && !isItemReady(item)"
+                class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200"
+              >
+                يجب إكمال اسم الشركة وتاريخ الملف قبل إرسال هذا العنصر.
+              </div>
+
+              <div
+                v-if="item.uploaded && item.fileId"
+                class="flex flex-wrap items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-300"
+              >
+                <span>تم إرسال الملف للمعالجة بنجاح.</span>
+                <button
+                  class="font-semibold text-green-700 underline-offset-4 hover:underline dark:text-green-300"
+                  @click="router.push(`/files/${item.fileId}`)"
+                >
+                  فتح الملف
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <datalist id="supplier-name-options">
+          <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.name">
+            {{ supplier.name }}
+          </option>
+        </datalist>
+
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button
+            class="flex-1 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+            :disabled="uploading || readyItemsCount === 0"
+            @click="uploadFiles"
+          >
+            <span class="flex items-center justify-center gap-2">
+              <BaseSpinner v-if="uploading" size="xs" color="white" />
+              <AppIcon v-else name="CloudArrowUp" size="sm" />
+              <span>
+                {{
+                  uploading
+                    ? "جاري إرسال الملفات..."
+                    : `إرسال ${readyItemsCount} ملف${readyItemsCount === 1 ? "" : ""}`
+                }}
+              </span>
+            </span>
+          </button>
+          <button
+            class="rounded-xl bg-brand-50 px-5 py-2.5 text-sm font-semibold text-brand-700 transition-all duration-200 hover:bg-brand-100 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
+            :disabled="uploading"
+            @click="clearAll"
+          >
+            مسح القائمة
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Quick Stats -->
     <TransitionGroup
@@ -519,17 +537,82 @@
         </div>
     </div>
   </div>
+    </TransitionGroup>
+
+    <!-- Recent Files -->
+    <div
+      class="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm border border-neutral-100 dark:border-neutral-700"
+    >
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">
+          آخر الملفات المرفوعة
+        </h3>
+        <router-link
+          v-if="recentFiles.length > 0"
+          to="/files"
+          class="text-sm text-brand-600 dark:text-neutral-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium"
+        >
+          عرض الكل
+        </router-link>
+      </div>
+
+      <TransitionGroup name="list" tag="div" class="space-y-3">
+        <div
+          v-for="file in recentFiles"
+          :key="file.id"
+          class="flex items-center gap-4 p-3 bg-brand-50 dark:bg-neutral-700/50 rounded-xl border border-neutral-100 dark:border-neutral-600 hover:bg-brand-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+          @click="router.push('/files/' + file.id)"
+        >
+          <div
+            class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center flex-shrink-0"
+          >
+            <AppIcon
+              name="document"
+              class="w-5 h-5 text-red-600 dark:text-red-400"
+            />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p
+              class="font-medium text-neutral-900 dark:text-white truncate text-sm"
+            >
+              {{ file.original_name }}
+            </p>
+            <p class="text-xs text-neutral-500 dark:text-neutral-400">
+              {{ formatDate(file.createdAt) }} ⬢
+              {{ file.parts_count || 0 }} قطعة ⬢
+              {{ formatSize(file.file_size) }}
+            </p>
+          </div>
+          <BaseBadge :variant="statusVariant(file.status)" size="xs">
+            {{ statusLabel(file.status) }}
+          </BaseBadge>
+        </div>
+      </TransitionGroup>
+
+      <div v-if="recentFiles.length === 0" class="text-center py-8">
+        <div
+          class="w-16 h-16 bg-neutral-100 dark:bg-neutral-700 rounded-xl mx-auto mb-4 flex items-center justify-center"
+        >
+          <AppIcon
+            name="FolderOpen"
+            class="w-8 h-8 text-neutral-400 dark:text-neutral-500"
+          />
+        </div>
+        <p class="text-neutral-500 dark:text-neutral-400 text-sm">
+          لم يتم رفع أي ملفات بعد
+        </p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { pdfAPI, settingsAPI, supplierAPI } from "@/services/api";
-import ProcessingProgress from "@/components/ProcessingProgress.vue";
 import { AppIcon } from "@/components/icons";
 import { BaseBadge, BaseSelect, BaseSpinner } from "@/components/base";
 
-// Helper functions - تعريف الدوال المساعدة في البداية
 const formatSize = (bytes) => {
   if (bytes < 1024) return bytes + " B";
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
@@ -559,12 +642,8 @@ const statusVariant = (s) =>
 
 const router = useRouter();
 const fileInput = ref(null);
-const selectedFile = ref(null);
-const selectedMethod = ref("");
 const defaultMethod = ref("python_pypdf");
-const supplierId = ref("");
-const supplierName = ref("");
-const documentDate = ref("");
+const uploadItems = ref([]);
 const suppliers = ref([]);
 const recentFiles = ref([]);
 const stats = ref({
@@ -574,33 +653,20 @@ const stats = ref({
   total_parts: 0,
 });
 const uploading = ref(false);
-const uploadSuccess = ref(false);
+const uploadSuccessMessage = ref("");
 const uploadError = ref("");
 const isDragging = ref(false);
-const extractingMetadata = ref(false);
+const uploadProgress = ref(0);
+const uploadProgressMessage = ref("");
+let uploadItemCounter = 0;
 
-// Progress tracking
-const showProgress = ref(false);
-const progress = ref(0);
-const progressTitle = ref("جاري معالجة الملف");
-const progressSubtitle = ref("");
-const currentStep = ref(0);
-const progressStatus = ref("processing");
-const progressSteps = ref([
-  { label: "رفع الملف", status: "pending", detail: "" },
-  { label: "فحص الملف", status: "pending", detail: "" },
-  { label: "استخراج البيانات", status: "pending", detail: "" },
-  { label: "حفظ النتائج", status: "pending", detail: "" },
-]);
-const progressStats = ref({
-  pages: 0,
-  parts: 0,
-  tables: 0,
-});
-
-let progressMonitorInterval = null;
-let fileId = null;
-let simulatedProgressInterval = null;
+const methodOptions = [
+  { label: "استخدام الإعداد الافتراضي", value: "" },
+  { label: "Python PyPDF", value: "python_pypdf" },
+  { label: "Python AI", value: "python_ai" },
+  { label: "Node PDF", value: "node_pdf" },
+  { label: "AWS Textract", value: "aws_textract" },
+];
 
 const processingMethodLabel = (value) =>
   ({
@@ -610,38 +676,6 @@ const processingMethodLabel = (value) =>
     aws_textract: "AWS Textract",
     ocr: "OCR",
   })[value] || value || "الافتراضي";
-
-const startSimulatedProgress = () => {
-  if (simulatedProgressInterval) clearInterval(simulatedProgressInterval);
-  
-  simulatedProgressInterval = setInterval(() => {
-    if (progressStatus.value !== 'processing') {
-      clearInterval(simulatedProgressInterval);
-      return;
-    }
-    
-    // Simulate progress smoothly
-    if (progress.value < 25) {
-      progress.value += 1;
-    } else if (progress.value < 50) {
-      progress.value += 0.5;
-    } else if (progress.value < 65) {
-      progress.value += 0.2;
-    } else if (progress.value < 70) {
-      progress.value += 0.05;
-    }
-    
-    // Format to 1 decimal place
-    progress.value = parseFloat(progress.value.toFixed(1));
-  }, 1000);
-};
-
-const stopSimulatedProgress = () => {
-  if (simulatedProgressInterval) {
-    clearInterval(simulatedProgressInterval);
-    simulatedProgressInterval = null;
-  }
-};
 
 const refreshFilesAndStats = async () => {
   try {
@@ -677,49 +711,114 @@ onMounted(async () => {
   await refreshFilesAndStats();
 });
 
-onUnmounted(() => {
-  stopProgressTracking();
+const normalizeSupplierName = (value) =>
+  (value || "").replace(/\s+/g, " ").trim();
+
+const isItemReady = (item) =>
+  !item.validationError &&
+  !!normalizeSupplierName(item.supplierName) &&
+  !!item.documentDate &&
+  !item.extractingMetadata &&
+  !item.uploaded;
+
+const isItemLocked = (item) => uploading.value || item.extractingMetadata || item.uploaded;
+
+const readyItems = computed(() => uploadItems.value.filter((item) => isItemReady(item)));
+const readyItemsCount = computed(() => readyItems.value.length);
+const reviewItemsCount = computed(() =>
+  uploadItems.value.filter(
+    (item) =>
+      !item.validationError &&
+      !item.uploadError &&
+      !item.uploaded &&
+      !isItemReady(item)
+  ).length
+);
+const erroredItemsCount = computed(() =>
+  uploadItems.value.filter((item) => !!item.validationError || !!item.uploadError).length
+);
+
+const nextUploadItemId = () => `upload-item-${Date.now()}-${uploadItemCounter++}`;
+
+const getFileValidationError = (file) => {
+  const hasPdfMime = file.type === "application/pdf";
+  const hasPdfExtension = file.name.toLowerCase().endsWith(".pdf");
+  if (!hasPdfMime && !hasPdfExtension) {
+    return "يجب أن يكون الملف بصيغة PDF فقط";
+  }
+
+  const maxSize = 100 * 1024 * 1024;
+  if (file.size > maxSize) {
+    return "حجم الملف يتجاوز الحد الأقصى المسموح (100 ميغابايت)";
+  }
+
+  return "";
+};
+
+const buildUploadItem = (file) => ({
+  id: nextUploadItemId(),
+  file,
+  supplierId: "",
+  supplierName: "",
+  documentDate: "",
+  method: "",
+  extractingMetadata: false,
+  validationError: getFileValidationError(file),
+  uploadError: "",
+  uploaded: false,
+  uploading: false,
+  fileId: "",
 });
 
+const itemStatus = (item) => {
+  if (item.validationError) {
+    return { label: "غير صالح", variant: "error" };
+  }
+  if (item.uploadError) {
+    return { label: "به خطأ", variant: "error" };
+  }
+  if (item.uploaded) {
+    return { label: "تم الإرسال", variant: "success" };
+  }
+  if (item.uploading) {
+    return { label: "جاري الرفع", variant: "info" };
+  }
+  if (item.extractingMetadata) {
+    return { label: "جاري القراءة", variant: "info" };
+  }
+  if (isItemReady(item)) {
+    return { label: "جاهز", variant: "success" };
+  }
+  return { label: "ينتظر الإكمال", variant: "warning" };
+};
+
 const handleFileSelect = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  await processSelectedFile(file);
+  const files = Array.from(e.target.files || []);
+  if (files.length === 0) return;
+  await addFiles(files);
+  e.target.value = "";
 };
 
 const handleDrop = async (e) => {
   isDragging.value = false;
-  const file = e.dataTransfer.files[0];
-  if (!file) return;
-  await processSelectedFile(file);
+  const files = Array.from(e.dataTransfer.files || []);
+  if (files.length === 0) return;
+  await addFiles(files);
 };
 
-const processSelectedFile = async (file) => {
-  // التحقق من صيغة الملف
-  if (file.type !== "application/pdf") {
-    uploadError.value = "يجب أن يكون الملف بصيغة PDF فقط";
-    return;
-  }
-
-  // التحقق من حجم الملف (100MB)
-  const maxSize = 100 * 1024 * 1024;
-  if (file.size > maxSize) {
-    uploadError.value = "حجم الملف يتجاوز الحد الأقصى المسموح (100 ميغابايت)";
-    return;
-  }
-
-  selectedFile.value = file;
+const addFiles = async (files) => {
   uploadError.value = "";
-  documentDate.value = "";
-  supplierId.value = "";
-  supplierName.value = "";
-  
-  // Extract metadata automatically
-  await extractFileMetadata(file);
-};
+  uploadSuccessMessage.value = "";
 
-const normalizeSupplierName = (value) =>
-  (value || "").replace(/\s+/g, " ").trim();
+  const items = files.map((file) => buildUploadItem(file));
+  uploadItems.value = [...items, ...uploadItems.value];
+
+  await Promise.allSettled(
+    items
+      .filter((item) => !item.validationError)
+      .map((item) => extractItemMetadata(item))
+  );
+};
 
 const findMatchingSupplier = (name) => {
   const normalizedName = normalizeSupplierName(name).toLowerCase();
@@ -745,16 +844,16 @@ const reloadSuppliers = async () => {
   suppliers.value = res.data?.data?.suppliers || [];
 };
 
-const ensureSupplierForUpload = async () => {
-  const normalizedName = normalizeSupplierName(supplierName.value);
+const ensureSupplierForUpload = async (item) => {
+  const normalizedName = normalizeSupplierName(item.supplierName);
   if (!normalizedName) {
     throw new Error("يرجى إدخال اسم الشركة الموردة");
   }
 
   const existing = findMatchingSupplier(normalizedName);
   if (existing) {
-    supplierId.value = existing.id;
-    supplierName.value = existing.name;
+    item.supplierId = existing.id;
+    item.supplierName = existing.name;
     return existing.id;
   }
 
@@ -763,16 +862,16 @@ const ensureSupplierForUpload = async () => {
     const newSupplier = createRes.data?.data;
     if (newSupplier) {
       suppliers.value.push(newSupplier);
-      supplierId.value = newSupplier.id;
-      supplierName.value = newSupplier.name;
+      item.supplierId = newSupplier.id;
+      item.supplierName = newSupplier.name;
       return newSupplier.id;
     }
   } catch (error) {
     await reloadSuppliers();
     const fallbackSupplier = findMatchingSupplier(normalizedName);
     if (fallbackSupplier) {
-      supplierId.value = fallbackSupplier.id;
-      supplierName.value = fallbackSupplier.name;
+      item.supplierId = fallbackSupplier.id;
+      item.supplierName = fallbackSupplier.name;
       return fallbackSupplier.id;
     }
 
@@ -782,308 +881,197 @@ const ensureSupplierForUpload = async () => {
   throw new Error("تعذر تجهيز الشركة الموردة حالياً");
 };
 
-const handleSupplierNameInput = () => {
-  supplierId.value = "";
+const handleSupplierNameInput = (item) => {
+  item.supplierId = "";
+  item.uploadError = "";
+  item.uploaded = false;
+  item.fileId = "";
 };
 
-const extractFileMetadata = async (file) => {
-  extractingMetadata.value = true;
+const extractItemMetadata = async (item) => {
+  if (!item || item.validationError) return;
+
+  item.extractingMetadata = true;
+  item.uploadError = "";
   try {
     const formData = new FormData();
-    formData.append("file", file);
-    
-    const res = await pdfAPI.extractMetadata(formData);
-    
-    // Check if user cleared or changed the file during extraction
-    if (selectedFile.value !== file) return;
+    formData.append("file", item.file);
 
+    const res = await pdfAPI.extractMetadata(formData);
     const data = res.data?.data;
-    
+
     if (data) {
       if (data.documentDate) {
-        documentDate.value = data.documentDate;
+        item.documentDate = data.documentDate;
       }
-      
+
       if (data.supplierName) {
         const extractedName = data.supplierName.trim();
-        supplierName.value = extractedName;
+        item.supplierName = extractedName;
         const existing = findMatchingSupplier(extractedName);
-        
+
         if (existing) {
-          supplierId.value = existing.id;
-          supplierName.value = existing.name;
+          item.supplierId = existing.id;
+          item.supplierName = existing.name;
         }
       }
     }
   } catch (e) {
-    if (selectedFile.value === file) {
-      documentDate.value = "";
-      supplierId.value = "";
-      supplierName.value = "";
-    }
-
     if (e?.response?.status !== 403) {
-      console.warn(
-        "Metadata extraction skipped:",
-        e?.response?.data?.message || e?.message || "unknown error"
-      );
+      item.uploadError =
+        e?.response?.data?.message || "تعذر استخراج البيانات تلقائياً لهذا الملف";
     }
   } finally {
-    extractingMetadata.value = false;
+    item.extractingMetadata = false;
   }
 };
 
-const clearFile = () => {
-  stopProgressTracking();
-  selectedFile.value = null;
-  documentDate.value = "";
-  supplierId.value = "";
-  supplierName.value = "";
-  selectedMethod.value = "";
-  uploadSuccess.value = false;
+const removeItem = (itemId) => {
+  uploadItems.value = uploadItems.value.filter((item) => item.id !== itemId);
+};
+
+const clearAll = () => {
+  uploadItems.value = [];
+  uploadSuccessMessage.value = "";
   uploadError.value = "";
-  extractingMetadata.value = false;
+  uploadProgress.value = 0;
+  uploadProgressMessage.value = "";
 };
 
-const uploadFile = async () => {
-  if (!selectedFile.value) return;
-  if (!supplierName.value.trim()) {
-    uploadError.value = "يرجى إدخال اسم الشركة الموردة";
-    return;
-  }
-  if (!documentDate.value) {
-    uploadError.value = "يرجى تحديد تاريخ الملف";
+const extractBatchResults = (payload) => {
+  if (!payload || typeof payload !== "object") return [];
+
+  const candidates = [
+    payload.items,
+    payload.files,
+    payload.results,
+    payload.uploads,
+    payload.uploadedFiles,
+    payload.uploaded_files,
+  ];
+
+  return candidates.find((candidate) => Array.isArray(candidate)) || [];
+};
+
+const uploadFiles = async () => {
+  if (readyItems.value.length === 0) {
+    uploadError.value = "لا توجد ملفات جاهزة للإرسال حالياً";
     return;
   }
 
   uploading.value = true;
-  uploadSuccess.value = false;
+  uploadSuccessMessage.value = "";
   uploadError.value = "";
+  uploadProgress.value = 0;
+  uploadProgressMessage.value = "جاري تجهيز الملفات للإرسال...";
+
+  uploadItems.value.forEach((item) => {
+    item.uploadError = item.validationError ? item.uploadError : "";
+    item.uploading = false;
+  });
 
   try {
-    const ensuredSupplierId = await ensureSupplierForUpload();
-    const formData = new FormData();
-    formData.append("file", selectedFile.value);
-    formData.append("supplier_id", ensuredSupplierId);
-    formData.append("document_date", documentDate.value);
-    if (selectedMethod.value) {
-      formData.append("method", selectedMethod.value);
+    const preparedUploads = [];
+
+    for (const item of readyItems.value) {
+      try {
+        const supplierId = await ensureSupplierForUpload(item);
+        item.uploading = true;
+        preparedUploads.push({
+          item,
+          payload: {
+            supplier_id: supplierId,
+            document_date: item.documentDate,
+            ...(item.method ? { method: item.method } : {}),
+          },
+        });
+      } catch (error) {
+        item.uploadError =
+          error?.response?.data?.message ||
+          error?.message ||
+          "تعذر تجهيز بيانات هذا الملف";
+      }
     }
 
-    // Start progress tracking
-    startProgressTracking();
+    if (preparedUploads.length === 0) {
+      throw new Error("تعذر تجهيز أي ملف للإرسال");
+    }
 
-    // Upload with progress tracking
+    const formData = new FormData();
+    preparedUploads.forEach(({ item }) => {
+      formData.append("files[]", item.file);
+    });
+    formData.append(
+      "items",
+      JSON.stringify(preparedUploads.map(({ payload }) => payload))
+    );
+
     const response = await pdfAPI.upload(formData, {
       onUploadProgress: (progressEvent) => {
+        if (!progressEvent.total) return;
         const percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total,
+          (progressEvent.loaded * 100) / progressEvent.total
         );
-        if (percentCompleted <= 30) {
-          progress.value = percentCompleted;
-          progressSubtitle.value = `جاري رفع الملف... ${percentCompleted}%`;
-          updateStep(0, 'active', progressSubtitle.value);
+        uploadProgress.value = percentCompleted;
+        if (percentCompleted < 100) {
+          uploadProgressMessage.value = `جاري رفع ${preparedUploads.length} ملف... ${percentCompleted}%`;
+        } else {
+          uploadProgressMessage.value = "تم إرسال الملفات. جاري تحديث القائمة...";
         }
       },
     });
 
-    fileId = response.data?.data?.id;
+    const payload = response.data?.data;
+    const results = extractBatchResults(payload);
 
-    uploadSuccess.value = true;
-    selectedFile.value = null;
+    let successCount = 0;
+
+    preparedUploads.forEach(({ item }, index) => {
+      const result = results[index];
+      const fileError =
+        result?.success === false || result?.status === "failed"
+          ? result?.error || result?.message || "تعذر رفع الملف"
+          : "";
+
+      if (fileError) {
+        item.uploadError = fileError;
+        item.uploaded = false;
+        item.fileId = "";
+      } else {
+        item.uploadError = "";
+        item.uploaded = true;
+        item.fileId =
+          result?.id ||
+          result?.file_id ||
+          result?.data?.id ||
+          payload?.id ||
+          "";
+        successCount += 1;
+      }
+
+      item.uploading = false;
+    });
+
+    uploadProgress.value = 100;
+    uploadProgressMessage.value = "اكتمل إرسال الملفات بنجاح";
+    uploadSuccessMessage.value = `تم إرسال ${successCount} من أصل ${preparedUploads.length} ملف للمعالجة.`;
 
     await refreshFilesAndStats();
-
-    // Continue monitoring progress
-    startProgressMonitor(fileId);
   } catch (error) {
-    console.error("Upload error:", error);
-    uploadError.value =
-      error.response?.data?.message || "حدث خطأ أثناء رفع الملف";
-    uploadSuccess.value = false;
-    
-    progressStatus.value = "error";
-    progressTitle.value = "فشل رفع الملف";
-    progressSubtitle.value = uploadError.value;
-    
-    stopProgressTracking();
+    const message =
+      error?.response?.data?.message || error?.message || "حدث خطأ أثناء رفع الملفات";
+    uploadError.value = message;
+    uploadItems.value.forEach((item) => {
+      if (item.uploading) {
+        item.uploading = false;
+        item.uploadError = message;
+      }
+    });
   } finally {
     uploading.value = false;
-  }
-};
-
-const progressMessage = ref("");
-
-const startProgressMonitor = (id) => {
-  if (!id) return;
-  
-  progressMonitorInterval = setInterval(async () => {
-    try {
-      const res = await pdfAPI.getJobStatus(id);
-      const statusData = res.data?.data;
-      
-      if (statusData) {
-        // Handle both API response formats (BullMQ raw vs DB status)
-        const currentProgress = statusData.progress_percent !== undefined ? statusData.progress_percent : statusData.progress;
-        
-        // Only take backend progress if it's greater than simulated progress or if we're near completion
-        if (currentProgress !== undefined) {
-          if (currentProgress >= 70 || currentProgress > progress.value) {
-            progress.value = currentProgress;
-          }
-        }
-        
-        const currentMessage = statusData.progress_message || statusData.message;
-        progressMessage.value = currentMessage || progressMessage.value;
-        progressSubtitle.value = progressMessage.value;
-        
-        // Update steps for visual feedback
-        if (progress.value > 0 && progress.value <= 30) {
-          currentStep.value = 1;
-          updateStep(0, 'completed', 'تم الرفع');
-          updateStep(1, 'active', progressMessage.value);
-        } else if (progress.value > 30 && progress.value < 90) {
-          currentStep.value = 2;
-          updateStep(0, 'completed', 'تم الرفع');
-          updateStep(1, 'completed', 'تم الفحص');
-          updateStep(2, 'active', progressMessage.value);
-        } else if (progress.value >= 90 && progress.value < 100) {
-          currentStep.value = 3;
-          updateStep(0, 'completed', 'تم الرفع');
-          updateStep(1, 'completed', 'تم الفحص');
-          updateStep(2, 'completed', 'تم استخراج البيانات');
-          updateStep(3, 'active', progressMessage.value);
-        }
-        
-        // Update stats
-        if (statusData.page_count !== undefined) progressStats.value.pages = statusData.page_count || 0;
-        if (statusData.parts_count !== undefined) progressStats.value.parts = statusData.parts_count || 0;
-        if (statusData.tables_count !== undefined) progressStats.value.tables = statusData.tables_count || 0;
-        
-        
-        if (statusData.state === 'completed' || statusData.status === 'completed') {
-          progress.value = 100;
-          progressMessage.value = "تمت المعالجة بنجاح";
-          progressStatus.value = "success";
-          progressTitle.value = "اكتملت معالجة الملف";
-          progressSubtitle.value = "تم استخراج البيانات بنجاح";
-          
-          currentStep.value = 4;
-          updateStep(3, 'completed', 'تم حفظ النتائج');
-          
-          stopProgressTracking();
-          uploadSuccess.value = true;
-          await refreshFilesAndStats();
-        } else if (statusData.state === 'failed' || statusData.status === 'failed') {
-          progressStatus.value = "error";
-          progressTitle.value = "فشلت معالجة الملف";
-          
-          const errorMessage = statusData.error_message || statusData.error || "حدث خطأ غير متوقع أثناء المعالجة";
-          progressSubtitle.value = errorMessage;
-          
-          uploadError.value = errorMessage;
-          stopProgressTracking();
-        }
-      }
-    } catch (e) {
-      console.error("Error checking job status:", e);
-    }
-  }, 2000);
-};
-
-const startProgressTracking = () => {
-  resetProgressState();
-  showProgress.value = true;
-  progressMessage.value = "يبدأ رفع الملف...";
-  progressSubtitle.value = "جاري التحضير للرفع...";
-  startSimulatedProgress();
-};
-
-const stopProgressTracking = () => {
-  if (progressMonitorInterval) {
-    clearInterval(progressMonitorInterval);
-    progressMonitorInterval = null;
-  }
-  stopSimulatedProgress();
-};
-
-const updateStep = (index, status, detail) => {
-  if (progressSteps.value[index]) {
-    progressSteps.value[index].status = status;
-    if (detail) {
-      progressSteps.value[index].detail = detail;
-    }
-  }
-};
-
-const resetProgressState = () => {
-  progress.value = 0;
-  progressTitle.value = "جاري معالجة الملف";
-  progressSubtitle.value = "";
-  progressStatus.value = "processing";
-  currentStep.value = 0;
-  progressSteps.value = [
-    { label: "رفع الملف", status: "pending", detail: "" },
-    { label: "فحص الملف", status: "pending", detail: "" },
-    { label: "استخراج البيانات", status: "pending", detail: "" },
-    { label: "حفظ النتائج", status: "pending", detail: "" },
-  ];
-  progressStats.value = {
-    pages: 0,
-    parts: 0,
-    tables: 0,
-  };
-};
-
-const closeProgress = () => {
-  showProgress.value = false;
-  stopProgressTracking();
-  resetProgressState();
-};
-
-const cancelProgress = () => {
-  showProgress.value = false;
-  stopProgressTracking();
-  resetProgressState();
-  uploadError.value = "تم إلغاء العملية";
-};
-
-
-const applyResults = () => {
-  const currentFileId = fileId;
-  closeProgress();
-  if (currentFileId) {
-    router.push(`/files/${currentFileId}`);
-  }
-};
-
-const cleanResults = () => {
-  closeProgress();
-  clearFile();
-  fileId = null;
-};
-
-const fixResults = async () => {
-  if (!fileId) {
-    closeProgress();
-    return;
-  }
-
-  uploadError.value = "";
-  progressTitle.value = "جاري إعادة المعالجة";
-  progressSubtitle.value = "يتم الآن طلب إعادة معالجة الملف";
-  startProgressTracking();
-
-  try {
-    await pdfAPI.reprocessFile(fileId, {});
-    startProgressMonitor(fileId);
-  } catch (e) {
-    stopProgressTracking();
-    progressStatus.value = "error";
-    progressTitle.value = "تعذرت إعادة المعالجة";
-    progressSubtitle.value =
-      e.response?.data?.message || "تعذر إعادة معالجة الملف حالياً";
-    uploadError.value = progressSubtitle.value;
+    uploadItems.value.forEach((item) => {
+      item.uploading = false;
+    });
   }
 };
 </script>

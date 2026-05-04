@@ -13,12 +13,7 @@ import logger from '../config/logger';
 import { adminRepository, userRepository } from '../repositories';
 import { toError } from '../utils/errors';
 import { normalizePhoneNumber } from '../utils/phone';
-import {
-  SINGLE_ADMIN_EMAIL,
-  SINGLE_ADMIN_FULL_NAME,
-  SINGLE_ADMIN_PASSWORD,
-  SINGLE_ADMIN_PHONE,
-} from '../repositories/AdminRepository';
+import { SINGLE_ADMIN_PHONE, SINGLE_ADMIN_PASSWORD } from '../repositories/AdminRepository';
 
 const resetUsers = async () => {
   try {

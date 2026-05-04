@@ -1,6 +1,5 @@
 <template>
   <div class="page-shell">
-    <BaseToast />
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
@@ -172,7 +171,7 @@ import { supportAPI } from '@/services/api';
 import { AppIcon } from '@/components/icons';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseModal from '@/components/base/BaseModal.vue';
-import BaseToast from '@/components/base/BaseToast.vue';
+import BaseSelect from '@/components/base/BaseSelect.vue';
 
 const channels = ref([]);
 const isLoading = ref(true);

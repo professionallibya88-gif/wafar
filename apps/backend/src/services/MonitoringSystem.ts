@@ -5,16 +5,93 @@ import * as path from 'path';
 import * as os from 'os';
 import { systemRepository } from '../repositories/SystemRepository';
 
+type MonitoringSeverity = 'critical' | 'high' | 'medium' | 'low';
+type MonitoringStatus = 'healthy' | 'unhealthy';
+
+type MonitoringOptions = {
+  logPath: string;
+  metricsInterval: number;
+  healthCheckInterval: number;
+  errorThreshold: number;
+  memoryThreshold: number;
+  cpuThreshold: number;
+  maxStoredMetrics: number;
+  maxAlerts: number;
+  metricsRetentionMs: number;
+};
+
+type RequestMetric = {
+  endpoint: string;
+  method: string;
+  duration: number;
+  statusCode: number;
+  timestamp: number;
+};
+
+type ErrorMetric = {
+  id: string;
+  message: string;
+  stack?: string;
+  source: string;
+  context: Record<string, unknown>;
+  timestamp: number;
+  severity: MonitoringSeverity;
+};
+
+type ProcessingTimeMetric = {
+  fileId: string;
+  duration: number;
+  success: boolean;
+  timestamp: number;
+};
+
+type MonitoringMetrics = {
+  requests: RequestMetric[];
+  errors: ErrorMetric[];
+  processingTimes: ProcessingTimeMetric[];
+  activeConnections: number;
+  startTime: number;
+};
+
+type HealthCheckEntry = {
+  status: MonitoringStatus;
+  value: unknown;
+};
+
+type HealthChecks = Record<string, HealthCheckEntry>;
+
+type HealthStatus = {
+  status: MonitoringStatus;
+  checks: HealthChecks;
+  lastCheck: number | null;
+};
+
+type MonitoringAlert = {
+  id: string;
+  type: string;
+  message: string;
+  data: Record<string, unknown>;
+  timestamp: number;
+  acknowledged: boolean;
+  acknowledgedAt?: number;
+};
+
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
+const getErrorStack = (error: unknown): string | undefined =>
+  error instanceof Error ? error.stack : undefined;
+
 export class MonitoringSystem extends EventEmitter {
   private static instance: MonitoringSystem | null = null;
-  public options: any;
+  public options: MonitoringOptions;
   public logger: winston.Logger;
-  public metrics: any;
-  public healthStatus: any;
-  public alerts: any[];
+  public metrics: MonitoringMetrics;
+  public healthStatus: HealthStatus;
+  public alerts: MonitoringAlert[];
   public intervals: ReturnType<typeof setInterval>[];
 
-  constructor(options: any = {}) {
+  constructor(options: Partial<MonitoringOptions> = {}) {
     super();
 
     this.options = {
@@ -73,7 +150,7 @@ export class MonitoringSystem extends EventEmitter {
     this.intervals = [];
   }
 
-  static getInstance(options?: any): MonitoringSystem {
+  static getInstance(options?: Partial<MonitoringOptions>): MonitoringSystem {
     if (!MonitoringSystem.instance) {
       MonitoringSystem.instance = new MonitoringSystem(options);
       MonitoringSystem.instance.start();
@@ -109,7 +186,7 @@ export class MonitoringSystem extends EventEmitter {
     this.log('info', 'Monitoring system stopped');
   }
 
-  log(level: string, message: string, meta: any = {}) {
+  log(level: string, message: string, meta: Record<string, unknown> = {}) {
     this.logger.log(level, message, {
       ...meta,
       timestamp: new Date().toISOString(),
@@ -130,11 +207,11 @@ export class MonitoringSystem extends EventEmitter {
     this.emit('request', { endpoint, method, duration, statusCode });
   }
 
-  trackError(error: any, source: string, context: any = {}) {
+  trackError(error: unknown, source: string, context: Record<string, unknown> = {}) {
     const errorEntry = {
       id: this.generateId(),
-      message: error?.message || String(error),
-      stack: error?.stack,
+      message: getErrorMessage(error),
+      stack: getErrorStack(error),
       source,
       context,
       timestamp: Date.now(),
@@ -169,15 +246,17 @@ export class MonitoringSystem extends EventEmitter {
     const oneMinuteAgo = now - 60000;
     this.pruneExpiredMetrics(now);
 
-    const recentRequests = this.metrics.requests.filter((r: any) => r.timestamp > oneMinuteAgo);
-    const recentErrors = this.metrics.errors.filter((e: any) => e.timestamp > oneMinuteAgo);
+    const recentRequests = this.metrics.requests.filter(
+      (request) => request.timestamp > oneMinuteAgo
+    );
+    const recentErrors = this.metrics.errors.filter((error) => error.timestamp > oneMinuteAgo);
 
     const stats = {
       timestamp: now,
       requests: {
         total: recentRequests.length,
         byStatus: this.groupBy(recentRequests, 'statusCode'),
-        avgDuration: this.average(recentRequests.map((r: any) => r.duration)),
+        avgDuration: this.average(recentRequests.map((request) => request.duration)),
       },
       errors: {
         total: recentErrors.length,
@@ -226,7 +305,7 @@ export class MonitoringSystem extends EventEmitter {
   }
 
   async performHealthCheck() {
-    const checks: any = {};
+    const checks: HealthChecks = {};
     let allHealthy = true;
 
     const memUsage = this.getSystemMetrics().memory.usagePercent / 100;
@@ -244,7 +323,7 @@ export class MonitoringSystem extends EventEmitter {
     if (checks.cpu.status === 'unhealthy') allHealthy = false;
 
     const now = Date.now();
-    const recentErrors = this.metrics.errors.filter((e: any) => e.timestamp > now - 60000);
+    const recentErrors = this.metrics.errors.filter((error) => error.timestamp > now - 60000);
     checks.errorRate = {
       status: recentErrors.length < this.options.errorThreshold ? 'healthy' : 'unhealthy',
       value: recentErrors.length,
@@ -256,8 +335,8 @@ export class MonitoringSystem extends EventEmitter {
     try {
       await systemRepository.checkDatabaseConnection();
       checks.database = { status: 'healthy', value: 'connected' };
-    } catch (error: any) {
-      checks.database = { status: 'unhealthy', value: error.message };
+    } catch (error) {
+      checks.database = { status: 'unhealthy', value: getErrorMessage(error) };
       allHealthy = false;
     }
 
@@ -278,7 +357,7 @@ export class MonitoringSystem extends EventEmitter {
 
   checkErrorThreshold() {
     const now = Date.now();
-    const recentErrors = this.metrics.errors.filter((e: any) => e.timestamp > now - 60000);
+    const recentErrors = this.metrics.errors.filter((error) => error.timestamp > now - 60000);
 
     if (recentErrors.length >= this.options.errorThreshold) {
       this.createAlert(
@@ -292,8 +371,8 @@ export class MonitoringSystem extends EventEmitter {
     }
   }
 
-  createAlert(type: string, message: string, data: any) {
-    const alert = {
+  createAlert(type: string, message: string, data: Record<string, unknown>) {
+    const alert: MonitoringAlert = {
       id: this.generateId(),
       type,
       message,
@@ -316,7 +395,7 @@ export class MonitoringSystem extends EventEmitter {
     const alert = this.alerts.find((a) => a.id === alertId);
     if (alert) {
       alert.acknowledged = true;
-      (alert as any).acknowledgedAt = Date.now();
+      alert.acknowledgedAt = Date.now();
       this.emit('alert:acknowledged', alert);
     }
     return alert;
@@ -335,7 +414,7 @@ export class MonitoringSystem extends EventEmitter {
     return this.collectMetrics();
   }
 
-  trimMetricCollection(collection: any[]) {
+  trimMetricCollection<T>(collection: T[]) {
     if (collection.length > this.options.maxStoredMetrics) {
       collection.splice(0, collection.length - this.options.maxStoredMetrics);
     }
@@ -343,25 +422,29 @@ export class MonitoringSystem extends EventEmitter {
 
   pruneExpiredMetrics(now: number) {
     const threshold = now - this.options.metricsRetentionMs;
-    this.metrics.requests = this.metrics.requests.filter(
-      (item: any) => item.timestamp >= threshold
-    );
-    this.metrics.errors = this.metrics.errors.filter((item: any) => item.timestamp >= threshold);
+    this.metrics.requests = this.metrics.requests.filter((item) => item.timestamp >= threshold);
+    this.metrics.errors = this.metrics.errors.filter((item) => item.timestamp >= threshold);
     this.metrics.processingTimes = this.metrics.processingTimes.filter(
-      (item: any) => item.timestamp >= threshold
+      (item) => item.timestamp >= threshold
     );
   }
 
-  calculateSeverity(error: any) {
-    if (error?.stack?.includes('OutOfMemory')) return 'critical';
-    if (error?.stack?.includes('ECONNREFUSED')) return 'high';
-    if (error?.message?.includes('timeout')) return 'medium';
+  calculateSeverity(error: unknown): MonitoringSeverity {
+    const stack = getErrorStack(error) || '';
+    const message = getErrorMessage(error);
+
+    if (stack.includes('OutOfMemory')) return 'critical';
+    if (stack.includes('ECONNREFUSED')) return 'high';
+    if (message.includes('timeout')) return 'medium';
     return 'low';
   }
 
-  groupBy(array: any[], key: string) {
-    return array.reduce((groups, item) => {
-      const value = item[key] || 'unknown';
+  groupBy<T extends Record<string, unknown>>(
+    array: T[],
+    key: keyof T | string
+  ): Record<string, number> {
+    return array.reduce<Record<string, number>>((groups, item) => {
+      const value = String(item[key as keyof T] ?? 'unknown');
       groups[value] = (groups[value] || 0) + 1;
       return groups;
     }, {});

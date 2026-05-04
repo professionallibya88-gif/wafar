@@ -10,6 +10,115 @@ import { pdfProcessingProfileService } from './PDFProcessingProfileService';
 import { vercelBlobService } from './VercelBlobService';
 import { promises as fs } from 'fs';
 import logger from '../config/logger';
+import type { PartCreationAttributes } from '../database/models/Part';
+
+type ExtractedTable = {
+  headers?: unknown[];
+  rows?: unknown[][];
+  page?: number;
+  table_index?: number;
+};
+
+type TablesExtractionResult = {
+  tables?: ExtractedTable[];
+  count?: number;
+  text?: string;
+  rawText?: string;
+};
+
+type ProcessedPartRow = {
+  part_code?: string | null;
+  oem_number?: string | null;
+  part_name?: string | null;
+  brand?: string | null;
+  origin_country?: string | null;
+  quality_grade?: string | null;
+  price_cash?: number | null;
+  price_bank?: number | null;
+  price_wholesale?: number | null;
+  price_wholesale_small?: number | null;
+  price_retail?: number | null;
+  supplier_name?: string | null;
+  quantity_available?: number | null;
+  derived?: Record<string, unknown>;
+  search_signature?: string;
+  mapping_confidence: number;
+  raw_headers: unknown[];
+  raw_row: unknown[];
+  page_number?: number;
+  table_index?: number;
+  row_index: number;
+};
+
+type ExtractedPart = Record<string, unknown> & {
+  partCode?: string | null;
+  code?: string | null;
+  part_code?: string | null;
+  item_number?: string | null;
+  partName?: string | null;
+  name?: string | null;
+  part_name?: string | null;
+  item_name?: string | null;
+  partNameEn?: string | null;
+  category?: string | null;
+  brand?: string | null;
+  originCountry?: string | null;
+  origin_country?: string | null;
+  qualityGrade?: string | null;
+  quality_grade?: string | null;
+  price?: number | null;
+  price_cash?: number | null;
+  price_bank?: number | null;
+  price_wholesale?: number | null;
+  price_wholesale_small?: number | null;
+  currency?: string | null;
+  unit?: string | null;
+  inStock?: boolean;
+  quantityAvailable?: number | null;
+  quantity_available?: number | null;
+  description?: string | null;
+  specifications?: unknown;
+  supplier_name?: string | null;
+  rawRow?: unknown;
+  raw_row?: unknown;
+  derived?: Record<string, unknown>;
+  search_signature?: string;
+  mapping_confidence?: number;
+  raw_headers?: unknown[];
+  row_index?: number;
+  page_number?: number;
+  table_index?: number;
+  oem_number?: string | null;
+};
+
+type ExtractionResult = {
+  parts?: ExtractedPart[];
+  pageCount?: number;
+  rawData?: TablesExtractionResult | Record<string, unknown> | null;
+  tablesCount?: number;
+  rawText?: string;
+  text?: string;
+};
+
+type ExtractionExecution = {
+  result: ExtractionResult;
+  actualMethod: string;
+};
+
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
+const toOptionalString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim().length > 0 ? value : undefined;
+
+const toOptionalNumber = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+
+const toQualityGrade = (value: unknown): PartCreationAttributes['quality_grade'] => {
+  const allowed = new Set(['original', 'high', 'medium', 'low', 'unspecified']);
+  const grade = typeof value === 'string' ? value : '';
+  return (allowed.has(grade) ? grade : 'unspecified') as PartCreationAttributes['quality_grade'];
+};
 
 export class PDFProcessor {
   private static toProcessingError(error: unknown, fallbackMessage: string): AppError {
@@ -24,8 +133,8 @@ export class PDFProcessor {
     return new BusinessError(fallbackMessage);
   }
 
-  static processTablesWithNewPipeline(tablesResult: any): any[] {
-    const finalParts: any[] = [];
+  static processTablesWithNewPipeline(tablesResult: TablesExtractionResult): ProcessedPartRow[] {
+    const finalParts: ProcessedPartRow[] = [];
 
     for (const table of tablesResult.tables || []) {
       const headers = table.headers || [];
@@ -33,7 +142,7 @@ export class PDFProcessor {
 
       const mapping = HeaderMapper.map(headers);
 
-      rows.forEach((row: any, rowIndex: number) => {
+      rows.forEach((row, rowIndex: number) => {
         try {
           const normalized = RowNormalizer.normalize(row, mapping);
           const validation = RowNormalizer.validateRow(normalized);
@@ -53,21 +162,19 @@ export class PDFProcessor {
               price_retail: normalized.price_retail,
               supplier_name: normalized.supplier_name,
               quantity_available: normalized.stock,
-              derived: (normalized as any).derived,
-              search_signature: (normalized as any).search_signature,
+              derived: normalized.derived,
+              search_signature: normalized.search_signature,
               mapping_confidence:
-                (mapping as any).item_number?.confidence ||
-                (mapping as any).oem_number?.confidence ||
-                0,
+                mapping.item_number?.confidence || mapping.oem_number?.confidence || 0,
               raw_headers: headers,
-              raw_row: row,
+              raw_row: Array.isArray(row) ? row : [row],
               page_number: table.page,
               table_index: table.table_index,
               row_index: rowIndex,
             });
           }
-        } catch (error: any) {
-          logger.warn('خطأ في معالجة صف:', error.message);
+        } catch (error) {
+          logger.warn('خطأ في معالجة صف:', getErrorMessage(error));
         }
       });
     }
@@ -104,21 +211,23 @@ export class PDFProcessor {
           const metadataResult = await PythonPDFProcessor.extractMetadata(pdfFilePath);
           metadataText = this.normalizeExtractedText(String(metadataResult?.text || ''));
           metadataDocumentDate = this.extractDocumentDate(metadataText);
-        } catch (metadataError: any) {
-          logger.warn(`تعذر استخراج البيانات الوصفية للملف ${pdfFileId}: ${metadataError.message}`);
+        } catch (metadataError) {
+          logger.warn(
+            `تعذر استخراج البيانات الوصفية للملف ${pdfFileId}: ${getErrorMessage(metadataError)}`
+          );
         }
       }
 
-      let execution;
+      let execution: ExtractionExecution;
       try {
         execution = await this.executeExtractionMethod(
           pdfFilePath,
           profile.requestedMethod,
           profile.tableEngine
         );
-      } catch (primaryError: any) {
+      } catch (primaryError) {
         logger.warn(
-          `فشل المحرك الأساسي ${profile.requestedMethod} أثناء معالجة الملف ${pdfFileId}: ${primaryError.message}`
+          `فشل المحرك الأساسي ${profile.requestedMethod} أثناء معالجة الملف ${pdfFileId}: ${getErrorMessage(primaryError)}`
         );
 
         if (!profile.enableAutoFallback) {
@@ -146,9 +255,9 @@ export class PDFProcessor {
             if (!this.needsFallback(execution.result)) {
               break;
             }
-          } catch (fallbackError: any) {
+          } catch (fallbackError) {
             logger.warn(
-              `فشل المحرك البديل ${fallbackMethod} أثناء معالجة الملف ${pdfFileId}: ${fallbackError.message}`
+              `فشل المحرك البديل ${fallbackMethod} أثناء معالجة الملف ${pdfFileId}: ${getErrorMessage(fallbackError)}`
             );
           }
         }
@@ -169,12 +278,12 @@ export class PDFProcessor {
           );
           result = ocrExecution.result;
           finalExtractionMethod = ocrExecution.actualMethod;
-        } catch (ocrError: any) {
-          logger.error(`فشل الاحتياط عبر OCR: ${ocrError.message}`);
+        } catch (ocrError) {
+          logger.error(`فشل الاحتياط عبر OCR: ${getErrorMessage(ocrError)}`);
           await pdfFileRepository.updateById(pdfFileId, {
             status: 'failed',
             error_message:
-              ocrError.message ||
+              getErrorMessage(ocrError) ||
               'فشل استخراج البيانات من الملف. قد يكون الملف ممسوحاً ضوئياً وبدون نص قابل للاستخراج.',
           });
           throw this.toProcessingError(ocrError, 'فشل محرك OCR الاحتياطي');
@@ -183,8 +292,14 @@ export class PDFProcessor {
 
       const finalParts = result.parts || [];
       const finalPageCount = result.pageCount || 0;
-      const tablesCount =
-        result.tablesCount || result.rawData?.count || result.rawData?.tables?.length || 0;
+      const rawData = result.rawData as
+        | TablesExtractionResult
+        | Record<string, unknown>
+        | null
+        | undefined;
+      const rawDataCount = typeof rawData?.count === 'number' ? rawData.count : 0;
+      const rawDataTables = Array.isArray(rawData?.tables) ? rawData.tables : [];
+      const tablesCount = result.tablesCount || rawDataCount || rawDataTables.length || 0;
 
       logger.info(`Extracted ${finalParts.length} parts from PDF ${pdfFileId}`);
 
@@ -195,8 +310,8 @@ export class PDFProcessor {
           metadataText ||
           result.rawText ||
           result.text ||
-          String(result.rawData?.text || result.rawData?.rawText || '') ||
-          JSON.stringify(result.rawData || '');
+          String(rawData?.text || rawData?.rawText || '') ||
+          JSON.stringify(rawData || '');
         detectedDocumentDate = this.extractDocumentDate(textToScan);
         detectedDocumentDate = detectedDocumentDate || metadataDocumentDate;
       }
@@ -213,51 +328,53 @@ export class PDFProcessor {
         ...(detectedDocumentDate ? { document_date: new Date(detectedDocumentDate) } : {}),
       });
 
-      const rows = finalParts.map((partData: any) => {
+      const rows = finalParts.map((partData) => {
         return {
           part_code:
             partData.partCode ||
             partData.code ||
             partData.part_code ||
             partData.item_number ||
-            null,
+            undefined,
           part_name:
             partData.partName ||
             partData.name ||
             partData.part_name ||
             partData.item_name ||
             'غير محدد',
-          part_name_en: partData.partNameEn || null,
-          category: partData.category || null,
-          brand: partData.brand || null,
-          origin_country: partData.originCountry || partData.origin_country || null,
-          quality_grade: partData.qualityGrade || partData.quality_grade || 'unspecified',
-          price: partData.price || null,
-          price_cash: partData.price_cash || null,
-          price_bank: partData.price_bank || null,
-          price_wholesale: partData.price_wholesale || null,
-          price_wholesale_small: partData.price_wholesale_small || null,
+          part_name_en: toOptionalString(partData.partNameEn),
+          category: toOptionalString(partData.category),
+          brand: toOptionalString(partData.brand),
+          origin_country: toOptionalString(partData.originCountry || partData.origin_country),
+          quality_grade: toQualityGrade(partData.qualityGrade || partData.quality_grade),
+          price: toOptionalNumber(partData.price),
+          price_cash: toOptionalNumber(partData.price_cash),
+          price_bank: toOptionalNumber(partData.price_bank),
+          price_wholesale: toOptionalNumber(partData.price_wholesale),
+          price_wholesale_small: toOptionalNumber(partData.price_wholesale_small),
           currency: partData.currency || 'LYD',
-          unit: partData.unit || null,
+          unit: toOptionalString(partData.unit),
           in_stock: partData.inStock !== undefined ? partData.inStock : true,
-          quantity_available: partData.quantityAvailable || partData.quantity_available || null,
-          description: partData.description || null,
-          specifications: partData.specifications || null,
-          supplier_name_text: partData.supplier_name || null,
-          row_data: partData.rawRow || partData.raw_row || null,
-          item_number: partData.item_number || null,
-          oem_number: partData.oem_number || null,
-          derived: partData.derived || null,
-          search_signature: partData.search_signature || null,
+          quantity_available: toOptionalNumber(
+            partData.quantityAvailable || partData.quantity_available
+          ),
+          description: partData.description || undefined,
+          specifications: partData.specifications || undefined,
+          supplier_name_text: partData.supplier_name || undefined,
+          row_data: partData.rawRow || partData.raw_row || undefined,
+          item_number: partData.item_number || undefined,
+          oem_number: partData.oem_number || undefined,
+          derived: partData.derived || undefined,
+          search_signature: partData.search_signature || undefined,
           mapping_confidence: partData.mapping_confidence || 0,
-          raw_headers: partData.raw_headers || null,
-          raw_row: partData.raw_row || null,
+          raw_headers: partData.raw_headers || undefined,
+          raw_row: partData.raw_row || undefined,
           row_index: partData.row_index || 0,
-          page_number: partData.page_number || null,
+          page_number: partData.page_number || undefined,
           table_index: partData.table_index || 0,
           pdf_file_id: pdfFileId,
           supplier_id: supplierId,
-        };
+        } satisfies PartCreationAttributes;
       });
 
       if (rows.length > 0) {
@@ -301,15 +418,15 @@ export class PDFProcessor {
           logger.error(`فشل رفع الملف لـ Vercel Blob: ${pdfFileId}`, uploadErr);
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       await pdfFileRepository.updateById(pdfFileId, {
         status: 'failed',
-        error_message: error.message,
+        error_message: getErrorMessage(error),
         progress_percent: 100,
         progress_message: 'فشلت المعالجة',
       });
 
-      logger.error(`فشل معالجة PDF ${pdfFileId}:`, error.message);
+      logger.error(`فشل معالجة PDF ${pdfFileId}:`, getErrorMessage(error));
       throw this.toProcessingError(error, 'فشلت معالجة ملف PDF');
     }
   }
@@ -318,7 +435,7 @@ export class PDFProcessor {
     filePath: string,
     method: string,
     tableEngine: string
-  ): Promise<{ result: any; actualMethod: string }> {
+  ): Promise<ExtractionExecution> {
     switch (method) {
       case 'python_ai': {
         const result = await PythonPDFProcessor.process(filePath, {
@@ -344,8 +461,8 @@ export class PDFProcessor {
               actualMethod: `python_tables:${tableEngine}`,
             };
           }
-        } catch (tableError: any) {
-          logger.warn(`فشل استخراج الجداول بمحرك ${tableEngine}: ${tableError.message}`);
+        } catch (tableError) {
+          logger.warn(`فشل استخراج الجداول بمحرك ${tableEngine}: ${getErrorMessage(tableError)}`);
         }
 
         const result = await PythonPDFProcessor.process(filePath, {
@@ -373,7 +490,7 @@ export class PDFProcessor {
     }
   }
 
-  private static needsFallback(result: any): boolean {
+  private static needsFallback(result: ExtractionResult | null | undefined): boolean {
     return !result || !Array.isArray(result.parts) || result.parts.length === 0;
   }
 

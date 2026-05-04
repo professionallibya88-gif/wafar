@@ -261,11 +261,8 @@ def extract_text_from_pdf(file_path):
                 try:
                     ocr_text = ocr_page(file_path, page_num)
                     full_text += ocr_text + "\n"
-                except Exception:
-                    logger.exception(
-                        'فشل OCR للصفحة %s أثناء استخراج النص من الملف %s',
-                        page_num,
-                        file_path)
+                except Exception as e:
+                    logger.error('فشل OCR للصفحة %s أثناء استخراج النص من الملف %s: %s', page_num, file_path, str(e))
 
     except ImportError:
         # PyPDF2 غير مثبت
@@ -523,10 +520,8 @@ def process_ai(file_path):
         result['_method'] = 'ai_enhanced'
         return result
 
-    except Exception:
-        logger.exception(
-            'فشلت المعالجة المعززة بالذكاء الاصطناعي؛ سيتم الرجوع إلى PyPDF للملف %s',
-            file_path)
+    except Exception as e:
+        logger.error('فشلت المعالجة المعززة بالذكاء الاصطناعي؛ سيتم الرجوع إلى PyPDF للملف %s: %s', file_path, str(e))
         return process_pypdf(file_path)
 
 
@@ -615,7 +610,8 @@ def api_process_pypdf():
             result.get('pageCount', 0),
         )
         return jsonify(result)
-    except Exception:
+    except Exception as e:
+        logger.error('فشل المسار /process/pypdf: %s', str(e))
         return internal_server_error('فشل المسار /process/pypdf')
 
 
@@ -644,7 +640,8 @@ def api_process_ai():
         )
 
         return jsonify(result)
-    except Exception:
+    except Exception as e:
+        logger.error('فشل المسار /process/ai: %s', str(e))
         return internal_server_error('فشل المسار /process/ai')
 
 
@@ -675,7 +672,8 @@ def api_process_enhanced():
         )
 
         return jsonify(result)
-    except Exception:
+    except Exception as e:
+        logger.error('فشل المسار /process/enhanced: %s', str(e))
         return internal_server_error('فشل المسار /process/enhanced')
 
 
@@ -727,7 +725,8 @@ def extract_tables():
             tmp_path,
             len(tables))
         return jsonify({'tables': tables, 'count': len(tables)}), 200
-    except Exception:
+    except Exception as e:
+        logger.error('فشل المسار /extract-tables: %s', str(e))
         return internal_server_error('فشل المسار /extract-tables')
     finally:
         cleanup_temp(tmp_path)
@@ -851,9 +850,8 @@ def extract_metadata():
                         'documentDate': data.get('document_date', ''),
                         'source': 'python_openrouter_vision'
                     }), 200
-            except Exception:
-                logger.exception(
-                    'فشل OpenRouter Vision للملف المؤقت %s', tmp_path)
+            except Exception as e:
+                logger.error('فشل OpenRouter Vision للملف المؤقت %s: %s', tmp_path, str(e))
 
         elif api_key and provider_type == 'google':
             try:
@@ -903,9 +901,8 @@ def extract_metadata():
                         'documentDate': data.get('document_date', ''),
                         'source': 'python_vision_ai'
                     }), 200
-            except Exception:
-                logger.exception(
-                    'فشل Google Vision AI للملف المؤقت %s', tmp_path)
+            except Exception as e:
+                logger.error('فشل Google Vision AI للملف المؤقت %s: %s', tmp_path, str(e))
                 # المتابعة للبديل المحلي في حال الفشل
 
         # 2. البديل المحلي: استخراج النص الخام + OCR للترويسة
@@ -975,7 +972,8 @@ def extract_metadata():
             'documentDate': document_date,
             'source': 'python_local',
         }), 200
-    except Exception:
+    except Exception as e:
+        logger.error('فشل المسار /extract-metadata: %s', str(e))
         return internal_server_error('فشل المسار /extract-metadata')
     finally:
         if doc is not None:
@@ -1007,6 +1005,19 @@ def stats():
         'uptime': time.time() - app.config.get('START_TIME', time.time())
     })
 
+
+API_KEY = os.environ.get('PYTHON_SERVICE_API_KEY', 'wafar_internal_secret_key_2025')
+
+@app.before_request
+def require_api_key():
+    # Allow health check without API key
+    if request.path == '/health':
+        return
+    
+    # Check for X-API-Key header
+    provided_key = request.headers.get('X-API-Key')
+    if not provided_key or provided_key != API_KEY:
+        return jsonify({'error': 'Unauthorized: Invalid API Key'}), 401
 
 @app.before_request
 def before_request():

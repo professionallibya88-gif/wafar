@@ -30,7 +30,7 @@ router.post(
   requireFeature('upload'),
   uploadLimiter,
   dailyUploadLimiter,
-  uploadMiddleware.single('file'),
+  uploadMiddleware.array('files[]', 20),
   runValidators(pdfRules.uploadPdfRules),
   upload
 );

@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { success } from '../utils/ApiResponse';
 import { adminAuthService } from '../services/AdminAuthService';
-import { adminRepository } from '../repositories';
-import { BusinessError, NotFoundError } from '../errors';
+import { NotFoundError } from '../errors';
+import { AuthenticatedRequest } from '../types';
 
 export const adminLogin = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -15,34 +15,30 @@ export const adminLogout = asyncHandler(async (_req: Request, res: Response) => 
   return success(res, { message: 'تم تسجيل خروج المدير بنجاح' });
 });
 
-export const getMe = asyncHandler(async (req: Request, res: Response) => {
-  const admin = (req as any).admin;
+export const getMe = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const admin = req.admin;
   return success(res, { data: adminAuthService.sanitizeAdmin(admin) });
 });
 
-export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
-  const adminId = (req as any).admin.id;
-  const { full_name, email } = req.body;
-
-  if (email !== undefined) {
-    throw new BusinessError('لا يمكن تعديل بريد حساب الإدارة الوحيد');
-  }
-
-  const admin = await adminRepository.findById(adminId);
-  if (!admin) {
+export const updateProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const adminId = req.admin?.id;
+  if (!adminId) {
     throw new NotFoundError('المدير غير موجود');
   }
 
-  const updatedAdmin =
-    full_name !== undefined ? await adminRepository.updateById(adminId, { full_name }) : admin;
+  const updatedAdmin = await adminAuthService.updateProfile(adminId, req.body);
+
   return success(res, {
-    data: adminAuthService.sanitizeAdmin(updatedAdmin),
+    data: updatedAdmin,
     message: 'تم تحديث الملف الشخصي بنجاح',
   });
 });
 
 export const changePassword = asyncHandler(async (req: Request, res: Response) => {
-  const adminId = (req as any).admin.id;
+  const adminId = (req as AuthenticatedRequest).admin?.id;
+  if (!adminId) {
+    throw new NotFoundError('المدير غير موجود');
+  }
   await adminAuthService.changePassword(adminId, req.body);
   return success(res, { message: 'تم تغيير كلمة المرور بنجاح' });
 });
