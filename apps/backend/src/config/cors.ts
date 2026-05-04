@@ -25,7 +25,7 @@ const getAllowedOrigins = (): string[] => {
     ...parseOriginList(process.env.FRONTEND_URL),
   ];
 
-  return [...new Set([...DEFAULT_ALLOWED_ORIGINS, ...envOrigins])];
+  return Array.from(new Set([...DEFAULT_ALLOWED_ORIGINS, ...envOrigins]));
 };
 
 const isAllowedOrigin = (origin?: string): boolean => {

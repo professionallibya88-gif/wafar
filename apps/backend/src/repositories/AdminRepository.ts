@@ -41,21 +41,40 @@ export class AdminRepository extends BaseRepository<Admin> {
         },
       });
     } catch (error) {
-      // Fallback for raw query
-      const results = await this.model.sequelize!.query<AdminLookupRow>(
-        `SELECT * FROM admins
-         WHERE is_active = true
-           AND (email = :input OR phone = :input)
-         ORDER BY created_at ASC
-         LIMIT 1`,
-        {
-          replacements: { input: normalizedInput },
-          type: QueryTypes.SELECT,
+      // Fallback for raw query if 'phone' column doesn't exist yet
+      try {
+        const results = await this.model.sequelize!.query<AdminLookupRow>(
+          `SELECT * FROM admins
+           WHERE is_active = true
+             AND (email = :input OR phone = :input)
+           ORDER BY created_at ASC
+           LIMIT 1`,
+          {
+            replacements: { input: normalizedInput },
+            type: QueryTypes.SELECT,
+          }
+        );
+        if (results && results.length > 0) {
+          const adminData = results[0];
+          return this.model.build(adminData as AdminCreationAttributes, { isNewRecord: false });
         }
-      );
-      if (results && results.length > 0) {
-        const adminData = results[0];
-        return this.model.build(adminData as AdminCreationAttributes, { isNewRecord: false });
+      } catch (innerError) {
+        // Ultimate fallback: check only email if phone completely fails
+        const results = await this.model.sequelize!.query<AdminLookupRow>(
+          `SELECT * FROM admins
+           WHERE is_active = true
+             AND email = :input
+           ORDER BY created_at ASC
+           LIMIT 1`,
+          {
+            replacements: { input: normalizedInput },
+            type: QueryTypes.SELECT,
+          }
+        );
+        if (results && results.length > 0) {
+          const adminData = results[0];
+          return this.model.build(adminData as AdminCreationAttributes, { isNewRecord: false });
+        }
       }
       return null;
     }
