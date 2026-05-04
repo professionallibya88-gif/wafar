@@ -1,11 +1,14 @@
 import { ref } from "vue";
 import { settingsAPI } from "@/services/api";
 
-const siteFont = ref("tajawal");
+export const DEFAULT_FONT_KEY = "tajawal";
+
+const siteFont = ref(DEFAULT_FONT_KEY);
 const settingsLoaded = ref(false);
+let activeFontHref = "";
 
 // خرائطة الخطوط
-const fontMap = {
+export const fontMap = {
   tajawal: {
     name: "Tajawal",
     nameAr: "تجوال",
@@ -43,64 +46,82 @@ const fontMap = {
   },
 };
 
+const getFontDefinition = (fontKey) => fontMap[fontKey] || fontMap[DEFAULT_FONT_KEY];
+
+const getFontHref = (fontKey) => {
+  const font = getFontDefinition(fontKey);
+  return `https://fonts.googleapis.com/css2?family=${font.googleFont}:wght@${font.weights}&display=swap`;
+};
+
+const ensureFontLink = (fontKey) => {
+  if (typeof document === "undefined") {
+    return Promise.resolve();
+  }
+
+  const href = getFontHref(fontKey);
+  let link = document.getElementById("google-font-link");
+
+  if (!link) {
+    link = document.createElement("link");
+    link.id = "google-font-link";
+    link.rel = "stylesheet";
+    document.head.appendChild(link);
+  }
+
+  if (link.getAttribute("href") === href || activeFontHref === href) {
+    activeFontHref = href;
+    return Promise.resolve();
+  }
+
+  activeFontHref = href;
+
+  return new Promise((resolve) => {
+    const finalize = () => resolve();
+
+    link.addEventListener("load", finalize, { once: true });
+    link.addEventListener("error", finalize, { once: true });
+    link.href = href;
+  });
+};
+
+export const applyFont = (fontKey) => {
+  if (typeof document === "undefined") {
+    return DEFAULT_FONT_KEY;
+  }
+
+  const resolvedKey = fontMap[fontKey] ? fontKey : DEFAULT_FONT_KEY;
+  const font = getFontDefinition(resolvedKey);
+  const root = document.documentElement;
+
+  siteFont.value = resolvedKey;
+  root.style.setProperty("--site-font-family", font.css);
+  root.style.setProperty("--font-sans", font.css);
+  root.style.setProperty("--font-display", font.css);
+
+  document.body?.style?.setProperty("font-family", "var(--font-sans)");
+  window.__WAFAR_BOOTSTRAP__?.setFontFamily?.(font.css);
+
+  return resolvedKey;
+};
+
 export function useSiteFont() {
-  // تحميل الخط من الإعدادات
-  const loadFont = async () => {
+  const loadFont = async (fontKey = siteFont.value) => {
+    const resolvedKey = applyFont(fontKey);
+
     try {
-      const res = await settingsAPI.getPublic();
-      if (res.data?.success && res.data.data?.site_font_family) {
-        siteFont.value = res.data.data.site_font_family;
-        applyFont(res.data.data.site_font_family);
-      } else {
-        // استخدام الخط الافتراضي في حالة عدم وجود البيانات
-        applyFont("tajawal");
-      }
-    } catch (error) {
-      // استخدام الخط الافتراضي في حالة الخطأ
-      applyFont("tajawal");
+      await ensureFontLink(resolvedKey);
     } finally {
       settingsLoaded.value = true;
     }
-  };
 
-  // تطلبيق الخط على الموقع
-  const applyFont = (fontKey) => {
-    const font = fontMap[fontKey];
-    if (!font) return;
-
-    // إزالة أي خط Google Fonts موجود مسبقاً
-    const existingLink = document.getElementById("google-font-link");
-    if (existingLink) {
-      existingLink.remove();
-    }
-
-    // تحميل خط Google Fonts الجديد
-    const link = document.createElement("link");
-    link.id = "google-font-link";
-    link.rel = "stylesheet";
-    link.href = `https://fonts.googleapis.com/css2?family=${font.googleFont}:wght@${font.weights}&display=swap`;
-    document.head.appendChild(link);
-
-    // تطلبيق الخط على جميع العناصر
-    document.documentElement.style.setProperty("--site-font-family", font.css);
-    document.body.style.fontFamily = font.css;
-
-    // تحديث جميع العناصر
-    const allElements = document.querySelectorAll("*");
-    allElements.forEach((el) => {
-      el.style.fontFamily = font.css;
-    });
-
-    // تحديث Tailwind
-    document.documentElement.style.fontFamily = font.css;
+    return resolvedKey;
   };
 
   // تحديث الخط (للأدمن)
   const updateFont = async (fontKey) => {
     try {
       await settingsAPI.update("site_font_family", fontKey);
-      siteFont.value = fontKey;
-      applyFont(fontKey);
+      await loadFont(fontKey);
       return true;
     } catch (error) {
       return false;

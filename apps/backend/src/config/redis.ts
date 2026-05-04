@@ -14,11 +14,42 @@ type RedisClient = ReturnType<typeof createClient>;
 let redisClient: RedisClient | null = null;
 let isConnecting = false;
 
+const isHostedEnvironment = Boolean(
+  process.env.RAILWAY_ENVIRONMENT ||
+    process.env.RAILWAY_PROJECT_ID ||
+    process.env.VERCEL ||
+    process.env.VERCEL_ENV
+);
+
+const resolveRedisUrl = (): string | null => {
+  const explicitUrl =
+    process.env.REDIS_URL || process.env.REDIS_PRIVATE_URL || process.env.REDIS_PUBLIC_URL;
+
+  if (explicitUrl) {
+    return explicitUrl;
+  }
+
+  if (process.env.REDIS_HOST) {
+    return `redis://${process.env.REDIS_PASSWORD ? `:${process.env.REDIS_PASSWORD}@` : ''}${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}/${process.env.REDIS_DB || 0}`;
+  }
+
+  if (isHostedEnvironment) {
+    return null;
+  }
+
+  return `redis://${process.env.REDIS_PASSWORD ? `:${process.env.REDIS_PASSWORD}@` : ''}localhost:${process.env.REDIS_PORT || 6379}/${process.env.REDIS_DB || 0}`;
+};
+
+const hasRedisConnectionConfig = (): boolean => !!resolveRedisUrl();
+
 /**
  * إنشاء Redis client باستخدام Redis v4 API
  */
 const createRedisClient = async (): Promise<RedisClient> => {
-  const url = `redis://${process.env.REDIS_PASSWORD ? `:${process.env.REDIS_PASSWORD}@` : ''}${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}/${process.env.REDIS_DB || 0}`;
+  const url = resolveRedisUrl();
+  if (!url) {
+    throw new Error('إعداد Redis غير متوفر في هذه البيئة');
+  }
 
   const client = createClient({
     url,
@@ -94,4 +125,4 @@ const closeRedisClient = async () => {
   }
 };
 
-export { createRedisClient, getRedisClient, closeRedisClient };
+export { createRedisClient, getRedisClient, closeRedisClient, resolveRedisUrl, hasRedisConnectionConfig };

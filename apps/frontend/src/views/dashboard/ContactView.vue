@@ -12,7 +12,7 @@
           <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">قنوات الدعم</h2>
           
           <div v-if="loadingChannels" class="flex justify-center p-8">
-            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-600"></div>
+            <BaseSpinner size="sm" usage="section" />
           </div>
           <div v-else-if="!channels.length" class="text-center text-sm text-gray-500 p-4">
             لا توجد قنوات تواصل متاحة حالياً.
@@ -74,7 +74,7 @@
             <div class="pt-4 border-t border-neutral-100 dark:border-neutral-700">
               <button type="submit" :disabled="submitting || !isValid" 
                       class="w-full sm:w-auto flex justify-center items-center gap-2 py-3 px-6 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <span v-if="submitting" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                <BaseSpinner v-if="submitting" size="xs" color="white" usage="action" />
                 <AppIcon v-else name="PaperAirplane" class="w-4 h-4 transform rotate-180" />
                 إرسال وفتح المحادثة
               </button>
@@ -89,6 +89,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { supportAPI } from '@/services/api';
+import { BaseSpinner } from '@/components/base';
 import { AppIcon } from '@/components/icons';
 
 const loadingChannels = ref(false);

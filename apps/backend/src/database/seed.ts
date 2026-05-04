@@ -8,36 +8,28 @@ import {
   systemSettingRepository,
 } from '../repositories';
 import { toError } from '../utils/errors';
+import {
+  SINGLE_ADMIN_EMAIL,
+  SINGLE_ADMIN_FULL_NAME,
+  SINGLE_ADMIN_PASSWORD,
+  SINGLE_ADMIN_PHONE,
+} from '../repositories/AdminRepository';
 
 export const seedAdmin = async () => {
   try {
     logger.info('بدء تهيئة البيانات الافتراضية...');
 
-    const adminPassword = process.env.ADMIN_PASSWORD || '000000';
-    const adminPhone = process.env.ADMIN_PHONE || '0910000000';
-    const adminEmail = process.env.ADMIN_EMAIL || `${adminPhone}@waffer.local`;
+    const hashedPassword = await bcrypt.hash(SINGLE_ADMIN_PASSWORD, 12);
 
-    const existingAdmin = await adminRepository.findOne({ role: 'super_admin' });
-    const hashedPassword = await bcrypt.hash(adminPassword, 12);
-
-    if (existingAdmin) {
-      // تحديث كلمة المرور ورقم الهاتف لضمان القدرة على الدخول بعد النشر (بناء على طلب المستخدم)
-      await adminRepository.updateById(existingAdmin.id, {
-        password: hashedPassword,
-        phone: adminPhone,
-        email: adminEmail,
-      });
-      logger.info(`حساب المدير موجود مسبقاً - تم تحديث بيانات الدخول لتكون (${adminPhone}).`);
-    } else {
-      await adminRepository.create({
-        full_name: 'المدير العام',
-        email: adminEmail,
-        phone: adminPhone,
-        password: hashedPassword,
-        role: 'super_admin',
-        is_active: true,
-      });
-      logger.info(`تم إنشاء حساب المدير بنجاح (${adminPhone}).`);
+    try {
+      const { cleanedCount, created } = await adminRepository.enforceSingleAdmin(hashedPassword);
+      const action = created ? 'تم إنشاء' : 'تم توحيد';
+      logger.info(`${action} حساب الإدارة الوحيد بنجاح (${SINGLE_ADMIN_PHONE}).`);
+      if (cleanedCount > 0) {
+        logger.info(`تم تنظيف وتعطيل ${cleanedCount} حساب/حسابات إدارية قديمة.`);
+      }
+    } catch (syncError) {
+      logger.error('فشل توحيد حساب الإدارة عبر ORM:', syncError);
     }
 
     if (process.env.NODE_ENV === 'development') {

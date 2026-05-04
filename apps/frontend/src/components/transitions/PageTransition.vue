@@ -11,7 +11,7 @@ const props = defineProps({
   // نوع الانتقال: fade, slide, scale, bounce
   type: {
     type: String,
-    default: "slide",
+    default: "fade",
   },
   // اتجاه الانتقال: forward, back
   direction: {
@@ -32,9 +32,10 @@ const transitionName = computed(() => {
     slide: "page-slide",
     scale: "page-scale",
     bounce: "page-bounce",
+    reduced: "page-reduced",
   };
 
-  const baseName = typeMap[props.type] || "page-slide";
+  const baseName = typeMap[props.type] || "page-fade";
 
   // إضافة لاحقة الاتجاه للانتقالات المنزلقة
   if (props.type === "slide") {

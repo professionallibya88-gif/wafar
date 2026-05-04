@@ -63,7 +63,7 @@
         <!-- List Area -->
         <div class="flex-1 overflow-y-auto custom-scrollbar">
           <div v-if="loading && !tickets.length" class="flex flex-col items-center justify-center p-12">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mb-3"></div>
+            <BaseSpinner size="md" usage="section" />
             <p class="text-sm text-gray-500">جاري تحميل التذاكر...</p>
           </div>
           
@@ -212,7 +212,7 @@
           >
             <div v-if="loadingMessages" class="flex justify-center p-8">
               <div class="flex flex-col items-center gap-2">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                <BaseSpinner size="sm" usage="section" />
                 <span class="text-xs text-gray-500">جاري تحميل الرسائل...</span>
               </div>
             </div>
@@ -313,7 +313,7 @@
                 :disabled="!newMessage.trim() || sendingMessage || selectedTicket.status === 'closed'"
                 class="inline-flex items-center justify-center h-11 w-11 rounded-full shadow-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
               >
-                <div v-if="sendingMessage" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <BaseSpinner v-if="sendingMessage" size="xs" color="white" usage="action" />
                 <AppIcon v-else name="PaperAirplaneIcon" class="h-5 w-5 rtl:rotate-180" />
               </button>
             </form>
@@ -357,8 +357,8 @@
 </template>
 
 <script setup>
-import { BaseSelect } from "@/components/base";
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { BaseSelect, BaseSpinner } from "@/components/base";
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { AppIcon } from '@/components/icons';
 import { supportAPI } from '@/services/api';
 import { useNotificationStore } from '@/stores/notification';

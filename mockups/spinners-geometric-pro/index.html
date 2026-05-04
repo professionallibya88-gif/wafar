@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>سبينرات هندسية مريحة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Tajawal", "system-ui", "sans-serif"],
+            },
+            colors: {
+              brand: {
+                50: "#eff6ff",
+                100: "#dbeafe",
+                200: "#bfdbfe",
+                300: "#93c5fd",
+                400: "#60a5fa",
+                500: "#3b82f6",
+                600: "#2563eb",
+                700: "#1d4ed8",
+                800: "#1e40af",
+                900: "#172554",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: radial-gradient(circle at 12% 10%, rgba(59,130,246,.16), transparent 25%),
+          radial-gradient(circle at 88% 88%, rgba(37,99,235,.12), transparent 28%),
+          linear-gradient(180deg, #020617 0%, #071426 52%, #020617 100%);
+        --panel: rgba(8, 15, 29, 0.82);
+        --panel-border: rgba(148,163,184,.14);
+        --stage: linear-gradient(180deg, rgba(10,18,35,.96), rgba(4,10,20,.98));
+        --stage-border: rgba(96,165,250,.10);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --soft: rgba(96,165,250,.16);
+        --soft-2: rgba(96,165,250,.28);
+        --main: #60a5fa;
+        --strong: #3b82f6;
+        --accent: #93c5fd;
+        --shadow: 0 26px 80px rgba(2,6,23,.34);
+      }
+
+      body[data-theme="light"] {
+        color-scheme: light;
+        --bg: radial-gradient(circle at 12% 10%, rgba(59,130,246,.10), transparent 25%),
+          radial-gradient(circle at 88% 88%, rgba(37,99,235,.08), transparent 28%),
+          linear-gradient(180deg, #f8fbff 0%, #edf4ff 52%, #f8fbff 100%);
+        --panel: rgba(255,255,255,.88);
+        --panel-border: rgba(59,130,246,.11);
+        --stage: linear-gradient(180deg, rgba(249,251,255,.98), rgba(238,246,255,.98));
+        --stage-border: rgba(59,130,246,.08);
+        --text: #0f172a;
+        --muted: #475569;
+        --soft: rgba(37,99,235,.11);
+        --soft-2: rgba(37,99,235,.18);
+        --main: #2563eb;
+        --strong: #1d4ed8;
+        --accent: #3b82f6;
+        --shadow: 0 20px 60px rgba(15,23,42,.12);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Tajawal", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        transition: background .22s ease, color .22s ease;
+      }
+
+      .glass {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        backdrop-filter: blur(18px);
+        box-shadow: var(--shadow);
+      }
+
+      .stage {
+        background: var(--stage);
+        border: 1px solid var(--stage-border);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      }
+
+      .spinner {
+        position: relative;
+        width: 92px;
+        height: 92px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .pill {
+        border-radius: 999px;
+        background: var(--soft);
+        color: var(--accent);
+        padding: .35rem .7rem;
+        font-size: .72rem;
+        font-weight: 700;
+      }
+
+      .toggle {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        transition: transform .18s ease;
+      }
+
+      .toggle:hover { transform: translateY(-1px); }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes reverse { to { transform: rotate(-360deg); } }
+      @keyframes pulse { 0%,100%{ transform: scale(.86); opacity: .5; } 50%{ transform: scale(1); opacity: 1; } }
+      @keyframes dash { 0%{ stroke-dasharray: 1 220; stroke-dashoffset: 0; } 50%{ stroke-dasharray: 120 220; stroke-dashoffset: -42; } 100%{ stroke-dasharray: 120 220; stroke-dashoffset: -180; } }
+      @keyframes orbit { to { transform: rotate(360deg); } }
+      @keyframes blink { 0%,100%{ opacity: .22; } 50%{ opacity: 1; } }
+      @keyframes ripple { 0%{ transform: scale(.68); opacity: .82; } 100%{ transform: scale(1.16); opacity: 0; } }
+      @keyframes bars { 0%,100%{ transform: scaleY(.55); opacity: .5; } 50%{ transform: scaleY(1); opacity: 1; } }
+
+      .g1 {
+        width: 74px; height: 74px; border-radius: 50%;
+        border: 4px solid transparent;
+        background:
+          linear-gradient(var(--stage), var(--stage)) padding-box,
+          conic-gradient(from 0deg, transparent 12%, var(--main), var(--strong), transparent 78%) border-box;
+        animation: spin 1s linear infinite;
+      }
+
+      .g2::before, .g2::after {
+        content: ""; position: absolute; border-radius: 50%; border: 4px solid transparent;
+      }
+      .g2::before { inset: 10px; border-top-color: var(--main); border-left-color: var(--main); animation: spin 1.05s linear infinite; }
+      .g2::after { inset: 24px; border-bottom-color: var(--strong); border-right-color: var(--strong); animation: reverse .95s linear infinite; }
+
+      .g3 {
+        width: 74px; height: 74px; border-radius: 50%;
+        background: conic-gradient(var(--soft-2) 0 18%, transparent 18% 32%, var(--main) 32% 48%, transparent 48% 64%, var(--strong) 64% 82%, transparent 82% 100%);
+        -webkit-mask: radial-gradient(circle, transparent 52%, #000 54%);
+        mask: radial-gradient(circle, transparent 52%, #000 54%);
+        animation: spin .98s linear infinite;
+      }
+
+      .g4 {
+        width: 72px; height: 72px; border-radius: 50%;
+        border: 3px solid var(--soft);
+        position: relative;
+      }
+      .g4::before {
+        content: ""; position: absolute; top: -4px; left: 50%; width: 10px; height: 10px; margin-left: -5px;
+        border-radius: 50%; background: linear-gradient(135deg, var(--main), var(--strong));
+        transform-origin: center 39px; animation: orbit .96s linear infinite;
+      }
+
+      .g5 svg, .g11 svg { width: 82px; height: 82px; transform: rotate(-90deg); }
+      .g5 .track, .g11 .track { fill: none; stroke: var(--soft); stroke-width: 5; }
+      .g5 .dash, .g11 .dash { fill: none; stroke: var(--main); stroke-width: 5; stroke-linecap: round; animation: dash 1.35s ease-in-out infinite; }
+
+      .g6 {
+        width: 72px; height: 72px; position: relative;
+      }
+      .g6 span {
+        position: absolute; top: 50%; left: 50%; width: 5px; height: 18px; margin: -9px -2.5px; border-radius: 999px;
+        background: var(--main); transform-origin: center -22px; animation: blink .96s linear infinite;
+      }
+      .g6 span:nth-child(1){ transform: rotate(0deg) translateY(-22px); animation-delay: 0s; }
+      .g6 span:nth-child(2){ transform: rotate(45deg) translateY(-22px); animation-delay: .08s; }
+      .g6 span:nth-child(3){ transform: rotate(90deg) translateY(-22px); animation-delay: .16s; }
+      .g6 span:nth-child(4){ transform: rotate(135deg) translateY(-22px); animation-delay: .24s; }
+      .g6 span:nth-child(5){ transform: rotate(180deg) translateY(-22px); animation-delay: .32s; }
+      .g6 span:nth-child(6){ transform: rotate(225deg) translateY(-22px); animation-delay: .40s; }
+      .g6 span:nth-child(7){ transform: rotate(270deg) translateY(-22px); animation-delay: .48s; }
+      .g6 span:nth-child(8){ transform: rotate(315deg) translateY(-22px); animation-delay: .56s; }
+
+      .g7 {
+        width: 60px; height: 60px; position: relative; animation: spin 1.25s linear infinite;
+      }
+      .g7::before, .g7::after {
+        content: ""; position: absolute; inset: 0; border-radius: 18px; border: 3px solid transparent;
+      }
+      .g7::before { border-top-color: var(--main); border-left-color: var(--main); }
+      .g7::after { inset: 12px; border-bottom-color: var(--strong); border-right-color: var(--strong); }
+
+      .g8 {
+        width: 54px; height: 54px; position: relative; transform: rotate(45deg); border: 3px solid var(--soft-2); animation: spin 1.4s linear infinite;
+      }
+      .g8::after {
+        content: ""; position: absolute; inset: 11px; border: 3px solid var(--main);
+      }
+
+      .g9::before, .g9::after, .g9 span {
+        content: ""; position: absolute; border-radius: 50%; border: 3px solid var(--soft); animation: ripple 1.7s ease-out infinite;
+      }
+      .g9::before { inset: 8px; }
+      .g9::after { inset: 18px; animation-delay: .16s; }
+      .g9 span { inset: 28px; border-color: var(--main); animation-delay: .3s; }
+
+      .g10 {
+        width: 76px; height: 76px; border-radius: 50%; position: relative;
+        background:
+          radial-gradient(circle at center, transparent 0 49%, var(--stage) 50% 54%, transparent 55%),
+          conic-gradient(var(--soft) 0 14%, var(--main) 14% 22%, transparent 22% 34%, var(--soft) 34% 44%, var(--strong) 44% 52%, transparent 52% 66%, var(--soft) 66% 78%, var(--main) 78% 86%, transparent 86% 100%);
+        animation: spin 1.02s linear infinite;
+      }
+
+      .g12 {
+        display: flex; gap: 6px; align-items: end; justify-content: center; height: 60px;
+      }
+      .g12 span {
+        width: 9px; border-radius: 999px; background: linear-gradient(180deg, var(--accent), var(--strong)); animation: bars 1s ease-in-out infinite;
+      }
+      .g12 span:nth-child(1){ height: 18px; }
+      .g12 span:nth-child(2){ height: 34px; animation-delay: .08s; }
+      .g12 span:nth-child(3){ height: 54px; animation-delay: .16s; }
+      .g12 span:nth-child(4){ height: 34px; animation-delay: .24s; }
+      .g12 span:nth-child(5){ height: 18px; animation-delay: .32s; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .g1, .g2::before, .g2::after, .g3, .g4::before, .g5 .dash, .g6 span,
+        .g7, .g8, .g9::before, .g9::after, .g9 span, .g10, .g11 .dash, .g12 span {
+          animation-duration: 2.1s !important;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="dark">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <header class="glass mb-8 rounded-[2rem] px-6 py-6 md:px-8">
+        <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div class="max-w-4xl">
+            <div class="mb-3 flex flex-wrap gap-2">
+              <span class="pill">هندسي</span>
+              <span class="pill">مريح للعين</span>
+              <span class="pill">إدراك سريع</span>
+              <span class="pill">مناسب لمشروع وفر</span>
+            </div>
+            <h1 class="text-2xl font-extrabold md:text-4xl">مجموعة هندسية مركزة لمؤشرات التحميل</h1>
+            <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-400 md:text-base">
+              هذه النسخة مبنية على مبادئ أكثر راحة للمستخدم: مركز بصري ثابت، حركة معتدلة، تباين
+              واضح، وعدد قليل من الإشارات البصرية حتى يدرك المستخدم حالة الانتظار بسرعة ومن غير
+              إجهاد.
+            </p>
+          </div>
+          <button
+            id="themeToggle"
+            type="button"
+            class="toggle glass inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-bold text-inherit"
+          >
+            تبديل الثيم
+          </button>
+        </div>
+      </header>
+
+      <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]"><div class="spinner"><div class="g1"></div></div></div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">1. قوس متدرج ثابت المركز</h2><p class="mt-2 text-sm leading-6 text-slate-400">الأكثر حيادية ووضوحاً، مناسب جداً كخيار افتراضي شامل.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]"><div class="spinner g2"></div></div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">2. حلقتان متوازنتان</h2><p class="mt-2 text-sm leading-6 text-slate-400">يعطي إحساساً بالنشاط بدون ضوضاء بصرية عالية.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]"><div class="spinner"><div class="g3"></div></div></div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">3. شرائح دائرية ناعمة</h2><p class="mt-2 text-sm leading-6 text-slate-400">حديث ومريح وملائم لمنصات SaaS واللوحات.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]"><div class="spinner"><div class="g4"></div></div></div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">4. مدار نقطة واحدة</h2><p class="mt-2 text-sm leading-6 text-slate-400">يسهل إدراكه سريعاً لأن العين تتبع عنصراً واحداً واضحاً.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]">
+            <div class="spinner g5">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="track" cx="50" cy="50" r="34"></circle>
+                <circle class="dash" cx="50" cy="50" r="34"></circle>
+              </svg>
+            </div>
+          </div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">5. دائرة مرسومة هندسياً</h2><p class="mt-2 text-sm leading-6 text-slate-400">احترافي جداً ويوحي بالدقة والموثوقية.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]"><div class="spinner g6"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">6. أشعة محيطية</h2><p class="mt-2 text-sm leading-6 text-slate-400">واضح جداً حتى في الأحجام الصغيرة ويشبه المؤشرات العالمية المألوفة.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]"><div class="spinner"><div class="g7"></div></div></div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">7. زوايا مربعة</h2><p class="mt-2 text-sm leading-6 text-slate-400">هندسي ويعكس طابعاً نظامياً أكثر من الشكل الدائري التقليدي.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]"><div class="spinner"><div class="g8"></div></div></div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">8. ماسة بسيطة</h2><p class="mt-2 text-sm leading-6 text-slate-400">مميز بصرياً لكن ما زال هادئاً ومهذباً.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]"><div class="spinner g9"><span></span></div></div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">9. تموجات متداخلة</h2><p class="mt-2 text-sm leading-6 text-slate-400">مريح جداً لشاشات البداية والانتظار القصير.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]"><div class="spinner"><div class="g10"></div></div></div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">10. مقاطع دائرية موزونة</h2><p class="mt-2 text-sm leading-6 text-slate-400">مرشح قوي جداً كنظام موحد داخل المشروع كله.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]">
+            <div class="spinner g11">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="track" cx="50" cy="50" r="32"></circle>
+                <circle class="dash" cx="50" cy="50" r="32"></circle>
+              </svg>
+            </div>
+          </div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">11. مسار دقيق رفيع</h2><p class="mt-2 text-sm leading-6 text-slate-400">فخم وناضج، مناسب للواجهات الراقية والخفيفة.</p></div>
+        </article>
+        <article class="glass rounded-[1.7rem] p-5">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.4rem]"><div class="spinner"><div class="g12"><span></span><span></span><span></span><span></span><span></span></div></div></div>
+          <div class="pt-4"><h2 class="text-lg font-extrabold">12. أعمدة متناظرة</h2><p class="mt-2 text-sm leading-6 text-slate-400">أوضح من كثير من السبينرات، لكنه أقل حيادية من الخيارات الدائرية.</p></div>
+        </article>
+      </section>
+
+      <section class="glass mt-8 rounded-[1.7rem] px-6 py-5">
+        <h2 class="text-lg font-extrabold md:text-xl">الترشيحات الأقوى للمشروع</h2>
+        <p class="mt-3 text-sm leading-7 text-slate-400">
+          إذا كان الهدف هو مؤشر تحميل موحد، مريح للمستخدم، وسهل الإدراك في مكانه داخل الواجهة،
+          فأقوى المرشحين هنا غالباً هم:
+          <strong class="text-inherit">1</strong>,
+          <strong class="text-inherit">4</strong>,
+          <strong class="text-inherit">5</strong>,
+          <strong class="text-inherit">10</strong>,
+          <strong class="text-inherit">11</strong>.
+        </p>
+      </section>
+    </div>
+
+    <script>
+      const body = document.body;
+      const themeToggle = document.getElementById("themeToggle");
+      themeToggle.addEventListener("click", () => {
+        body.dataset.theme = body.dataset.theme === "dark" ? "light" : "dark";
+      });
+    </script>
+  </body>
+</html>

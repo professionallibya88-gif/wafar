@@ -13,6 +13,12 @@ import logger from '../config/logger';
 import { adminRepository, userRepository } from '../repositories';
 import { toError } from '../utils/errors';
 import { normalizePhoneNumber } from '../utils/phone';
+import {
+  SINGLE_ADMIN_EMAIL,
+  SINGLE_ADMIN_FULL_NAME,
+  SINGLE_ADMIN_PASSWORD,
+  SINGLE_ADMIN_PHONE,
+} from '../repositories/AdminRepository';
 
 const resetUsers = async () => {
   try {
@@ -21,27 +27,16 @@ const resetUsers = async () => {
 
     let deletedUsersCount = 0;
     let deletedAdminsCount = 0;
-    let adminEmail = '';
+    let adminPhone = '';
     let userPhone = '';
 
     await sequelize.transaction(async (transaction) => {
       deletedUsersCount = await userRepository.deleteWhere({}, { force: true, transaction });
       deletedAdminsCount = await adminRepository.deleteWhere({}, { force: true, transaction });
 
-      const adminPassword = await bcrypt.hash('000000', 12);
-      const admin = await adminRepository.create(
-        {
-          full_name: 'مدير النظام',
-          email: 'admin@waffer.local',
-          password: adminPassword,
-          role: 'super_admin',
-          is_active: true,
-        },
-        { transaction }
-      );
-      if (admin && admin.email) {
-        adminEmail = admin.email;
-      }
+      const adminPassword = await bcrypt.hash(SINGLE_ADMIN_PASSWORD, 12);
+      await adminRepository.enforceSingleAdmin(adminPassword, { transaction });
+      adminPhone = SINGLE_ADMIN_PHONE;
 
       const userPassword = await bcrypt.hash('000000', 12);
       const user = await userRepository.create(
@@ -58,7 +53,7 @@ const resetUsers = async () => {
     });
 
     logger.info(`تم حذف ${deletedUsersCount} مستخدم/مستخدمين و ${deletedAdminsCount} مدير/مديرين.`);
-    logger.info(`تم إنشاء حساب المدير: ${adminEmail} / 000000`);
+    logger.info(`تم إنشاء حساب المدير: ${adminPhone} / ${SINGLE_ADMIN_PASSWORD}`);
     logger.info(`تم إنشاء حساب المستخدم: ${userPhone} / 000000`);
 
     logger.info('اكتملت إعادة تعيين المستخدمين بنجاح.');

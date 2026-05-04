@@ -101,12 +101,8 @@
               >
                 <div
                   v-if="uiState.isUserDropdownOpen"
-                  class="fixed z-[95] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
-                  :style="{
-                    top: `${userDropdownPosition.top}px`,
-                    left: `${userDropdownPosition.left}px`,
-                    width: `${userDropdownPosition.width}px`,
-                  }"
+                  class="fixed z-[130] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
+                  :style="userDropdownStyle"
                   @click.stop
                 >
                   <div class="py-1">
@@ -154,12 +150,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import { AppIcon } from "@/icons";
 import { ThemeToggle } from "@/base";
 import NotificationBell from "@/NotificationBell.vue";
 import { buildLoginRedirect } from "@/utils/authRedirect";
+import { useFloatingPosition } from "@/composables/useFloatingPosition";
 import { useSiteSettings } from "@/composables/useSiteSettings";
 
 const { siteSettings } = useSiteSettings();
@@ -188,7 +185,18 @@ const uiState = reactive({
 });
 const userDropdownRef = ref(null);
 const userDropdownButtonRef = ref(null);
-const userDropdownPosition = ref({ top: 0, left: 0, width: 0 });
+
+const { floatingStyle: userDropdownStyle } = useFloatingPosition({
+  triggerRef: userDropdownButtonRef,
+  isOpen: computed(() => uiState.isUserDropdownOpen),
+  desktopWidth: 192,
+  mobileWidth: (viewportWidth) => Math.min(280, viewportWidth - 32),
+  viewportPadding: 16,
+  offset: 8,
+  mobileBreakpoint: 640,
+  centerOnMobile: false,
+  align: "end",
+});
 
 const toggleUserDropdown = () => {
   uiState.isUserDropdownOpen = !uiState.isUserDropdownOpen;
@@ -208,44 +216,6 @@ const handleClickOutside = (event) => {
     closeUserDropdown();
   }
 };
-
-const calculateUserDropdownPosition = () => {
-  if (!userDropdownButtonRef.value) return;
-
-  const rect = userDropdownButtonRef.value.getBoundingClientRect();
-  const viewportWidth = window.innerWidth;
-  const dropdownWidth = viewportWidth < 640 ? Math.min(280, viewportWidth - 32) : 192;
-  const horizontalPadding = 16;
-
-  let left = rect.right - dropdownWidth;
-  left = Math.max(
-    horizontalPadding,
-    Math.min(left, viewportWidth - dropdownWidth - horizontalPadding),
-  );
-
-  userDropdownPosition.value = {
-    top: rect.bottom + 8,
-    left,
-    width: dropdownWidth,
-  };
-};
-
-const handleViewportChange = () => {
-  if (uiState.isUserDropdownOpen) {
-    calculateUserDropdownPosition();
-  }
-};
-
-watch(
-  () => uiState.isUserDropdownOpen,
-  (isOpen) => {
-    if (isOpen) {
-      nextTick(() => {
-        calculateUserDropdownPosition();
-      });
-    }
-  },
-);
 
 // Navbar Scroll Logic
 const isNavbarHidden = ref(false);
@@ -278,8 +248,6 @@ const handleScroll = () => {
 
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
-  window.addEventListener("resize", handleViewportChange, { passive: true });
-  window.addEventListener("scroll", handleViewportChange, true);
   // استخدام scroll event مع passive لتحسين الأداء
   window.addEventListener("scroll", handleScroll, { passive: true });
   // إذا كان المحتوى بداخل main element فيه overflow-auto
@@ -305,8 +273,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
-  window.removeEventListener("resize", handleViewportChange);
-  window.removeEventListener("scroll", handleViewportChange, true);
   window.removeEventListener("scroll", handleScroll);
   const mainEl = document.querySelector('.dashboard-main');
   if (mainEl && mainEl._navScrollHandler) {

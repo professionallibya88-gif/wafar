@@ -9,7 +9,7 @@
     <!-- Dot -->
     <span v-if="dot" :class="['w-1.5 h-1.5 rounded-full ml-1.5', dotClass]" />
 
-    <slot />
+    <slot>{{ displayValue }}</slot>
   </span>
 </template>
 
@@ -43,6 +43,10 @@ const props = defineProps({
   pulse: {
     type: Boolean,
     default: false,
+  },
+  value: {
+    type: [Number, String],
+    default: "",
   },
 });
 
@@ -88,4 +92,8 @@ const dotClass = computed(() => {
     ? `${dots[props.variant]} animate-pulse`
     : dots[props.variant];
 });
+
+const displayValue = computed(() =>
+  props.value === null || props.value === undefined ? "" : String(props.value),
+);
 </script>

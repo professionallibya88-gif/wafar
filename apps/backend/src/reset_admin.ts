@@ -1,16 +1,12 @@
 import './database/models/index';
 import { adminRepository } from './repositories/index';
 import * as bcrypt from 'bcryptjs';
+import { SINGLE_ADMIN_PASSWORD } from './repositories/AdminRepository';
 
 export async function reset() {
   try {
-    const admin = await adminRepository.findOne({ role: 'super_admin' });
-    if (!admin) {
-      return;
-    }
-
-    const password = await bcrypt.hash('000000', 12);
-    await adminRepository.updateById(admin.id, { password });
+    const password = await bcrypt.hash(SINGLE_ADMIN_PASSWORD, 12);
+    await adminRepository.enforceSingleAdmin(password);
   } catch (error) {
     // Ignore error
   }

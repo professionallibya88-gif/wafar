@@ -13,9 +13,7 @@ import { partAdminService } from '../services/PartAdminService';
 import MonitoringSystem from '../services/MonitoringSystem';
 import PerformanceMonitor from '../services/PerformanceMonitor';
 import { AuthenticatedRequest } from '../types';
-import { adminRepository } from '../repositories/AdminRepository';
-import * as bcrypt from 'bcryptjs';
-import { NotFoundError } from '../errors';
+import { BusinessError, NotFoundError } from '../errors';
 import { activityLogService } from '../services/ActivityLogService';
 
 /**
@@ -101,105 +99,36 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
  */
 export const listAdmins = asyncHandler(async (req: Request, res: Response) => {
   const { limit, offset, page } = parsePagination(req.query);
-  const where: any = {};
-  if (req.query.search) {
-    const s = req.query.search as string;
-    where.full_name = { $iLike: `%${s}%` };
-  }
-
-  const { rows, count } = await adminRepository.findAndCountAll(where, {
+  const { admins, count } = await adminService.listAdmins({
     limit,
     offset,
-    order: [['created_at', 'DESC']],
-  });
-
-  const safeRows = rows.map((admin) => {
-    const data = admin.toJSON();
-    delete data.password;
-    return data;
+    search: req.query.search as string | undefined,
   });
 
   return success(res, {
-    data: { admins: safeRows },
+    data: { admins },
     meta: buildPaginationMeta({ total: count, page, limit }),
   });
 });
 
-export const createAdmin = asyncHandler(async (req: Request, res: Response) => {
-  const { full_name, email, phone, password, role, is_active } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 12);
-
-  const admin = await adminRepository.create({
-    full_name,
-    email: email ? email.toLowerCase() : null,
-    phone: phone || null,
-    password: hashedPassword,
-    role: role || 'editor',
-    is_active: is_active !== undefined ? is_active : true,
-  });
-
-  const data = admin.toJSON();
-  delete data.password;
-
-  return created(res, { data, message: 'تم إنشاء المدير بنجاح' });
+export const createAdmin = asyncHandler(async (_req: Request, res: Response) => {
+  await adminService.createAdmin();
 });
 
 export const updateAdmin = asyncHandler(async (req: Request, res: Response) => {
   const adminId = req.params.id as string;
-  const admin = await adminRepository.findById(adminId);
-
-  if (!admin) {
-    throw new NotFoundError('المدير غير موجود');
-  }
-
-  const updates: any = { ...req.body };
-
-  if (updates.password) {
-    updates.password = await bcrypt.hash(updates.password, 12);
-  } else {
-    delete updates.password;
-  }
-
-  if (updates.email !== undefined) {
-    updates.email = updates.email ? updates.email.toLowerCase() : null;
-  }
-  if (updates.phone !== undefined) {
-    updates.phone = updates.phone || null;
-  }
-
-  const updatedAdmin = await adminRepository.updateById(adminId, updates);
-  if (!updatedAdmin) {
-    throw new NotFoundError('المدير غير موجود');
-  }
-  const data = updatedAdmin.toJSON();
-  delete data.password;
-
+  const data = await adminService.updateAdmin(adminId, req.body);
   return success(res, { data, message: 'تم تحديث بيانات المدير بنجاح' });
 });
 
-export const toggleAdminActive = asyncHandler(async (req: Request, res: Response) => {
+export const toggleAdminActive = asyncHandler(async (req: Request, _res: Response) => {
   const adminId = req.params.id as string;
-  const admin = await adminRepository.findById(adminId);
-
-  if (!admin) {
-    throw new NotFoundError('المدير غير موجود');
-  }
-
-  const updatedAdmin = await adminRepository.updateById(adminId, { is_active: !admin.is_active });
-  if (!updatedAdmin) {
-    throw new NotFoundError('المدير غير موجود');
-  }
-  const data = updatedAdmin.toJSON();
-  delete data.password;
-
-  const message = data.is_active ? 'تم تفعيل حساب المدير' : 'تم تعطيل حساب المدير';
-  return success(res, { data, message });
+  await adminService.toggleAdminActive(adminId);
 });
 
-export const deleteAdmin = asyncHandler(async (req: Request, res: Response) => {
+export const deleteAdmin = asyncHandler(async (req: Request, _res: Response) => {
   const adminId = req.params.id as string;
-  await adminRepository.deleteById(adminId);
-  return success(res, { message: 'تم حذف المدير بنجاح' });
+  await adminService.deleteAdmin(adminId);
 });
 
 /**

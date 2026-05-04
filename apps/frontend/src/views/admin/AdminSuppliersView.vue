@@ -106,6 +106,9 @@
     <div
       class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
     >
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalSuppliers" :totalPages="totalPages" />
+      </div>
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-gray-50 dark:bg-gray-900">
@@ -230,44 +233,18 @@
       </div>
 
       <!-- Pagination -->
-      <div
-        v-if="totalPages > 1"
-        class="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700"
-      >
-        <p class="text-sm text-gray-600 dark:text-gray-400">
-          عرض {{ (currentPage - 1) * pageSize + 1 }} إلى
-          {{ Math.min(currentPage * pageSize, totalSuppliers) }} من
-          {{ totalSuppliers }} شركة
-        </p>
-        <div class="flex items-center gap-2">
-          <button
-            @click="changePage(currentPage - 1)"
-            :disabled="currentPage === 1"
-            class="px-3 py-2 text-sm font-medium text-brand-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-brand-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            السابق
-          </button>
-          <span class="text-sm text-gray-600 dark:text-gray-400">
-            صفحة {{ currentPage }} من {{ totalPages }}
-          </span>
-          <button
-            @click="changePage(currentPage + 1)"
-            :disabled="currentPage === totalPages"
-            class="px-3 py-2 text-sm font-medium text-brand-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-brand-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            التالي
-          </button>
-        </div>
+      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalSuppliers" :totalPages="totalPages" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { adminAPI, supplierAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseSelect } from "@/components/base";
+import { BaseToast, BaseSelect, BasePagination } from "@/components/base";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 
 const suppliers = ref([]);
@@ -288,6 +265,18 @@ const currentPage = ref(1);
 const pageSize = ref(20);
 const totalSuppliers = ref(0);
 const totalPages = ref(1);
+
+watch(pageSize, () => {
+  if (currentPage.value !== 1) {
+    currentPage.value = 1;
+  } else {
+    loadSuppliers();
+  }
+});
+
+watch(currentPage, () => {
+  loadSuppliers();
+});
 
 const loadSuppliers = async () => {
   try {
@@ -319,12 +308,7 @@ const { applyNow: applySupplierFilters } = useAutoApplyFilters(
   },
 );
 
-const changePage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-    loadSuppliers();
-  }
-};
+
 
 const editSupplier = (supplierItem) => {
   editingId.value = supplierItem.id;

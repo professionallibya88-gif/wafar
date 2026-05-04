@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>معاينة مؤشرات التحميل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Tajawal", "system-ui", "sans-serif"],
+            },
+            colors: {
+              brand: {
+                50: "#eff6ff",
+                100: "#dbeafe",
+                200: "#bfdbfe",
+                300: "#93c5fd",
+                400: "#60a5fa",
+                500: "#3b82f6",
+                600: "#2563eb",
+                700: "#1d4ed8",
+                800: "#1e40af",
+                900: "#1e3a8a",
+              },
+            },
+            boxShadow: {
+              panel: "0 20px 60px rgba(15,23,42,0.16)",
+              panelDark: "0 24px 80px rgba(2,6,23,0.45)",
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg-primary: #020617;
+        --bg-secondary: rgba(15, 23, 42, 0.74);
+        --panel-bg: rgba(8, 15, 33, 0.76);
+        --panel-border: rgba(148, 163, 184, 0.14);
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --surface: radial-gradient(circle at top right, rgba(59, 130, 246, 0.22), transparent 30%),
+          radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.18), transparent 32%),
+          linear-gradient(180deg, #020617 0%, #07152d 52%, #020617 100%);
+        --stage-bg: linear-gradient(180deg, rgba(14, 24, 46, 0.9), rgba(5, 12, 25, 0.94));
+        --stage-border: rgba(96, 165, 250, 0.12);
+        --spinner-main: #60a5fa;
+        --spinner-strong: #3b82f6;
+        --spinner-soft: rgba(96, 165, 250, 0.18);
+      }
+
+      body[data-theme="light"] {
+        color-scheme: light;
+        --bg-primary: #eff6ff;
+        --bg-secondary: rgba(255, 255, 255, 0.72);
+        --panel-bg: rgba(255, 255, 255, 0.84);
+        --panel-border: rgba(59, 130, 246, 0.12);
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --surface: radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 30%),
+          radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.1), transparent 32%),
+          linear-gradient(180deg, #f8fbff 0%, #eef4ff 55%, #f8fbff 100%);
+        --stage-bg: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(239, 246, 255, 0.98));
+        --stage-border: rgba(59, 130, 246, 0.1);
+        --spinner-main: #2563eb;
+        --spinner-strong: #1d4ed8;
+        --spinner-soft: rgba(37, 99, 235, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Tajawal", system-ui, sans-serif;
+        background: var(--surface);
+        color: var(--text-primary);
+        min-height: 100vh;
+        transition: background 220ms ease, color 220ms ease;
+      }
+
+      .glass {
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        backdrop-filter: blur(18px);
+      }
+
+      .stage {
+        background: var(--stage-bg);
+        border: 1px solid var(--stage-border);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+
+      .theme-switch {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        transition: transform 180ms ease, background 180ms ease;
+      }
+
+      .theme-switch:hover {
+        transform: translateY(-1px);
+      }
+
+      .spinner-shell {
+        position: relative;
+        width: 88px;
+        height: 88px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .spinner-shell.lg {
+        width: 102px;
+        height: 102px;
+      }
+
+      .ring-gradient {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        border: 4px solid transparent;
+        background:
+          linear-gradient(var(--stage-bg), var(--stage-bg)) padding-box,
+          conic-gradient(from 0deg, transparent 10%, var(--spinner-main), var(--spinner-strong), transparent 76%) border-box;
+        animation: spin 0.9s linear infinite;
+      }
+
+      .dual-rings::before,
+      .dual-rings::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        border-style: solid;
+        border-color: transparent;
+      }
+
+      .dual-rings::before {
+        inset: 10px;
+        border-width: 4px;
+        border-top-color: var(--spinner-main);
+        border-right-color: var(--spinner-main);
+        animation: spin 0.92s linear infinite;
+      }
+
+      .dual-rings::after {
+        inset: 22px;
+        border-width: 4px;
+        border-bottom-color: var(--spinner-strong);
+        border-left-color: var(--spinner-strong);
+        animation: spinReverse 0.78s linear infinite;
+      }
+
+      .pulse-dots {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .pulse-dots span {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--spinner-main), var(--spinner-strong));
+        box-shadow: 0 0 0 8px transparent;
+        animation: dotsPulse 1s ease-in-out infinite;
+      }
+
+      .pulse-dots span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+
+      .pulse-dots span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+
+      .concentric::before,
+      .concentric::after,
+      .concentric span {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        border: 3px solid var(--spinner-soft);
+        animation: ripple 1.8s ease-out infinite;
+      }
+
+      .concentric::before {
+        inset: 18px;
+      }
+
+      .concentric::after {
+        inset: 6px;
+        animation-delay: 0.3s;
+      }
+
+      .concentric span {
+        inset: 30px;
+        border-color: var(--spinner-main);
+        animation-delay: 0.15s;
+      }
+
+      .draw-circle svg {
+        width: 84px;
+        height: 84px;
+        transform: rotate(-90deg);
+      }
+
+      .draw-circle circle {
+        fill: none;
+        stroke-linecap: round;
+        stroke-width: 5;
+      }
+
+      .draw-circle .track {
+        stroke: var(--spinner-soft);
+      }
+
+      .draw-circle .dash {
+        stroke: var(--spinner-main);
+        stroke-dasharray: 120 200;
+        stroke-dashoffset: 0;
+        animation: dash 1.35s ease-in-out infinite;
+      }
+
+      .radar {
+        width: 74px;
+        height: 74px;
+        border-radius: 50%;
+        border: 1px solid var(--spinner-soft);
+        background:
+          radial-gradient(circle, transparent 0 48%, var(--spinner-soft) 49% 50%, transparent 51%),
+          radial-gradient(circle, transparent 0 72%, var(--spinner-soft) 73% 74%, transparent 75%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .radar::before {
+        content: "";
+        position: absolute;
+        inset: -18%;
+        background: conic-gradient(from 0deg, transparent 0 78%, rgba(96, 165, 250, 0.65) 90%, transparent 100%);
+        animation: spin 1.15s linear infinite;
+      }
+
+      .equalizer {
+        display: flex;
+        align-items: end;
+        justify-content: center;
+        gap: 7px;
+        width: 88px;
+        height: 72px;
+      }
+
+      .equalizer span {
+        width: 8px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, var(--spinner-main), var(--spinner-strong));
+        animation: bars 1s ease-in-out infinite;
+      }
+
+      .equalizer span:nth-child(1) {
+        height: 24px;
+      }
+
+      .equalizer span:nth-child(2) {
+        height: 44px;
+        animation-delay: 0.12s;
+      }
+
+      .equalizer span:nth-child(3) {
+        height: 58px;
+        animation-delay: 0.24s;
+      }
+
+      .equalizer span:nth-child(4) {
+        height: 36px;
+        animation-delay: 0.36s;
+      }
+
+      .equalizer span:nth-child(5) {
+        height: 48px;
+        animation-delay: 0.48s;
+      }
+
+      .dash-ring {
+        width: 74px;
+        height: 74px;
+        border-radius: 50%;
+        border: 4px dashed var(--spinner-main);
+        animation: spin 1.2s linear infinite;
+      }
+
+      .infinity svg {
+        width: 92px;
+        height: 58px;
+      }
+
+      .infinity path {
+        fill: none;
+        stroke: var(--spinner-main);
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-dasharray: 160;
+        stroke-dashoffset: 160;
+        animation: infinityDraw 1.5s ease-in-out infinite;
+      }
+
+      .segmented {
+        width: 78px;
+        height: 78px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at center, transparent 0 48%, var(--stage-bg) 49% 52%, transparent 53%),
+          conic-gradient(
+            from 0deg,
+            var(--spinner-soft) 0 12%,
+            var(--spinner-main) 12% 20%,
+            transparent 20% 28%,
+            var(--spinner-soft) 28% 40%,
+            var(--spinner-strong) 40% 48%,
+            transparent 48% 58%,
+            var(--spinner-soft) 58% 72%,
+            var(--spinner-main) 72% 82%,
+            transparent 82% 100%
+          );
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes spinReverse {
+        to {
+          transform: rotate(-360deg);
+        }
+      }
+
+      @keyframes dotsPulse {
+        0%, 80%, 100% {
+          transform: translateY(0) scale(0.92);
+          opacity: 0.42;
+        }
+        40% {
+          transform: translateY(-8px) scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes ripple {
+        0% {
+          transform: scale(0.72);
+          opacity: 0.8;
+        }
+        100% {
+          transform: scale(1.18);
+          opacity: 0;
+        }
+      }
+
+      @keyframes dash {
+        0% {
+          stroke-dasharray: 1 200;
+          stroke-dashoffset: 0;
+        }
+        50% {
+          stroke-dasharray: 120 200;
+          stroke-dashoffset: -34;
+        }
+        100% {
+          stroke-dasharray: 120 200;
+          stroke-dashoffset: -166;
+        }
+      }
+
+      @keyframes bars {
+        0%, 100% {
+          transform: scaleY(0.55);
+          opacity: 0.4;
+        }
+        50% {
+          transform: scaleY(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes infinityDraw {
+        0% {
+          stroke-dashoffset: 160;
+          opacity: 0.3;
+        }
+        45% {
+          opacity: 1;
+        }
+        100% {
+          stroke-dashoffset: -160;
+          opacity: 0.4;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .ring-gradient,
+        .dual-rings::before,
+        .dual-rings::after,
+        .pulse-dots span,
+        .concentric::before,
+        .concentric::after,
+        .concentric span,
+        .draw-circle .dash,
+        .radar::before,
+        .equalizer span,
+        .dash-ring,
+        .infinity path,
+        .segmented {
+          animation-duration: 2.2s !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen" data-theme="dark">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <header class="glass mb-8 rounded-[2rem] px-6 py-6 shadow-panel dark:shadow-panelDark md:px-8">
+        <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div class="max-w-3xl">
+            <p class="mb-2 text-xs font-extrabold tracking-[0.28em] text-brand-400 md:text-sm">
+              WAFAR LOADING SYSTEM
+            </p>
+            <h1 class="text-2xl font-extrabold md:text-4xl">معاينة 10 تصاميم لمؤشرات التحميل</h1>
+            <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-400 md:text-base">
+              هذه صفحة اختبار بصرية لاختيار سبينر موحد للمشروع. كل بطاقة تعرض اتجاهاً مختلفاً:
+              رسمي، تقني، هادئ، أو أكثر حيوية حتى تختار التصميم الأقرب لهوية المنصة.
+            </p>
+          </div>
+
+          <button
+            id="themeToggle"
+            type="button"
+            class="theme-switch glass inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-bold text-inherit shadow-panel dark:shadow-panelDark"
+          >
+            تبديل الثيم
+          </button>
+        </div>
+      </header>
+
+      <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <article class="glass rounded-[1.75rem] p-5 shadow-panel dark:shadow-panelDark">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.5rem]">
+            <div class="spinner-shell lg">
+              <div class="ring-gradient"></div>
+            </div>
+          </div>
+          <div class="pt-4">
+            <h2 class="text-lg font-extrabold">1. الحلقة المتدرجة</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-400">خيار رسمي ومتوازن، قريب من أسلوب منصات SaaS الحديثة.</p>
+          </div>
+        </article>
+
+        <article class="glass rounded-[1.75rem] p-5 shadow-panel dark:shadow-panelDark">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.5rem]">
+            <div class="spinner-shell dual-rings lg"></div>
+          </div>
+          <div class="pt-4">
+            <h2 class="text-lg font-extrabold">2. الحلقتان المتعاكستان</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-400">أكثر تقنية وحيوية، مناسب للتحميلات المهمة والواجهات الإدارية.</p>
+          </div>
+        </article>
+
+        <article class="glass rounded-[1.75rem] p-5 shadow-panel dark:shadow-panelDark">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.5rem]">
+            <div class="spinner-shell lg">
+              <div class="pulse-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+          <div class="pt-4">
+            <h2 class="text-lg font-extrabold">3. النقاط النابضة</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-400">خفيف وودود، مناسب للمساحات الصغيرة أو التحميلات القصيرة.</p>
+          </div>
+        </article>
+
+        <article class="glass rounded-[1.75rem] p-5 shadow-panel dark:shadow-panelDark">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.5rem]">
+            <div class="spinner-shell concentric lg">
+              <span></span>
+            </div>
+          </div>
+          <div class="pt-4">
+            <h2 class="text-lg font-extrabold">4. الموجات الدائرية</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-400">يوحي بالعمق والاستجابة، أنيق جداً لشاشة البداية أو الطبقات العائمة.</p>
+          </div>
+        </article>
+
+        <article class="glass rounded-[1.75rem] p-5 shadow-panel dark:shadow-panelDark">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.5rem]">
+            <div class="spinner-shell draw-circle lg">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="track" cx="50" cy="50" r="34"></circle>
+                <circle class="dash" cx="50" cy="50" r="34"></circle>
+              </svg>
+            </div>
+          </div>
+          <div class="pt-4">
+            <h2 class="text-lg font-extrabold">5. الرسم المتتابع</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-400">إحساس هندسي دقيق، قوي بصرياً ويعطي طابعاً متقدماً.</p>
+          </div>
+        </article>
+
+        <article class="glass rounded-[1.75rem] p-5 shadow-panel dark:shadow-panelDark">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.5rem]">
+            <div class="spinner-shell lg">
+              <div class="radar"></div>
+            </div>
+          </div>
+          <div class="pt-4">
+            <h2 class="text-lg font-extrabold">6. الرادار</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-400">تصميم قوي وغير تقليدي، مناسب إذا أردت هوية تقنية مميزة جداً.</p>
+          </div>
+        </article>
+
+        <article class="glass rounded-[1.75rem] p-5 shadow-panel dark:shadow-panelDark">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.5rem]">
+            <div class="spinner-shell lg">
+              <div class="equalizer">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+          <div class="pt-4">
+            <h2 class="text-lg font-extrabold">7. الأعمدة المتحركة</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-400">نابض وواضح، لكنه أكثر نشاطاً من الطابع الرسمي الكلاسيكي.</p>
+          </div>
+        </article>
+
+        <article class="glass rounded-[1.75rem] p-5 shadow-panel dark:shadow-panelDark">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.5rem]">
+            <div class="spinner-shell lg">
+              <div class="dash-ring"></div>
+            </div>
+          </div>
+          <div class="pt-4">
+            <h2 class="text-lg font-extrabold">8. الحلقة المتقطعة</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-400">نسخة مطورة من السبينر التقليدي، نظيف وسهل الاعتماد عالمياً.</p>
+          </div>
+        </article>
+
+        <article class="glass rounded-[1.75rem] p-5 shadow-panel dark:shadow-panelDark">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.5rem]">
+            <div class="spinner-shell infinity lg">
+              <svg viewBox="0 0 120 70" aria-hidden="true">
+                <path d="M18 35c10-20 28-20 42 0s30 20 42 0M18 35c10 20 28 20 42 0s30-20 42 0"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="pt-4">
+            <h2 class="text-lg font-extrabold">9. اللانهاية</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-400">مميز جداً كهوية بصرية، لكنه أكثر جرأة وأقل حيادية من بقية الخيارات.</p>
+          </div>
+        </article>
+
+        <article class="glass rounded-[1.75rem] p-5 shadow-panel dark:shadow-panelDark">
+          <div class="stage flex min-h-[220px] items-center justify-center rounded-[1.5rem]">
+            <div class="spinner-shell lg">
+              <div class="segmented"></div>
+            </div>
+          </div>
+          <div class="pt-4">
+            <h2 class="text-lg font-extrabold">10. الدائرة المقسمة</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-400">خيار رسمي حديث جداً، متزن وقوي ومرشح ممتاز كنظام موحد للمشروع.</p>
+          </div>
+        </article>
+
+      </section>
+    </div>
+
+    <script>
+      const body = document.body;
+      const themeToggle = document.getElementById("themeToggle");
+
+      themeToggle.addEventListener("click", () => {
+        body.dataset.theme = body.dataset.theme === "dark" ? "light" : "dark";
+      });
+    </script>
+  </body>
+</html>

@@ -1,11 +1,15 @@
 import { defineStore } from "pinia";
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { themeStorage } from "@/services/storage";
+
+const VALID_THEME_MODES = ["light", "dark", "system"];
+const DEFAULT_THEME_MODE = "dark";
+const DEFAULT_RESOLVED_THEME = "dark";
 
 export const useThemeStore = defineStore("theme", () => {
   // حالة الوضع الحالي
-  const themeMode = ref("dark");
-  const resolvedTheme = ref("dark");
+  const themeMode = ref(DEFAULT_THEME_MODE);
+  const resolvedTheme = ref(DEFAULT_RESOLVED_THEME);
   const isInitialized = ref(false);
 
   // مراقبة تفضيلات النظام
@@ -17,25 +21,27 @@ export const useThemeStore = defineStore("theme", () => {
     if (typeof document === "undefined") return;
 
     const root = document.documentElement;
+    const resolvedMode = newTheme === "light" ? "light" : "dark";
 
-    if (newTheme === "dark") {
+    if (resolvedMode === "dark") {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
     }
 
-    root.setAttribute("data-theme", newTheme);
+    root.setAttribute("data-theme", resolvedMode);
     root.setAttribute(
       "data-theme-source",
       mode === "system" ? "system" : "manual",
     );
+    root.style.colorScheme = resolvedMode;
 
     // تحديث لون meta theme
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       metaThemeColor.setAttribute(
         "content",
-        newTheme === "dark" ? "#0a0a0a" : "#f8f9fa",
+        resolvedMode === "dark" ? "#0a0a0a" : "#f8f9fa",
       );
     }
   };
@@ -45,16 +51,33 @@ export const useThemeStore = defineStore("theme", () => {
     if (systemDarkQuery) {
       return systemDarkQuery.matches ? "dark" : "light";
     }
-    return "dark";
+    return DEFAULT_RESOLVED_THEME;
   };
 
   // الحصول على الوضع المحفوظ أو الافتراضي
   const getStoredTheme = () => {
     const stored = themeStorage.getTheme();
-    if (stored === "light" || stored === "dark" || stored === "system") {
+    if (VALID_THEME_MODES.includes(stored)) {
       return stored;
     }
     return null;
+  };
+
+  const getBootstrapThemeState = () => {
+    if (typeof document === "undefined") return null;
+
+    const root = document.documentElement;
+    const domResolvedTheme = root.getAttribute("data-theme");
+    const domThemeSource = root.getAttribute("data-theme-source");
+
+    return {
+      themeMode:
+        domThemeSource === "system" ? "system" : DEFAULT_THEME_MODE,
+      resolvedTheme:
+        domResolvedTheme === "light" || domResolvedTheme === "dark"
+          ? domResolvedTheme
+          : null,
+    };
   };
 
   // تحديد الوضع الفعال
@@ -66,7 +89,7 @@ export const useThemeStore = defineStore("theme", () => {
   };
 
   // تهيئة الوضع
-  const initTheme = () => {
+  const initTheme = (initialState = null) => {
     if (isInitialized.value) return;
 
     // إعداد مراقبة النظام
@@ -76,9 +99,16 @@ export const useThemeStore = defineStore("theme", () => {
         : null;
 
     // الحصول على الوضع المحفوظ أو الافتراضي
+    const bootstrapState = initialState || getBootstrapThemeState();
     const stored = getStoredTheme();
-    themeMode.value = stored || "dark";
-    resolvedTheme.value = resolveTheme(themeMode.value);
+    const initialMode =
+      stored ||
+      bootstrapState?.themeMode ||
+      DEFAULT_THEME_MODE;
+
+    themeMode.value = initialMode;
+    resolvedTheme.value =
+      bootstrapState?.resolvedTheme || resolveTheme(initialMode);
 
     // تطبيق الوضع
     applyTheme(resolvedTheme.value, themeMode.value);
@@ -128,15 +158,9 @@ export const useThemeStore = defineStore("theme", () => {
       systemDarkQuery.removeEventListener("change", systemListener);
       systemListener = null;
     }
+    systemDarkQuery = null;
     isInitialized.value = false;
   };
-
-  // مراقبة تغيرات themeMode
-  watch(themeMode, (newMode) => {
-    const newResolved = resolveTheme(newMode);
-    resolvedTheme.value = newResolved;
-    applyTheme(newResolved, newMode);
-  });
 
   return {
     theme: resolvedTheme,

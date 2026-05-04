@@ -1,5 +1,5 @@
 import { put, del } from '@vercel/blob';
-import fs from 'fs/promises';
+import { promises as fs } from 'fs';
 import path from 'path';
 import logger from '../config/logger';
 
@@ -35,7 +35,10 @@ export class VercelBlobService {
    * Delete a file from Vercel Blob
    */
   async deleteFile(fileUrl: string): Promise<void> {
-    if (process.env.USE_VERCEL_BLOB !== 'true' || !fileUrl.includes('public.blob.vercel-storage.com')) {
+    if (
+      process.env.USE_VERCEL_BLOB !== 'true' ||
+      !fileUrl.includes('public.blob.vercel-storage.com')
+    ) {
       // If it's a local file, delete locally
       try {
         await fs.unlink(fileUrl);

@@ -6,6 +6,8 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import * as THREE from "three";
 
+const emit = defineEmits(["ready"]);
+
 const PALETTES = {
   dark: {
     base: [0.01, 0.03, 0.08],
@@ -30,6 +32,8 @@ let floorMesh;
 let tunnelGroup;
 let pillarsGroup;
 let particles;
+let startupTimerId = null;
+let hasEmittedReady = false;
 
 const activePalette = () => PALETTES.dark;
 
@@ -66,6 +70,11 @@ const initScene = () => {
   createPillars();
   createFloatingParticles();
   updateBackdropSize();
+  renderer.render(scene, camera);
+  if (!hasEmittedReady) {
+    hasEmittedReady = true;
+    emit("ready");
+  }
 
   window.addEventListener("resize", onResize);
   animate();
@@ -590,6 +599,10 @@ const onResize = () => {
 
 const cleanup = () => {
   window.removeEventListener("resize", onResize);
+  if (startupTimerId) {
+    window.clearTimeout(startupTimerId);
+    startupTimerId = null;
+  }
 
   if (animationId) {
     cancelAnimationFrame(animationId);
@@ -627,8 +640,10 @@ const cleanup = () => {
 };
 
 onMounted(() => {
-  initScene();
-  updatePalette();
+  startupTimerId = window.setTimeout(() => {
+    initScene();
+    updatePalette();
+  }, 120);
 });
 
 onUnmounted(() => {

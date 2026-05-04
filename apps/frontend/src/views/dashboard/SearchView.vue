@@ -64,21 +64,22 @@
       </div>
 
       <!-- Advanced Filters -->
-      <Transition name="filter-transition">
-        <div
-          v-if="showFilters"
-          class="fixed inset-0 z-[60] md:static md:z-auto md:block flex flex-col justify-end md:justify-start"
-        >
-          <!-- Mobile Backdrop -->
-          <div 
-            class="absolute inset-0 bg-black/50 backdrop-blur-sm md:hidden"
-            @click="showFilters = false"
-          ></div>
-
-          <!-- Content Wrapper -->
-          <div 
-            class="filter-content relative w-full bg-white dark:bg-neutral-900 md:bg-transparent rounded-t-3xl md:rounded-none p-5 md:p-0 md:mt-6 md:pt-6 md:border-t md:border-neutral-200 md:dark:border-neutral-700 max-h-[85vh] md:max-h-none overflow-y-auto custom-scrollbar shadow-2xl md:shadow-none flex flex-col"
+      <Teleport to="body" :disabled="!useMobileFiltersPortal">
+        <Transition name="filter-transition">
+          <div
+            v-if="showFilters"
+            class="fixed inset-0 z-[140] flex flex-col justify-end md:static md:z-auto md:block md:justify-start"
           >
+            <!-- Mobile Backdrop -->
+            <div
+              class="absolute inset-0 bg-black/50 backdrop-blur-sm md:hidden"
+              @click="showFilters = false"
+            ></div>
+
+            <!-- Content Wrapper -->
+            <div
+              class="filter-content relative w-full bg-white dark:bg-neutral-900 md:bg-transparent rounded-t-3xl md:rounded-none p-5 md:p-0 md:mt-6 md:pt-6 md:border-t md:border-neutral-200 md:dark:border-neutral-700 max-h-[85vh] md:max-h-none overflow-y-auto custom-scrollbar shadow-2xl md:shadow-none flex flex-col"
+            >
             <!-- Header -->
             <div class="flex items-center justify-between mb-4 md:mb-5 pb-4 md:pb-0 border-b border-neutral-100 dark:border-neutral-800 md:border-0 shrink-0">
               <h3 class="text-lg font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
@@ -121,7 +122,7 @@
                   </button>
                 </div>
                 
-                <div v-if="showBrandDropdown" class="absolute z-20 w-full mt-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar">
+                <div v-if="showBrandDropdown" class="absolute z-[80] w-full mt-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar">
                   <div v-if="filteredBrands.length === 0" class="p-4 text-sm text-neutral-500 dark:text-neutral-400 text-center">لا توجد نتائج مطابقة</div>
                   <button
                     v-for="brand in filteredBrands"
@@ -229,14 +230,15 @@
                  عرض النتائج
                </BaseButton>
             </div>
+            </div>
           </div>
-        </div>
-      </Transition>
+        </Transition>
+      </Teleport>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="panel-card overflow-hidden p-6">
-      <BaseSkeleton type="table" :rows="8" />
+      <BaseSkeleton type="table" :rows="8" usage="table" />
     </div>
 
     <!-- Results -->
@@ -248,11 +250,6 @@
           <BaseBadge variant="primary" size="lg">
             {{ totalResults }} نتيجة
           </BaseBadge>
-          <span
-            v-if="totalPages > 1"
-            class="text-sm text-neutral-500 dark:text-neutral-400"
-            >صفحة {{ currentPage }} من {{ totalPages }}</span
-          >
         </div>
         <BaseButton @click="selectAll" variant="outline" size="sm" class="w-full sm:w-auto justify-center">
           <template #iconLeft>
@@ -260,6 +257,10 @@
           </template>
           تحديد الكل
         </BaseButton>
+      </div>
+      
+      <div class="p-4 border-b border-neutral-200 dark:border-neutral-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalResults" :totalPages="totalPages" />
       </div>
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
@@ -415,23 +416,8 @@
       </div>
 
       <!-- Pagination -->
-      <div
-        v-if="totalPages > 1"
-        class="p-4 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-center gap-2"
-      >
-        <button
-          v-for="p in totalPages"
-          :key="p"
-          @click="currentPage = p"
-          :class="[
-            'w-10 h-10 rounded-xl text-sm font-medium transition-all duration-200',
-            p === currentPage
-              ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30'
-              : 'bg-brand-50 dark:bg-neutral-700 text-brand-700 dark:text-neutral-300 hover:bg-brand-100 dark:hover:bg-neutral-600',
-          ]"
-        >
-          {{ p }}
-        </button>
+      <div class="p-4 border-t border-neutral-200 dark:border-neutral-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalResults" :totalPages="totalPages" />
       </div>
     </div>
 
@@ -481,11 +467,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { formatCurrency } from "@/utils/currency";
 import { searchAPI, pdfAPI } from "@/services/api";
-import { BaseButton, BaseBadge, BaseToast, BaseSelect } from "@/components/base";
+import { BaseButton, BaseBadge, BaseToast, BaseSelect, BasePagination } from "@/components/base";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import { AppIcon } from "@/components/icons";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
@@ -504,11 +490,22 @@ const searched = ref(false);
 const results = ref([]);
 const totalResults = ref(0);
 const currentPage = ref(1);
+watch(pageSize, () => {
+  totalPages.value = Math.max(1, Math.ceil(flatResults.value.length / pageSize.value));
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value;
+  }
+});
 const totalPages = ref(1);
 const selectedParts = ref([]);
 const selectAllChecked = ref(false);
 const showFilters = ref(false);
-const pageSize = 20;
+const pageSize = ref(20);
+const useMobileFiltersPortal = ref(typeof window !== "undefined" ? window.innerWidth < 768 : true);
+
+const updateMobileFiltersPortal = () => {
+  useMobileFiltersPortal.value = window.innerWidth < 768;
+};
 
 // Brand Dropdown State
 const availableBrands = ref([]);
@@ -603,11 +600,17 @@ const loadFiles = async () => {
 };
 
 onMounted(() => {
+  updateMobileFiltersPortal();
+  window.addEventListener("resize", updateMobileFiltersPortal);
   loadBrands();
   loadFiles();
   if (route.query.q) {
     doSearch();
   }
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updateMobileFiltersPortal);
 });
 
 
@@ -671,13 +674,13 @@ const flatResults = computed(() => {
 });
 
 const paginatedResults = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  return flatResults.value.slice(start, start + pageSize);
+  const start = (currentPage.value - 1) * pageSize.value;
+  return flatResults.value.slice(start, start + pageSize.value);
 });
 
 watch(flatResults, (items) => {
   totalResults.value = items.length;
-  totalPages.value = Math.max(1, Math.ceil(items.length / pageSize));
+  totalPages.value = Math.max(1, Math.ceil(items.length / pageSize.value));
   if (currentPage.value > totalPages.value) {
     currentPage.value = totalPages.value;
   }

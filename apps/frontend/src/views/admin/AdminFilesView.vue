@@ -82,6 +82,16 @@
 
     <!-- Files Table Card -->
     <div class="panel-table">
+      <!-- Pagination Top -->
+      <div v-if="totalPages > 1 || totalFiles > 0" class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <BasePagination
+          v-model:currentPage="currentPage"
+          v-model:pageSize="pageSize"
+          :totalItems="totalFiles"
+          :totalPages="totalPages"
+        />
+      </div>
+
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-brand-50 dark:bg-gray-900">
@@ -211,39 +221,21 @@
         </div>
       </div>
 
-      <!-- Pagination -->
-      <div v-if="totalPages > 1" class="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-        <p class="text-sm text-neutral-600 dark:text-neutral-400">
-          عرض {{ (currentPage - 1) * pageSize + 1 }} إلى
-          {{ Math.min(currentPage * pageSize, totalFiles) }} من
-          {{ totalFiles }} ملف
-        </p>
-        <div class="flex items-center gap-2">
-          <button
-            @click="changePage(currentPage - 1)"
-            :disabled="currentPage === 1"
-            class="px-3 py-2 text-sm font-medium text-brand-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-brand-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            السابق
-          </button>
-          <span class="text-sm text-neutral-600 dark:text-neutral-400">
-            صفحة {{ currentPage }} من {{ totalPages }}
-          </span>
-          <button
-            @click="changePage(currentPage + 1)"
-            :disabled="currentPage === totalPages"
-            class="px-3 py-2 text-sm font-medium text-brand-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-brand-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            التالي
-          </button>
-        </div>
+      <!-- Pagination Bottom -->
+      <div v-if="totalPages > 1 || totalFiles > 0" class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+        <BasePagination
+          v-model:currentPage="currentPage"
+          v-model:pageSize="pageSize"
+          :totalItems="totalFiles"
+          :totalPages="totalPages"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
 import { BaseBadge, BaseButton, BaseToast, BaseSelect } from "@/components/base";
@@ -271,12 +263,15 @@ const filteredFiles = computed(() => {
 
 useAutoApplyFilters(
   () => [searchQuery.value, statusFilter.value],
-  () => loadFiles(),
+  () => {
+    if (currentPage.value === 1) {
+      loadFiles();
+    } else {
+      currentPage.value = 1;
+    }
+  },
   {
     delay: 400,
-    resetPage: () => {
-      currentPage.value = 1;
-    },
   }
 );
 
@@ -341,12 +336,17 @@ const loadFiles = async () => {
   } catch (error) { /* ignore */ }
 };
 
-const changePage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
+watch(pageSize, () => {
+  if (currentPage.value === 1) {
     loadFiles();
+  } else {
+    currentPage.value = 1;
   }
-};
+});
+
+watch(currentPage, () => {
+  loadFiles();
+});
 
 const reprocessFile = async (id) => {
   try {

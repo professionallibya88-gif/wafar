@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div class="relative w-full">
     <!-- Header -->
     <div class="text-center mb-6 pt-0 flex flex-col items-center">
       <img
@@ -122,6 +122,8 @@
         العودة لتسجيل دخول المستخدمين
       </router-link>
     </div>
+
+    <BaseBlockingOverlay :show="authStore.loading" />
   </div>
 </template>
 
@@ -130,6 +132,7 @@ import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { AppIcon } from "@/components/icons";
+import { BaseBlockingOverlay } from "@/components/base";
 import { getPostAdminAuthRedirect } from "@/utils/authRedirect";
 import { useSiteSettings } from "@/composables/useSiteSettings";
 

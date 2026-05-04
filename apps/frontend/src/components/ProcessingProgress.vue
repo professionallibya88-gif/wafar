@@ -2,10 +2,10 @@
   <Teleport to="body">
     <div
       v-if="visible"
-      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+      class="fixed inset-0 z-[140] flex min-h-dvh items-center justify-center overflow-y-auto bg-black/60 backdrop-blur-md p-4 sm:p-6"
     >
       <div
-        class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl p-4 sm:p-6 max-w-md w-full mx-4 animate-scale-in border border-gray-200 dark:border-gray-800"
+        class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl p-4 sm:p-6 max-w-md w-full mx-auto animate-scale-in border border-gray-200 dark:border-gray-800"
       >
       <!-- Header -->
       <div class="text-center mb-5">
@@ -36,9 +36,9 @@
               color="error"
               customClass="dark:text-red-400"
             />
-            <div
+            <BaseSpinner
               v-else-if="isProcessing"
-              class="w-5 h-5 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin"
+              size="xs"
             />
           </div>
         </div>
@@ -158,12 +158,10 @@
                   size="xs"
                   color="white"
                 />
-                <AppIcon
+                <BaseSpinner
                   v-else-if="step.status === 'active'"
-                  name="Refresh"
                   size="xs"
                   color="white"
-                  customClass="animate-spin"
                 />
                 <span
                   v-else
@@ -299,6 +297,7 @@
 <script setup>
 import { computed } from "vue";
 import { AppIcon } from "./icons";
+import BaseSpinner from "./base/BaseSpinner.vue";
 
 const props = defineProps({
   visible: {

@@ -111,7 +111,7 @@
               class="w-7 h-7 text-red-600 dark:text-red-400"
             />
             <div v-if="extractingMetadata" class="absolute inset-0 bg-white/50 dark:bg-neutral-800/50 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <AppIcon name="arrow-path" class="w-5 h-5 text-brand-600 animate-spin" />
+              <BaseSpinner size="sm" />
             </div>
           </div>
           <div class="flex-1 min-w-0">
@@ -137,7 +137,7 @@
             class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2 flex items-center gap-2"
           >
             اسم الشركة الموردة
-            <AppIcon v-if="extractingMetadata" name="arrow-path" class="w-4 h-4 text-brand-600 animate-spin" />
+            <BaseSpinner v-if="extractingMetadata" size="xs" />
           </label>
           <div class="relative">
             <input
@@ -166,7 +166,7 @@
             class="block text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2 flex items-center gap-2"
           >
             تاريخ الملف (من الشركة)
-            <AppIcon v-if="extractingMetadata" name="arrow-path" class="w-4 h-4 text-brand-600 animate-spin" />
+            <BaseSpinner v-if="extractingMetadata" size="xs" />
           </label>
           <div class="relative">
             <input
@@ -227,11 +227,10 @@
               class="absolute inset-0 bg-brand-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             />
             <span class="relative flex items-center justify-center gap-2">
-              <AppIcon
+              <BaseSpinner
                 v-if="uploading || extractingMetadata"
-                name="ArrowPath"
-                size="sm"
-                customClass="animate-spin"
+                size="xs"
+                color="white"
               />
               <AppIcon v-else name="CloudArrowUp" size="sm" />
               <span>{{
@@ -528,7 +527,7 @@ import { useRouter } from "vue-router";
 import { pdfAPI, settingsAPI, supplierAPI } from "@/services/api";
 import ProcessingProgress from "@/components/ProcessingProgress.vue";
 import { AppIcon } from "@/components/icons";
-import { BaseBadge, BaseSelect } from "@/components/base";
+import { BaseBadge, BaseSelect, BaseSpinner } from "@/components/base";
 
 // Helper functions - تعريف الدوال المساعدة في البداية
 const formatSize = (bytes) => {

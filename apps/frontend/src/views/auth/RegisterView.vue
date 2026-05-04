@@ -168,7 +168,7 @@
         :disabled="authStore.loading || !acceptTerms"
         class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 py-3 text-base font-semibold text-white shadow-lg shadow-brand-500/30 transition-all duration-200 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-500/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
       >
-        <AppIcon v-if="authStore.loading" name="Refresh" size="sm" customClass="animate-spin" />
+        <BaseSpinner v-if="authStore.loading" size="xs" color="white" usage="action" />
         <span>{{ authStore.loading ? 'جاري إنشاء الحساب...' : 'إنشاء الحساب' }}</span>
       </button>
     </form>
@@ -192,6 +192,7 @@
 import { ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { BaseSpinner } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { getPostAuthRedirect } from "@/utils/authRedirect";
 import { normalizePhoneNumber } from "@/utils/phone";

@@ -1,13 +1,14 @@
 import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import logger from './config/logger';
+import { validateCorsOrigin } from './config/cors';
 
 let io: SocketIOServer;
 
 export const initSocket = (server: HttpServer) => {
   io = new SocketIOServer(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:3050',
+      origin: validateCorsOrigin,
       methods: ['GET', 'POST'],
       credentials: true,
     },

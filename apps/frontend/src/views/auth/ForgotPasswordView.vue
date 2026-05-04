@@ -73,7 +73,7 @@
         :disabled="loading"
         class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/30 hover:shadow-xl hover:shadow-brand-500/40 active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base"
       >
-        <AppIcon v-if="loading" name="Refresh" size="sm" customClass="animate-spin" />
+        <BaseSpinner v-if="loading" size="xs" color="white" usage="action" />
         <span>{{ loading ? 'جاري إرسال الرمز...' : 'إرسال رمز التحقق' }}</span>
       </button>
     </form>
@@ -119,7 +119,7 @@
           :disabled="loading"
           class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/30 hover:shadow-xl hover:shadow-brand-500/40 active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base"
         >
-          <AppIcon v-if="loading" name="Refresh" size="sm" customClass="animate-spin" />
+          <BaseSpinner v-if="loading" size="xs" color="white" usage="action" />
           <span>{{ loading ? 'جاري التحقق...' : 'تحقق من الرمز' }}</span>
         </button>
       </div>
@@ -176,7 +176,7 @@
           :disabled="loading"
           class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/30 hover:shadow-xl hover:shadow-brand-500/40 active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base"
         >
-          <AppIcon v-if="loading" name="Refresh" size="sm" customClass="animate-spin" />
+          <BaseSpinner v-if="loading" size="xs" color="white" usage="action" />
           <span>{{ loading ? 'جاري التغيير...' : 'تأكيد التغيير' }}</span>
         </button>
       </div>
@@ -199,6 +199,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { authAPI } from "@/services/api";
+import { BaseSpinner } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { normalizePhoneNumber } from "@/utils/phone";
 

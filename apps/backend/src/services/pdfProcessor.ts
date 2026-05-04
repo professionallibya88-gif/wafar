@@ -8,7 +8,7 @@ import { HeaderMapper } from './HeaderMapper';
 import { RowNormalizer } from './RowNormalizer';
 import { pdfProcessingProfileService } from './PDFProcessingProfileService';
 import { vercelBlobService } from './VercelBlobService';
-import fs from 'fs/promises';
+import { promises as fs } from 'fs';
 import logger from '../config/logger';
 
 export class PDFProcessor {
@@ -289,7 +289,7 @@ export class PDFProcessor {
           const vercelUrl = await vercelBlobService.uploadFile(pdfFilePath, pdfFile.original_name);
           finalFilePath = vercelUrl;
           await pdfFileRepository.updateById(pdfFileId, { file_path: finalFilePath });
-          
+
           // Try to delete the local file since it's uploaded
           try {
             await fs.unlink(pdfFilePath);
@@ -301,7 +301,6 @@ export class PDFProcessor {
           logger.error(`فشل رفع الملف لـ Vercel Blob: ${pdfFileId}`, uploadErr);
         }
       }
-
     } catch (error: any) {
       await pdfFileRepository.updateById(pdfFileId, {
         status: 'failed',

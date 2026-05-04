@@ -6,13 +6,35 @@ import logger from '../config/logger';
 import { pdfFileRepository } from '../repositories';
 import fs from 'fs';
 import { NotFoundError, ValidationError } from '../errors';
+import { resolveRedisUrl } from '../config/redis';
+
+type LocalJobState = 'waiting' | 'active' | 'completed' | 'failed';
+
+interface LocalJobRecord {
+  id: string;
+  state: LocalJobState;
+  progress: number;
+  data: {
+    pdfFileId: string;
+    filePath: string;
+    method: string;
+  };
+  result?: Record<string, unknown>;
+  failedReason?: string;
+  processedOn?: number;
+  finishedOn?: number;
+}
+
+const localJobs = new Map<string, LocalJobRecord>();
 
 const createQueueRedisConnection = () => {
-  return new IORedis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379', 10),
-    password: process.env.REDIS_PASSWORD || undefined,
-    db: parseInt(process.env.REDIS_DB || '0', 10),
+  const redisUrl = resolveRedisUrl();
+
+  if (!redisUrl) {
+    throw new Error('إعداد Redis غير متوفر لطابور معالجة PDF');
+  }
+
+  return new IORedis(redisUrl, {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
     retryStrategy: (times: number) => {
@@ -154,6 +176,81 @@ const createPDFWorker = () => {
 let pdfQueueInstance: Queue | null = null;
 let pdfWorkerInstance: Worker | null = null;
 
+const runLocalPDFJob = async (jobId: string) => {
+  const localJob = localJobs.get(jobId);
+  if (!localJob) {
+    return;
+  }
+
+  localJob.state = 'active';
+  localJob.progress = 10;
+  localJob.processedOn = Date.now();
+
+  try {
+    const { pdfFileId, method } = localJob.data;
+    const pdfFile = await pdfFileRepository.findById(pdfFileId);
+    if (!pdfFile) {
+      throw new NotFoundError('ملف PDF غير موجود');
+    }
+
+    const MAX_FILE_SIZE = 100 * 1024 * 1024;
+    if (pdfFile.file_size > MAX_FILE_SIZE) {
+      throw new ValidationError(`حجم الملف يتجاوز الحد الأقصى ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+    }
+
+    if (!fs.existsSync(pdfFile.file_path)) {
+      throw new NotFoundError('ملف PDF غير موجود على القرص');
+    }
+
+    await pdfFileRepository.updateById(pdfFileId, { status: 'processing' });
+    await PDFProcessor.processPDF(pdfFileId, method);
+
+    localJob.state = 'completed';
+    localJob.progress = 100;
+    localJob.finishedOn = Date.now();
+    localJob.result = { success: true, pdfFileId };
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Local PDF processing error:', err.message);
+
+    if (localJob.data.pdfFileId) {
+      await pdfFileRepository.updateById(localJob.data.pdfFileId, {
+        status: 'failed',
+        error_message: err.message,
+      });
+    }
+
+    localJob.state = 'failed';
+    localJob.failedReason = err.message;
+    localJob.finishedOn = Date.now();
+  }
+};
+
+const scheduleLocalPDFProcessingJob = (
+  pdfFileId: string,
+  filePath: string,
+  method: string
+): LocalJobRecord => {
+  const localJob: LocalJobRecord = {
+    id: `local-${pdfFileId}-${Date.now()}`,
+    state: 'waiting',
+    progress: 0,
+    data: {
+      pdfFileId,
+      filePath,
+      method,
+    },
+  };
+
+  localJobs.set(localJob.id, localJob);
+
+  setImmediate(() => {
+    void runLocalPDFJob(localJob.id);
+  });
+
+  return localJob;
+};
+
 export const getPDFQueue = () => {
   if (!pdfQueueInstance) {
     pdfQueueInstance = createPDFQueue();
@@ -181,27 +278,46 @@ export const addPDFProcessingJob = async (
   method: string,
   options: JobOptions = {}
 ) => {
-  const queue = getPDFQueue();
+  try {
+    const queue = getPDFQueue();
 
-  const job = await queue.add(
-    'process-pdf',
-    {
-      pdfFileId,
-      filePath,
-      method,
-    },
-    {
-      priority: options.priority ?? 5,
-      delay: options.delay ?? 0,
-      attempts: options.attempts ?? 3,
-      jobId: options.jobId || undefined,
-    }
-  );
+    const job = await queue.add(
+      'process-pdf',
+      {
+        pdfFileId,
+        filePath,
+        method,
+      },
+      {
+        priority: options.priority ?? 5,
+        delay: options.delay ?? 0,
+        attempts: options.attempts ?? 3,
+        jobId: options.jobId || undefined,
+      }
+    );
 
-  return job;
+    return job;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    logger.warn('تعذر إضافة مهمة PDF إلى Redis، سيتم استخدام المعالجة المحلية:', message);
+    return scheduleLocalPDFProcessingJob(pdfFileId, filePath, method);
+  }
 };
 
 export const getJobStatus = async (jobId: string) => {
+  if (localJobs.has(jobId)) {
+    const localJob = localJobs.get(jobId) as LocalJobRecord;
+    return {
+      status: localJob.state,
+      progress: localJob.progress,
+      data: localJob.data,
+      result: localJob.result,
+      failedReason: localJob.failedReason,
+      processedOn: localJob.processedOn,
+      finishedOn: localJob.finishedOn,
+    };
+  }
+
   const queue = getPDFQueue();
   const job = await queue.getJob(jobId);
 

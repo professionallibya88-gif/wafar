@@ -41,7 +41,12 @@
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <template v-if="loading">
-        <BaseSkeleton v-for="i in 4" :key="`skeleton-stat-${i}`" type="card" />
+        <BaseSkeleton
+          v-for="i in 4"
+          :key="`skeleton-stat-${i}`"
+          type="card"
+          usage="card"
+        />
       </template>
       <template v-else>
         <div
@@ -112,7 +117,7 @@
         </div>
         <div class="space-y-4">
           <template v-if="loading">
-            <BaseSkeleton v-for="i in 5" :key="i" type="custom">
+            <BaseSkeleton v-for="i in 5" :key="i" type="custom" usage="list">
               <div class="flex items-center gap-4 p-3 bg-brand-50 dark:bg-gray-700/50 rounded-xl">
                 <div class="w-10 h-10 rounded-xl bg-gray-200 dark:bg-gray-600 animate-pulse"></div>
                 <div class="flex-1 space-y-2">
@@ -208,7 +213,7 @@
         </div>
         <template v-if="loading">
           <div class="mt-4 space-y-3">
-            <BaseSkeleton v-for="i in 3" :key="i" type="custom">
+            <BaseSkeleton v-for="i in 3" :key="i" type="custom" usage="list">
               <div class="flex items-center gap-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-100 dark:border-yellow-800">
                 <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/50 rounded-xl flex items-center justify-center animate-pulse"></div>
                 <div class="flex-1 space-y-2">
@@ -280,7 +285,7 @@
         </div>
         <template v-if="loading">
           <div class="mt-4 space-y-3">
-            <BaseSkeleton v-for="i in 3" :key="i" type="custom">
+            <BaseSkeleton v-for="i in 3" :key="i" type="custom" usage="list">
               <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                 <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center animate-pulse"></div>
                 <div class="flex-1 space-y-2">

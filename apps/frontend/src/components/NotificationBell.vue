@@ -30,11 +30,8 @@
       >
         <div
           v-if="isOpen"
-          class="fixed w-[90%] sm:w-96 md:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999]"
-          :style="{
-            top: dropdownPosition.top + 'px',
-            left: dropdownPosition.left + 'px',
-          }"
+          class="fixed z-[130] w-[90%] sm:w-96 md:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
+          :style="dropdownStyle"
           dir="rtl"
         >
           <!-- رأس القائمة -->
@@ -66,7 +63,7 @@
           <div class="max-h-96 sm:max-h-80 overflow-y-auto">
             <!-- حالة التحميل -->
             <div v-if="loading" class="p-8 text-center">
-              <BaseSpinner />
+              <BaseSpinner usage="section" />
             </div>
 
             <!-- قائمة الإشعارات -->
@@ -111,10 +108,11 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch, nextTick } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useNotificationStore } from "@/stores/notification";
 import { useAuthStore } from "@/stores/auth";
+import { useFloatingPosition } from "@/composables/useFloatingPosition";
 import BaseBadge from "./base/BaseBadge.vue";
 import BaseSpinner from "./base/BaseSpinner.vue";
 import NotificationList from "./NotificationList.vue";
@@ -125,7 +123,6 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const buttonRef = ref(null);
-const dropdownPosition = ref({ top: 0, left: 0 });
 
 const isOpen = computed({
   get: () => notificationStore.isOpen,
@@ -138,57 +135,24 @@ const isOpen = computed({
   },
 });
 
-const calculateDropdownPosition = () => {
-  if (buttonRef.value) {
-    const rect = buttonRef.value.getBoundingClientRect();
-    const screenWidth = window.innerWidth;
-    const isMobile = screenWidth < 640; // sm breakpoint
-
-    let dropdownWidth = 384; // w-96
-    let left;
-
-    if (isMobile) {
-      // على الهواتف: تتوسط القائمة الشاشة بعرض 90%
-      dropdownWidth = screenWidth * 0.9; // w-[90%]
-      left = (screenWidth - dropdownWidth) / 2;
-    } else {
-      // على الشاشات الأكبر: التموضع المعتاد
-      left = Math.max(8, rect.left - dropdownWidth + rect.width);
-    }
-
-    dropdownPosition.value = {
-      top: rect.bottom + 8,
-      left: left,
-    };
-  }
-};
-
-watch(isOpen, (newValue) => {
-  if (newValue) {
-    nextTick(() => {
-      calculateDropdownPosition();
-    });
-  }
+const { floatingStyle: dropdownStyle } = useFloatingPosition({
+  triggerRef: buttonRef,
+  isOpen,
+  desktopWidth: 384,
+  mobileWidth: (viewportWidth) => viewportWidth * 0.9,
+  viewportPadding: 8,
+  offset: 8,
+  mobileBreakpoint: 640,
+  centerOnMobile: true,
+  align: "end",
 });
 
-// إعادة حساب التموضع عند تغيير حجم الشاشة
-const handleResize = () => {
-  if (isOpen.value) {
-    calculateDropdownPosition();
-  }
-};
-
 onMounted(async () => {
-  window.addEventListener("resize", handleResize);
   if (authStore.isAuthenticated) {
     try {
       await notificationStore.fetchUnreadCount();
     } catch (error) { /* ignore */ }
   }
-});
-
-onUnmounted(() => {
-  window.removeEventListener("resize", handleResize);
 });
 
 const notifications = computed(() => notificationStore.notifications);

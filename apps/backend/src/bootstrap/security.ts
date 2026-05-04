@@ -3,6 +3,7 @@ import cors from 'cors';
 import hpp from 'hpp';
 import sanitizeHtml from 'sanitize-html';
 import { Application, Request, Response, NextFunction } from 'express';
+import { validateCorsOrigin } from '../config/cors';
 
 /**
  * إعداد طبقات الأمان: helmet + cors + hpp + xss sanitizer
@@ -61,12 +62,8 @@ const applySecurity = (app: Application) => {
   app.use(hpp());
 
   // CORS
-  const defaultOrigins = ['https://waffer.com', 'https://wafar-frontend.vercel.app'];
-  const envOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [];
-  const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
-
   const corsOptions = {
-    origin: process.env.NODE_ENV === 'production' ? allowedOrigins : '*',
+    origin: validateCorsOrigin,
     credentials: true,
   };
   app.use(cors(corsOptions));

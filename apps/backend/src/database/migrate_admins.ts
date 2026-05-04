@@ -1,5 +1,8 @@
 import { sequelize } from './index';
 import logger from '../config/logger';
+import { adminRepository } from '../repositories/AdminRepository';
+import bcrypt from 'bcryptjs';
+import { SINGLE_ADMIN_PASSWORD } from '../repositories/AdminRepository';
 
 export const migrateAdmins = async () => {
   try {
@@ -109,6 +112,11 @@ export const migrateAdmins = async () => {
     `);
 
     logger.info('تم تهجير جدول admins وتحديث جدول users بنجاح.');
+
+    logger.info('تنفيذ سياسة الحساب الإداري الواحد بعد التهجير...');
+    const hashedPassword = await bcrypt.hash(SINGLE_ADMIN_PASSWORD, 12);
+    await adminRepository.enforceSingleAdmin(hashedPassword);
+    logger.info('تم تطبيق سياسة الحساب الإداري الواحد بنجاح.');
   } catch (error) {
     logger.error('خطأ في تهجير جدول admins:', error);
     throw error;

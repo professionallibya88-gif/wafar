@@ -38,8 +38,11 @@
         </h2>
         <span
           class="text-sm text-gray-500 dark:text-gray-400 bg-brand-50 dark:bg-gray-700 px-3 py-1 rounded-full"
-          >{{ history.length }} عملية</span
+          >{{ totalHistory }} عملية</span
         >
+      </div>
+      <div v-if="history.length > 0" class="p-4 border-b border-gray-100 dark:border-gray-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalHistory" :totalPages="totalPages" />
       </div>
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
@@ -108,6 +111,9 @@
             </tr>
           </tbody>
         </table>
+        <div v-if="history.length > 0" class="p-4 border-t border-gray-100 dark:border-gray-700">
+          <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalHistory" :totalPages="totalPages" />
+        </div>
         <div v-if="history.length === 0" class="text-center py-16">
           <div
             class="w-20 h-20 bg-brand-50 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-4"
@@ -130,20 +136,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { searchAPI } from "@/services/api";
-import BaseButton from "@/components/base/BaseButton.vue";
+import { BaseButton, BasePagination } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 
 const router = useRouter();
 const history = ref([]);
+const totalHistory = ref(0);
+const totalPages = ref(1);
+const currentPage = ref(1);
+const pageSize = ref(20);
 
-onMounted(async () => {
+const loadHistory = async () => {
   try {
-    const res = await searchAPI.getHistory({ limit: 100 });
+    const res = await searchAPI.getHistory({ page: currentPage.value, limit: pageSize.value });
     history.value = res.data?.data?.history || [];
+    const meta = res.data?.meta || res.data?.data?.pagination;
+    totalPages.value = meta?.totalPages || meta?.pages || 1;
+    totalHistory.value = meta?.totalItems || meta?.total || 0;
   } catch (error) { /* ignore */ }
+};
+
+onMounted(() => {
+  loadHistory();
+});
+
+watch([currentPage, pageSize], () => {
+  loadHistory();
 });
 
 const searchAgain = (query) => {

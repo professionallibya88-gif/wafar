@@ -1,5 +1,11 @@
 <template>
-  <div :class="wrapperClass" role="status" :aria-label="label">
+  <div
+    :class="wrapperClass"
+    role="status"
+    :aria-label="resolvedLabel"
+    :data-loading-kind="'skeleton'"
+    :data-loading-usage="resolvedUsage"
+  >
     <!-- Text Skeleton -->
     <template v-if="type === 'text'">
       <div
@@ -63,7 +69,7 @@
     </template>
 
     <!-- Loading Text -->
-    <span class="sr-only">{{ label || "جاري التحميل..." }}</span>
+    <span class="sr-only">{{ resolvedLabel }}</span>
   </div>
 </template>
 
@@ -109,10 +115,43 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  usage: {
+    type: String,
+    default: "",
+    validator: (v) =>
+      ["", "section", "list", "table", "card", "detail", "media"].includes(v),
+  },
   animated: {
     type: Boolean,
     default: true,
   },
+});
+
+// السكلتون مخصص للتحميلات التي تحتاج الحفاظ على بنية الصفحة أو القائمة أو الجدول.
+const usageByType = {
+  text: "detail",
+  avatar: "media",
+  image: "media",
+  card: "card",
+  table: "table",
+  custom: "section",
+};
+
+const usageLabels = {
+  section: "جاري تجهيز بنية المحتوى",
+  list: "جاري تجهيز عناصر القائمة",
+  table: "جاري تجهيز بيانات الجدول",
+  card: "جاري تجهيز البطاقات",
+  detail: "جاري تجهيز تفاصيل المحتوى",
+  media: "جاري تجهيز المحتوى المرئي",
+};
+
+const resolvedUsage = computed(() => {
+  return props.usage || usageByType[props.type] || "section";
+});
+
+const resolvedLabel = computed(() => {
+  return props.label || usageLabels[resolvedUsage.value] || "جاري التحميل...";
 });
 
 const wrapperClass = computed(() => {

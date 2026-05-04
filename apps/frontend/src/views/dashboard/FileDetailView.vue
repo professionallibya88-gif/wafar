@@ -347,9 +347,9 @@
           </tbody>
         </table>
         <div v-if="partsLoading" class="text-center py-12">
-          <div
-            class="w-10 h-10 border-4 border-brand-200 dark:border-neutral-800 border-t-brand-600 rounded-full animate-spin mx-auto mb-4"
-          ></div>
+          <div class="mb-4 flex justify-center">
+            <BaseSpinner size="lg" usage="section" />
+          </div>
           <p class="text-neutral-500 dark:text-neutral-400">جاري تحميل القطع...</p>
         </div>
         <div
@@ -408,9 +408,9 @@
       class="bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-neutral-100 dark:border-neutral-700 p-12"
     >
       <div class="text-center">
-        <div
-          class="w-16 h-16 border-4 border-brand-200 dark:border-neutral-800 border-t-brand-600 rounded-full animate-spin mx-auto mb-4"
-        ></div>
+        <div class="mb-4 flex justify-center">
+          <BaseSpinner size="xl" usage="section" />
+        </div>
         <p class="text-neutral-500 dark:text-neutral-400">
           جاري تحميل البيانات...
         </p>
@@ -443,7 +443,7 @@
 import { ref, onMounted, watch, onBeforeUnmount, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { pdfAPI } from "@/services/api";
-import { BaseButton, BaseBadge, BaseSelect } from "@/components/base";
+import { BaseButton, BaseBadge, BaseSelect, BaseSpinner } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { formatCurrency } from "@/utils/currency";
 import { getFileStatusLabel, getFileStatusVariant } from "@/utils/statusLabels";

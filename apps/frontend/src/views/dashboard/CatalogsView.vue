@@ -32,6 +32,9 @@
     <div
       class="panel-table"
     >
+      <div v-if="catalogs.length > 0" class="p-4 border-b border-gray-100 dark:border-gray-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalCatalogs" :totalPages="totalPages" />
+      </div>
       <div v-if="catalogs.length > 0" class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-gray-50 dark:bg-gray-900">
@@ -145,23 +148,8 @@
       </div>
 
       <!-- Pagination -->
-      <div
-        v-if="totalPages > 1"
-        class="px-4 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-center gap-2"
-      >
-        <button
-          v-for="p in totalPages"
-          :key="p"
-          @click.stop="goToPage(p)"
-          :class="[
-            'w-10 h-10 rounded-xl text-sm font-medium transition-all duration-200',
-            p === currentPage
-              ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30'
-              : 'bg-brand-50 dark:bg-gray-700 text-brand-700 dark:text-gray-300 hover:bg-brand-100 dark:hover:bg-gray-600',
-          ]"
-        >
-          {{ p }}
-        </button>
+      <div v-if="catalogs.length > 0" class="p-4 border-t border-gray-100 dark:border-gray-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalCatalogs" :totalPages="totalPages" />
       </div>
 
       <!-- Empty State -->
@@ -190,9 +178,9 @@
 
       <!-- Loading -->
       <div v-if="loading" class="text-center py-16">
-        <div
-          class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-brand-600 rounded-full animate-spin mx-auto mb-4"
-        ></div>
+        <div class="mb-4 flex justify-center">
+          <BaseSpinner size="xl" usage="section" />
+        </div>
         <p class="text-gray-500 dark:text-gray-400">
           جاري تحميل الكتالوجات...
         </p>
@@ -204,7 +192,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { pdfAPI } from "@/services/api";
-import { BaseButton } from "@/components/base";
+import { BaseButton, BaseSpinner, BasePagination } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 
 const formatDate = (d) => {
@@ -219,6 +207,8 @@ const formatDate = (d) => {
 const catalogs = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
+const pageSize = ref(20);
+const totalCatalogs = ref(0);
 const totalPages = ref(1);
 const latestOnly = ref(true);
 
@@ -227,12 +217,13 @@ const fetchCatalogs = async () => {
   try {
     const res = await pdfAPI.getCatalogs({
       page: currentPage.value,
-      limit: 20,
+      limit: pageSize.value,
       latest_only: latestOnly.value,
     });
     catalogs.value = res.data?.data?.catalogs || [];
-    const meta = res.data?.meta;
-    totalPages.value = meta?.totalPages || 1;
+    const meta = res.data?.meta || res.data?.data?.pagination;
+    totalPages.value = meta?.totalPages || meta?.pages || 1;
+    totalCatalogs.value = meta?.totalItems || meta?.total || 0;
   } catch (e) {
     // تجاهل
   } finally {
@@ -240,10 +231,9 @@ const fetchCatalogs = async () => {
   }
 };
 
-const goToPage = (page) => {
-  currentPage.value = page;
+watch([currentPage, pageSize], () => {
   fetchCatalogs();
-};
+});
 
 onMounted(fetchCatalogs);
 

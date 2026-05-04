@@ -11,7 +11,8 @@
       </div>
       <div class="flex flex-wrap gap-3">
         <BaseButton variant="secondary" :disabled="loading" @click="refreshAll">
-          <AppIcon name="ArrowPath" size="md" :customClass="loading ? 'animate-spin' : ''" />
+          <BaseSpinner v-if="loading" size="sm" usage="action" />
+          <AppIcon v-else name="ArrowPath" size="md" />
           تحديث
         </BaseButton>
         <BaseButton variant="secondary" @click="openBulkPanel = !openBulkPanel">
@@ -275,7 +276,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { aiProviderAPI, pdfAPI, settingsAPI } from "@/services/api";
-import { BaseBadge, BaseButton, BaseDrawer, BaseDropdown, BaseToast, BaseSelect } from "@/components/base";
+import { BaseBadge, BaseButton, BaseDrawer, BaseDropdown, BaseToast, BaseSelect, BaseSpinner } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 
 const router = useRouter();

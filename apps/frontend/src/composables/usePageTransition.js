@@ -1,83 +1,146 @@
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
-/**
- * Composable لتحديد نوع الانتقال بين الصفحات
- * يدعم RTL ويحدد نوع الانتقال بناءً على المسقارن والتنقل
- */
-export function usePageTransition() {
+const DEFAULT_TRANSITION_CONFIG = {
+  preset: "fade",
+  reducedMotionPreset: "reduced",
+  mode: "out-in",
+};
+
+const getHistoryPosition = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return Number.isFinite(window.history.state?.position)
+    ? window.history.state.position
+    : null;
+};
+
+export function usePageTransition(options = {}) {
   const route = useRoute();
-
-  // تخزين المسقارن السابق لتحديد اتجاه التنقل
-  const previousRoute = ref(route.path);
+  const metaKey = options.metaKey || "pageTransition";
+  const prefersReducedMotion = ref(false);
   const transitionDirection = ref("forward");
+  const lastHistoryPosition = ref(getHistoryPosition());
 
-  // تحديد عمق المسقارن (عدد المستويات)
-  const getRouteDepth = (path) => {
-    return path.split("/").filter(Boolean).length;
+  let motionMediaQuery;
+  let motionMediaQueryListener;
+
+  const getTransitionConfig = (routeLocation) => {
+    return {
+      ...DEFAULT_TRANSITION_CONFIG,
+      ...(routeLocation?.meta?.[metaKey] || {}),
+    };
   };
 
-  // تحديد نوع الانتقال بناءً على المسار
-  const getTransitionType = (to, from) => {
-    // الانتقال من/إلى صفحات المصادقة - استخدام scale
-    const authRoutes = ["/login", "/register", "/forgot-password"];
-    if (
-      authRoutes.some((r) => to.startsWith(r)) ||
-      authRoutes.some((r) => from.startsWith(r))
-    ) {
-      return "scale";
-    }
+  const createRouteSnapshot = (routeLocation) => {
+    const config = getTransitionConfig(routeLocation);
 
-    // الانتقال من/إلى لوحة المدير - استخدام fade
-    if (to.startsWith("/admin") || from.startsWith("/admin")) {
-      return "fade";
-    }
-
-    // الانتقال إلى صفحة تفاصيل - استخدام slide
-    if (to.includes("/files/") || to.includes("/compare")) {
-      return "slide";
-    }
-
-    // الافتراضي - استخدام slide
-    return "slide";
+    return {
+      fullPath: routeLocation.fullPath,
+      level:
+        config.level ?? routeLocation.path.split("/").filter(Boolean).length,
+      preset: config.preset,
+    };
   };
 
-  // تحديث اتجاه الانتقال عند تغيير المسار
+  const previousSnapshot = ref(createRouteSnapshot(route));
+
+  const inferDirection = (currentSnapshot, previousRouteSnapshot) => {
+    const currentHistoryPosition = getHistoryPosition();
+
+    if (currentHistoryPosition !== null && lastHistoryPosition.value !== null) {
+      if (currentHistoryPosition < lastHistoryPosition.value) {
+        lastHistoryPosition.value = currentHistoryPosition;
+        return "back";
+      }
+
+      if (currentHistoryPosition > lastHistoryPosition.value) {
+        lastHistoryPosition.value = currentHistoryPosition;
+        return "forward";
+      }
+    }
+
+    lastHistoryPosition.value = currentHistoryPosition;
+
+    if (currentSnapshot.level < previousRouteSnapshot.level) {
+      return "back";
+    }
+
+    if (currentSnapshot.level > previousRouteSnapshot.level) {
+      return "forward";
+    }
+
+    if (currentSnapshot.preset !== previousRouteSnapshot.preset) {
+      return "forward";
+    }
+
+    return "forward";
+  };
+
+  const updateReducedMotionPreference = () => {
+    prefersReducedMotion.value = Boolean(motionMediaQuery?.matches);
+  };
+
+  onMounted(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    motionMediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    updateReducedMotionPreference();
+    motionMediaQueryListener = updateReducedMotionPreference;
+
+    if (typeof motionMediaQuery.addEventListener === "function") {
+      motionMediaQuery.addEventListener("change", motionMediaQueryListener);
+      return;
+    }
+
+    motionMediaQuery.addListener(motionMediaQueryListener);
+  });
+
+  onUnmounted(() => {
+    if (!motionMediaQuery || !motionMediaQueryListener) {
+      return;
+    }
+
+    if (typeof motionMediaQuery.removeEventListener === "function") {
+      motionMediaQuery.removeEventListener("change", motionMediaQueryListener);
+      return;
+    }
+
+    motionMediaQuery.removeListener(motionMediaQueryListener);
+  });
+
   watch(
-    () => route.path,
-    (newPath, oldPath) => {
-      if (!oldPath) {
-        previousRoute.value = newPath;
-        return;
-      }
-
-      const newDepth = getRouteDepth(newPath);
-      const oldDepth = getRouteDepth(oldPath);
-
-      // تحديد الاتجاه بناءً على عمق المسار
-      if (newDepth > oldDepth) {
-        transitionDirection.value = "forward";
-      } else if (newDepth < oldDepth) {
-        transitionDirection.value = "back";
-      } else {
-        // نفس المستوى - استخدام forward افتراضياً
-        transitionDirection.value = "forward";
-      }
-
-      previousRoute.value = oldPath;
+    () => route.fullPath,
+    () => {
+      const currentSnapshot = createRouteSnapshot(route);
+      transitionDirection.value = inferDirection(
+        currentSnapshot,
+        previousSnapshot.value,
+      );
+      previousSnapshot.value = currentSnapshot;
     },
   );
 
-  // خصائص الانتقال الحالية
-  const transitionProps = computed(() => ({
-    type: getTransitionType(route.path, previousRoute.value),
-    direction: transitionDirection.value,
-    mode: "out-in",
-  }));
+  const transitionProps = computed(() => {
+    const transitionConfig = getTransitionConfig(route);
+
+    return {
+      type: prefersReducedMotion.value
+        ? transitionConfig.reducedMotionPreset
+        : transitionConfig.preset,
+      direction: transitionDirection.value,
+      mode: transitionConfig.mode,
+    };
+  });
 
   return {
     transitionProps,
     transitionDirection,
-    getTransitionType,
+    prefersReducedMotion,
+    getTransitionConfig,
   };
 }

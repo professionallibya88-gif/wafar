@@ -6,11 +6,11 @@
     class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
     :class="variantClasses"
   >
-    <AppIcon
+    <BaseSpinner
       v-if="loading"
-      name="Refresh"
-      size="sm"
-      customClass="animate-spin"
+      :size="loadingSpinnerSize"
+      :color="loadingSpinnerColor"
+      usage="action"
     />
     <AppIcon
       v-if="icon && !loading"
@@ -26,6 +26,7 @@
 <script setup>
 import { computed } from "vue";
 import { AppIcon } from "@/icons";
+import BaseSpinner from "./BaseSpinner.vue";
 
 const props = defineProps({
   variant: {
@@ -67,6 +68,15 @@ const props = defineProps({
 });
 
 defineEmits(["click"]);
+
+const loadingSpinnerSize = computed(() => {
+  return props.iconSize === "lg" || props.iconSize === "xl" ? "sm" : "xs";
+});
+
+const loadingSpinnerColor = computed(() => {
+  const solidVariants = ["primary", "accent", "danger", "success"];
+  return solidVariants.includes(props.variant) ? "white" : "primary";
+});
 
 const variantClasses = computed(() => {
   const variants = {

@@ -34,14 +34,18 @@
 
       <!-- المحتوى الرئيسي -->
       <main
-        class="dashboard-main flex-1 transition-all duration-300"
+        class="dashboard-main flex-1 pt-4 pb-10 sm:pt-6 lg:pt-8 transition-all duration-300"
         :class="[
           desktopSidebarOffsetClass,
           showMobileSidebar || (!authStore.isAuthenticated && route.path === '/') ? 'overflow-hidden' : '',
         ]"
       >
-        <div class="max-w-7xl mx-auto w-full pb-32 lg:pb-8">
-          <router-view />
+        <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pb-32 lg:pb-8">
+          <router-view v-slot="{ Component, route }">
+            <PageTransition v-bind="transitionProps">
+              <component :is="Component" :key="route.fullPath" />
+            </PageTransition>
+          </router-view>
         </div>
       </main>
     </div>
@@ -65,10 +69,12 @@ import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useDashboardMenu } from "@/composables/useDashboardMenu";
 import { useSidebarState } from "@/composables/useSidebarState";
+import { usePageTransition } from "@/composables/usePageTransition";
 import DashboardNavbar from "@/components/layout/DashboardNavbar.vue";
 import DashboardSidebar from "@/components/layout/DashboardSidebar.vue";
 import DashboardBottomNav from "@/components/layout/DashboardBottomNav.vue";
 import FloatingSupportWidget from "@/components/support/FloatingSupportWidget.vue";
+import { PageTransition } from "@/components/transitions";
 
 const route = useRoute();
 const router = useRouter();
@@ -82,6 +88,8 @@ const {
   closeMobileSidebar,
   toggleSidebar,
 } = useSidebarState();
+
+const { transitionProps } = usePageTransition();
 
 const desktopSidebarOffsetClass = computed(() => {
   if (!authStore.isAuthenticated) {

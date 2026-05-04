@@ -24,13 +24,17 @@
       />
 
       <main
-        class="flex-1 min-w-0 p-4 xs:p-6 lg:p-6 xl:p-8 bg-layer-content transition-all duration-300"
+        class="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 pt-4 pb-10 sm:pt-6 lg:pt-8 bg-layer-content transition-all duration-300"
         :class="showMobileSidebar ? 'overflow-hidden' : ''"
       >
         <div
-          class="max-w-7xl mx-auto pb-32 lg:p-6 xl:p-8 lg:min-h-[calc(100vh-6.5rem)] lg:rounded-[2rem] lg:border lg:border-neutral-200/70 dark:border-neutral-800/70 lg:bg-layer-content"
+          class="max-w-7xl mx-auto w-full pb-32 lg:p-6 xl:p-8 lg:min-h-[calc(100vh-6.5rem)] lg:rounded-[2rem] lg:border lg:border-neutral-200/70 dark:border-neutral-800/70 lg:bg-layer-content"
         >
-          <router-view />
+          <router-view v-slot="{ Component, route }">
+            <PageTransition v-bind="transitionProps">
+              <component :is="Component" :key="route.fullPath" />
+            </PageTransition>
+          </router-view>
         </div>
       </main>
     </div>
@@ -48,15 +52,19 @@ import { ref, watch, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useAdminMenu } from "@/composables/useAdminMenu";
+import { usePageTransition } from "@/composables/usePageTransition";
 import AdminNavbar from "@/components/layout/AdminNavbar.vue";
 import AdminSidebar from "@/components/layout/AdminSidebar.vue";
 import AdminBottomNav from "@/components/layout/AdminBottomNav.vue";
+import { PageTransition } from "@/components/transitions";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
 const { filteredAdminMenuSections, bottomNavItems } = useAdminMenu();
+
+const { transitionProps } = usePageTransition();
 
 const showMobileSidebar = ref(false);
 const isSidebarCollapsed = ref(false);

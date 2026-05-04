@@ -90,7 +90,7 @@
             >
               <div
                 v-if="isAdminDropdownOpen"
-                class="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-neutral-900 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden z-50"
+                class="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-neutral-900 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden z-[130]"
               >
                 <div class="py-1">
                   <router-link

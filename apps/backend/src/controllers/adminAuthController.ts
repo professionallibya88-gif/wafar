@@ -3,6 +3,7 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { success } from '../utils/ApiResponse';
 import { adminAuthService } from '../services/AdminAuthService';
 import { adminRepository } from '../repositories';
+import { BusinessError, NotFoundError } from '../errors';
 
 export const adminLogin = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -23,7 +24,17 @@ export const updateProfile = asyncHandler(async (req: Request, res: Response) =>
   const adminId = (req as any).admin.id;
   const { full_name, email } = req.body;
 
-  const updatedAdmin = await adminRepository.updateById(adminId, { full_name, email });
+  if (email !== undefined) {
+    throw new BusinessError('لا يمكن تعديل بريد حساب الإدارة الوحيد');
+  }
+
+  const admin = await adminRepository.findById(adminId);
+  if (!admin) {
+    throw new NotFoundError('المدير غير موجود');
+  }
+
+  const updatedAdmin =
+    full_name !== undefined ? await adminRepository.updateById(adminId, { full_name }) : admin;
   return success(res, {
     data: adminAuthService.sanitizeAdmin(updatedAdmin),
     message: 'تم تحديث الملف الشخصي بنجاح',

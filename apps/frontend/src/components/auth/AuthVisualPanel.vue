@@ -1,6 +1,12 @@
 <template>
   <div class="auth-visual hidden lg:flex flex-1 relative overflow-hidden isolate">
-    <CinematicBackground />
+    <div class="absolute inset-0 auth-poster" />
+    <CinematicBackground
+      v-if="shouldRenderDynamicVisual"
+      class="auth-cinematic-layer"
+      :class="isVisualReady ? 'opacity-100' : 'opacity-0'"
+      @ready="handleVisualReady"
+    />
 
     <div
       class="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.08),rgba(2,6,23,0.28),rgba(2,6,23,0.72))]"
@@ -55,16 +61,54 @@
 </template>
 
 <script setup>
+import { computed, onMounted, ref } from "vue";
 import { AppIcon } from "@/components/icons";
 import CinematicBackground from "@/components/CinematicBackground.vue";
 import { useSiteSettings } from "@/composables/useSiteSettings";
 
 const { siteSettings } = useSiteSettings();
+const shouldRenderDynamicVisual = ref(false);
+const isVisualReady = ref(false);
+
+const prefersReducedMotion = computed(() => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+});
+
+const handleVisualReady = () => {
+  isVisualReady.value = true;
+};
+
+onMounted(() => {
+  if (prefersReducedMotion.value) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      shouldRenderDynamicVisual.value = true;
+    });
+  });
+});
 </script>
 
 <style scoped>
 .auth-visual {
   background: #0b1f47;
+}
+
+.auth-poster {
+  background:
+    radial-gradient(circle at 18% 20%, rgba(96, 165, 250, 0.22), transparent 24%),
+    radial-gradient(circle at 85% 82%, rgba(59, 130, 246, 0.2), transparent 28%),
+    linear-gradient(180deg, #06122b 0%, #081937 46%, #050d1e 100%);
+}
+
+.auth-cinematic-layer {
+  transition: opacity 320ms ease;
 }
 
 .auth-noise {
@@ -96,22 +140,22 @@ const { siteSettings } = useSiteSettings();
 
 .animate-fade-up-1 {
   opacity: 0;
-  animation: fadeUpSlow 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+  animation: fadeUpSlow 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.08s forwards;
 }
 
 .animate-fade-up-2 {
   opacity: 0;
-  animation: fadeUpSlow 1s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards;
+  animation: fadeUpSlow 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.14s forwards;
 }
 
 .animate-fade-up-3 {
   opacity: 0;
-  animation: fadeUpSlow 1s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+  animation: fadeUpSlow 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
 }
 
 .animate-fade-up-4 {
   opacity: 0;
-  animation: fadeUpSlow 1s cubic-bezier(0.16, 1, 0.3, 1) 0.75s forwards;
+  animation: fadeUpSlow 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.26s forwards;
 }
 
 .float-slow {
@@ -136,5 +180,20 @@ const { siteSettings } = useSiteSettings();
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0) scale(1); }
   50% { transform: translateY(-16px) scale(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-cinematic-layer,
+  .animate-fade-up-1,
+  .animate-fade-up-2,
+  .animate-fade-up-3,
+  .animate-fade-up-4,
+  .float-slow,
+  .float-slow-delayed {
+    animation: none;
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 </style>

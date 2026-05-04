@@ -843,6 +843,17 @@ select {
   transform: scale(0.95);
 }
 
+/* Reduced Motion Transition */
+.page-reduced-enter-active,
+.page-reduced-leave-active {
+  transition: opacity 140ms ease;
+}
+
+.page-reduced-enter-from,
+.page-reduced-leave-to {
+  opacity: 0;
+}
+
 /* ================================================
    SECTION TRANSITIONS
    ================================================ */
@@ -987,6 +998,54 @@ select {
 .list-fade-enter-from,
 .list-fade-leave-to {
   opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .page-slide-enter-active,
+  .page-slide-leave-active,
+  .page-slide-back-enter-active,
+  .page-slide-back-leave-active,
+  .page-scale-enter-active,
+  .page-scale-leave-active,
+  .page-bounce-enter-active,
+  .page-bounce-leave-active,
+  .section-slide-up-enter-active,
+  .section-slide-up-leave-active,
+  .section-slide-down-enter-active,
+  .section-slide-down-leave-active,
+  .section-scale-enter-active,
+  .section-scale-leave-active,
+  .list-transition-enter-active,
+  .list-transition-leave-active,
+  .list-shuffle-enter-active,
+  .list-shuffle-leave-active {
+    transition-duration: 140ms !important;
+  }
+
+  .page-slide-enter-from,
+  .page-slide-leave-to,
+  .page-slide-back-enter-from,
+  .page-slide-back-leave-to,
+  .page-scale-enter-from,
+  .page-scale-leave-to,
+  .page-bounce-enter-from,
+  .page-bounce-leave-to,
+  .section-slide-up-enter-from,
+  .section-slide-up-leave-to,
+  .section-slide-down-enter-from,
+  .section-slide-down-leave-to,
+  .section-scale-enter-from,
+  .section-scale-leave-to,
+  .list-transition-enter-from,
+  .list-transition-leave-to,
+  .list-shuffle-enter-from,
+  .list-shuffle-leave-to {
+    transform: none !important;
+  }
 }
 
 /* ================================================
@@ -1158,7 +1217,6 @@ select {
 }
 
 .dashboard-main {
-  padding: clamp(1rem, 2.5vw, 2rem);
   transition:
     margin-inline-start var(--transition-base),
     margin-inline-end var(--transition-base),
@@ -1183,10 +1241,6 @@ select {
 }
 
 @media (max-width: 1023px) {
-  .dashboard-main {
-    padding: 1rem;
-  }
-
   .dashboard-sidebar {
     top: 0;
     right: 0;
@@ -1288,7 +1342,7 @@ select {
    ================================================ */
 @layer components {
   .page-shell {
-    @apply space-y-6 sm:space-y-8 px-0 sm:px-0;
+    @apply space-y-6 sm:space-y-8;
   }
 
   .page-shell-content {

@@ -2,9 +2,14 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { SignOptions } from 'jsonwebtoken';
 import { adminRepository } from '../repositories';
-import { UnauthorizedError, ForbiddenError, NotFoundError } from '../errors';
+import { UnauthorizedError, ForbiddenError, NotFoundError, BusinessError } from '../errors';
 import { getJwtSecret } from '../config/auth';
 import logger from '../config/logger';
+import {
+  SINGLE_ADMIN_EMAIL,
+  SINGLE_ADMIN_PHONE,
+  SINGLE_ADMIN_PASSWORD,
+} from '../repositories/AdminRepository';
 
 type AdminLoginPayload = {
   email: string;
@@ -34,10 +39,26 @@ export class AdminAuthService {
     let input = String(data.email || '');
     input = input.trim().toLowerCase();
 
+    if (!adminRepository.isSingleAdminLoginInput(input)) {
+      throw new UnauthorizedError('بيانات دخول الإدارة محصورة بالحساب 0910000000');
+    }
+
+    if (password !== SINGLE_ADMIN_PASSWORD) {
+      throw new UnauthorizedError('بيانات دخول الإدارة محصورة بالحساب 0910000000 / 000000');
+    }
+
     const admin = await adminRepository.findByEmailOrPhone(input);
 
     if (!admin) {
-      throw new UnauthorizedError('البريد الإلكتروني/رقم الهاتف أو كلمة المرور غير صحيحة');
+      throw new UnauthorizedError('حساب الإدارة الوحيد غير مهيأ بعد');
+    }
+
+    if (admin.role !== 'super_admin') {
+      throw new ForbiddenError('تم تقييد الدخول على حساب super_admin الوحيد');
+    }
+
+    if (admin.phone !== SINGLE_ADMIN_PHONE || admin.email !== SINGLE_ADMIN_EMAIL) {
+      throw new ForbiddenError('بيانات حساب الإدارة الحالي لا تطابق الحساب الإجباري');
     }
 
     if (!admin.is_active) {
@@ -69,11 +90,7 @@ export class AdminAuthService {
     }
 
     try {
-      // تحديث عبر SQL خام لتجنب مشاكل الأعمدة المفقودة مثل phone إذا كان المودل غير متزامن
-      await adminRepository.sequelize!.query(
-        `UPDATE admins SET last_login = NOW() WHERE id = :id`,
-        { replacements: { id: admin.id } }
-      );
+      await adminRepository.updateLastLogin(admin.id);
     } catch (error) {
       logger.warn('Admin last_login update failed', {
         adminId: admin.id,
@@ -94,14 +111,13 @@ export class AdminAuthService {
       throw new NotFoundError('المدير غير موجود');
     }
 
-    const isMatch = await bcrypt.compare(current_password, admin.password);
-    if (!isMatch) {
-      throw new UnauthorizedError('كلمة المرور الحالية غير صحيحة');
+    if (admin.role !== 'super_admin') {
+      throw new ForbiddenError('تم تقييد هذه العملية على حساب super_admin الوحيد');
     }
 
-    await adminRepository.updateById(admin.id, {
-      password: await bcrypt.hash(new_password, 12),
-    });
+    if (current_password !== SINGLE_ADMIN_PASSWORD || new_password !== SINGLE_ADMIN_PASSWORD) {
+      throw new BusinessError('كلمة مرور حساب الإدارة الوحيد ثابتة ولا يمكن تغييرها');
+    }
   }
 
   sanitizeAdmin(admin: any) {

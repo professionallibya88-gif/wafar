@@ -19,11 +19,11 @@
         :disabled="saving"
         class="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-xl hover:bg-brand-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <AppIcon
+        <BaseSpinner
           v-if="saving"
-          name="Refresh"
-          size="sm"
-          customClass="animate-spin"
+          size="xs"
+          color="white"
+          usage="action"
         />
         <AppIcon v-else name="Check" size="sm" />
         <span class="sm:inline">{{ saving ? "جاري الحفظ..." : "حفظ التغييرات" }}</span>
@@ -37,11 +37,11 @@
         :disabled="saving"
         class="w-10 h-10 flex items-center justify-center text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 rounded-full disabled:opacity-50"
       >
-        <AppIcon
+        <BaseSpinner
           v-if="saving"
-          name="Refresh"
-          size="sm"
-          customClass="animate-spin"
+          size="xs"
+          color="white"
+          usage="action"
         />
         <AppIcon v-else name="Check" size="sm" />
       </button>
@@ -1122,11 +1122,8 @@
               :disabled="testingEmail"
               class="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-xl hover:bg-brand-700 transition-all flex items-center gap-2 disabled:opacity-50"
             >
-              <AppIcon
-                :name="testingEmail ? 'ArrowPath' : 'PaperAirplane'"
-                size="sm"
-                :customClass="testingEmail ? 'animate-spin' : ''"
-              />
+              <BaseSpinner v-if="testingEmail" size="xs" usage="action" />
+              <AppIcon v-else name="PaperAirplane" size="sm" />
               {{ testingEmail ? "جاري الفحص..." : "فحص الإعدادات" }}
             </button>
           </div>
@@ -1200,6 +1197,8 @@
             ضع كل عنوان IP في سطر مستقل
           </p>
         </div>
+
+        <SpinnerSystemSettings :settings="settings.general" />
 
         <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
           <h3 class="text-md font-medium text-gray-900 dark:text-white mb-4">
@@ -1948,8 +1947,10 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { settingsAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseSelect } from "@/components/base";
+import { BaseToast, BaseSelect, BaseSpinner } from "@/components/base";
 import BaseTabsLayout from "@/components/base/BaseTabsLayout.vue";
+import SpinnerSystemSettings from "@/components/admin/SpinnerSystemSettings.vue";
+import { useSiteSettings } from "@/composables/useSiteSettings";
 
 const settings = ref({
   general: {},
@@ -1969,6 +1970,7 @@ const showSuccess = ref(false);
 const toast = ref(null);
 const testingEmail = ref(false);
 const router = useRouter();
+const { applySettings: applySiteSettings } = useSiteSettings();
 
 const uploadingLogo = ref(false);
 const uploadingFavicon = ref(false);
@@ -2018,6 +2020,10 @@ const loadSettings = async () => {
         site_favicon: data.general?.site_favicon || "",
         landing_hero_title: data.general?.landing_hero_title || "",
         landing_hero_description: data.general?.landing_hero_description || "",
+        loader_spinner_variant: data.general?.loader_spinner_variant || "arc-gradient",
+        loader_spinner_size: data.general?.loader_spinner_size || "md",
+        loader_spinner_color: data.general?.loader_spinner_color || "primary",
+        loader_spinner_speed: data.general?.loader_spinner_speed || "normal",
       },
       pdf_processing: {
         default_pdf_method:
@@ -2178,6 +2184,7 @@ const saveAllSettings = async () => {
   saving.value = true;
   try {
     await settingsAPI.updateAll(settings.value);
+    applySiteSettings(settings.value);
     showSuccess.value = true;
     setTimeout(() => (showSuccess.value = false), 3000);
   } catch (e) {

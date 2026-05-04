@@ -11,7 +11,8 @@
       </div>
       <div class="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full lg:w-auto">
         <BaseButton @click="loadParts" :disabled="loading" variant="secondary" size="sm" class="w-full sm:w-auto justify-center">
-          <AppIcon name="ArrowPath" size="md" :customClass="loading ? 'animate-spin' : ''" />
+          <BaseSpinner v-if="loading" size="sm" usage="action" />
+          <AppIcon v-else name="ArrowPath" size="md" />
           تحديث
         </BaseButton>
         <BaseButton @click="exportResults" :disabled="exporting" variant="secondary" size="sm" class="w-full sm:w-auto justify-center">
@@ -222,6 +223,9 @@
     </div>
 
     <div class="panel-table overflow-hidden">
+      <div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-800">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalParts" :totalPages="totalPages" />
+      </div>
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[1100px]">
           <thead class="bg-brand-50 dark:bg-neutral-900">
@@ -338,29 +342,8 @@
         </table>
       </div>
 
-      <div
-        v-if="totalPages > 1"
-        class="flex flex-col gap-3 border-t border-neutral-200 px-6 py-4 text-sm dark:border-neutral-800 lg:flex-row lg:items-center lg:justify-between"
-      >
-        <p class="text-neutral-600 dark:text-neutral-400">
-          عرض {{ pageStart }} - {{ pageEnd }} من {{ totalParts }} نتيجة
-        </p>
-        <div class="flex items-center gap-2">
-          <BaseButton variant="secondary" size="sm" :disabled="currentPage === 1" @click="changePage(currentPage - 1)">
-            السابق
-          </BaseButton>
-          <span class="px-3 text-neutral-600 dark:text-neutral-400">
-            صفحة {{ currentPage }} من {{ totalPages }}
-          </span>
-          <BaseButton
-            variant="secondary"
-            size="sm"
-            :disabled="currentPage === totalPages"
-            @click="changePage(currentPage + 1)"
-          >
-            التالي
-          </BaseButton>
-        </div>
+      <div class="px-6 py-4 border-t border-neutral-200 dark:border-neutral-800">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalParts" :totalPages="totalPages" />
       </div>
     </div>
 
@@ -490,10 +473,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { adminAPI, searchAPI } from "@/services/api";
 import { formatCurrency } from "@/utils/currency";
-import { BaseBadge, BaseButton, BaseModal, BaseToast, BaseSelect } from "@/components/base";
+import { BaseBadge, BaseButton, BaseModal, BaseToast, BaseSelect, BaseSpinner, BasePagination } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { useAutoApplyFilters } from "@/composables/useAutoApplyFilters";
 
@@ -507,6 +490,18 @@ const currentPage = ref(1);
 const pageSize = ref(20);
 const totalParts = ref(0);
 const totalPages = ref(1);
+
+watch(pageSize, () => {
+  if (currentPage.value !== 1) {
+    currentPage.value = 1;
+  } else {
+    loadParts();
+  }
+});
+
+watch(currentPage, () => {
+  loadParts();
+});
 
 const filterOptions = ref({
   categories: [],
@@ -584,8 +579,6 @@ const activeFilterCount = computed(() =>
       value !== undefined
   ).length
 );
-const pageStart = computed(() => (totalParts.value ? (currentPage.value - 1) * pageSize.value + 1 : 0));
-const pageEnd = computed(() => Math.min(currentPage.value * pageSize.value, totalParts.value));
 
 const qualityLabel = (value) =>
   ({
@@ -659,14 +652,7 @@ const resetFilters = async () => {
   // loadParts() will be triggered automatically by useAutoApplyFilters
 };
 
-const changePage = async (page) => {
-  if (page < 1 || page > totalPages.value) {
-    return;
-  }
 
-  currentPage.value = page;
-  await loadParts();
-};
 
 const resetForm = () => {
   Object.assign(form, createDefaultForm());

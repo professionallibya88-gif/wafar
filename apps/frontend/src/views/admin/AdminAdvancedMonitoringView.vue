@@ -30,11 +30,8 @@
           :disabled="loading"
           class="w-full sm:w-auto px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors flex justify-center items-center gap-2"
         >
-          <AppIcon
-            name="Refresh"
-            size="lg"
-            :customClass="loading ? 'animate-spin' : ''"
-          />
+          <BaseSpinner v-if="loading" size="sm" usage="action" />
+          <AppIcon v-else name="Refresh" size="lg" />
           تحديث
         </button>
       </div>
@@ -399,7 +396,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseSelect } from "@/components/base";
+import { BaseToast, BaseSelect, BaseSpinner } from "@/components/base";
 import { useAdminMonitoring } from "@/composables/useAdminMonitoring";
 import {
   getQueuePercentage,

@@ -15,10 +15,11 @@
     @click="$emit('click', $event)"
   >
     <!-- Spinner -->
-    <AppIcon
+    <BaseSpinner
       v-if="loading"
-      name="Refresh"
-      :class="['animate-spin', iconSizeClass]"
+      :size="loadingSpinnerSize"
+      :color="loadingSpinnerColor"
+      usage="action"
     />
 
     <!-- Icon Left -->
@@ -38,7 +39,7 @@
 
 <script setup>
 import { computed } from "vue";
-import { AppIcon } from "@/icons";
+import BaseSpinner from "./BaseSpinner.vue";
 
 const props = defineProps({
   type: {
@@ -115,6 +116,22 @@ const iconSizeClass = computed(() => {
     xl: "w-5 h-5",
   };
   return sizes[props.size];
+});
+
+const loadingSpinnerSize = computed(() => {
+  const sizes = {
+    xs: "xs",
+    sm: "xs",
+    md: "xs",
+    lg: "sm",
+    xl: "sm",
+  };
+  return sizes[props.size];
+});
+
+const loadingSpinnerColor = computed(() => {
+  const solidVariants = ["primary", "danger", "success", "warning"];
+  return solidVariants.includes(props.variant) ? "white" : "primary";
 });
 
 const variantClasses = computed(() => {

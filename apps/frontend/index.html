@@ -1,17 +1,276 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="dark">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0a0a0a" />
+  <meta name="color-scheme" content="dark light" />
+  <meta
+    name="description"
+    content="منصة وفر المتخصصة في قطع غيار السيارات للسوق الليبي"
+  />
   <title>منصة وفر</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    id="google-font-link"
+    href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --bootstrap-bg-light: #fafafa;
+      --bootstrap-bg-dark: #0a0a0a;
+      --bootstrap-surface-light: rgba(255, 255, 255, 0.88);
+      --bootstrap-surface-dark: rgba(17, 24, 39, 0.72);
+      --bootstrap-border-light: rgba(15, 23, 42, 0.08);
+      --bootstrap-border-dark: rgba(148, 163, 184, 0.16);
+      --bootstrap-text-light: #0f172a;
+      --bootstrap-text-dark: #f8fafc;
+      --bootstrap-text-muted-light: #475569;
+      --bootstrap-text-muted-dark: #94a3b8;
+      --bootstrap-accent: #2563eb;
+      --font-sans:
+        "Tajawal", "Noto Sans Arabic", "Inter", "Segoe UI", system-ui,
+        -apple-system, sans-serif;
+      --font-display:
+        "Tajawal", "Noto Sans Arabic", "Poppins", "Segoe UI", sans-serif;
+      --site-font-family:
+        "Tajawal", "Noto Sans Arabic", "Inter", "Segoe UI", system-ui,
+        -apple-system, sans-serif;
+    }
+
+    html {
+      direction: rtl;
+      background-color: var(--bootstrap-bg-light);
+      color: var(--bootstrap-text-light);
+      color-scheme: light;
+    }
+
+    html.dark {
+      background-color: var(--bootstrap-bg-dark);
+      color: var(--bootstrap-text-dark);
+      color-scheme: dark;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: inherit;
+      color: inherit;
+      overflow-x: hidden;
+      font-family: var(--font-sans);
+    }
+
+    #app {
+      min-height: 100vh;
+      opacity: 0;
+    }
+
+    html[data-app-ready="true"] #app {
+      opacity: 1;
+    }
+
+    #app-bootstrap-shell {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top, rgba(37, 99, 235, 0.12), transparent 38%),
+        linear-gradient(180deg, rgba(15, 23, 42, 0.04), transparent 42%),
+        var(--bootstrap-bg-light);
+      transition:
+        opacity 180ms ease,
+        visibility 180ms ease;
+    }
+
+    html.dark #app-bootstrap-shell {
+      background:
+        radial-gradient(circle at top, rgba(96, 165, 250, 0.16), transparent 42%),
+        linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(10, 10, 10, 0.92)),
+        var(--bootstrap-bg-dark);
+    }
+
+    html[data-app-ready="true"] #app-bootstrap-shell {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .bootstrap-spinner-shell {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 5.5rem;
+      height: 5.5rem;
+      border-radius: 9999px;
+      border: 1px solid var(--bootstrap-border-light);
+      background: var(--bootstrap-surface-light);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+      backdrop-filter: blur(18px);
+    }
+
+    html.dark .bootstrap-spinner-shell {
+      border-color: var(--bootstrap-border-dark);
+      background: var(--bootstrap-surface-dark);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.34);
+    }
+
+    .bootstrap-spinner-shell::before {
+      content: "";
+      position: absolute;
+      inset: -18px;
+      border-radius: inherit;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.18), transparent 62%);
+      opacity: 0.9;
+    }
+
+    .bootstrap-spinner {
+      position: relative;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 9999px;
+      border: 3px solid rgba(148, 163, 184, 0.2);
+      border-top-color: #2563eb;
+      border-right-color: #60a5fa;
+      animation: bootstrap-spinner-rotate 0.82s linear infinite;
+      z-index: 1;
+    }
+
+    html.dark .bootstrap-spinner {
+      border-color: rgba(71, 85, 105, 0.38);
+      border-top-color: #60a5fa;
+      border-right-color: #93c5fd;
+    }
+
+    .bootstrap-spinner::after {
+      content: "";
+      position: absolute;
+      inset: 0.55rem;
+      border-radius: inherit;
+      background: rgba(37, 99, 235, 0.12);
+    }
+
+    html[data-bootstrap-transitions="off"] *,
+    html[data-bootstrap-transitions="off"] *::before,
+    html[data-bootstrap-transitions="off"] *::after {
+      transition-property: none !important;
+      transition-duration: 0s !important;
+      transition-delay: 0s !important;
+    }
+
+    @keyframes bootstrap-spinner-rotate {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      const defaultThemeMode = "dark";
+      const defaultTheme = "dark";
+      const defaultFont =
+        '"Tajawal", "Noto Sans Arabic", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif';
+
+      const getSystemTheme = () =>
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+
+      const readStoredTheme = () => {
+        try {
+          const storedTheme = window.localStorage.getItem("theme");
+          if (storedTheme === "light" || storedTheme === "dark" || storedTheme === "system") {
+            return storedTheme;
+          }
+        } catch (error) {
+          return defaultThemeMode;
+        }
+
+        return defaultThemeMode;
+      };
+
+      const applyTheme = (resolvedTheme, themeMode) => {
+        const activeTheme = resolvedTheme === "light" ? "light" : defaultTheme;
+        root.classList.toggle("dark", activeTheme === "dark");
+        root.setAttribute("data-theme", activeTheme);
+        root.setAttribute(
+          "data-theme-source",
+          themeMode === "system" ? "system" : "manual",
+        );
+        root.style.colorScheme = activeTheme;
+
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute(
+            "content",
+            activeTheme === "dark" ? "#0a0a0a" : "#f8f9fa",
+          );
+        }
+      };
+
+      const setFontFamily = (fontFamily) => {
+        root.style.setProperty("--site-font-family", fontFamily);
+        root.style.setProperty("--font-sans", fontFamily);
+        root.style.setProperty("--font-display", fontFamily);
+      };
+
+      const themeMode = readStoredTheme();
+      const resolvedTheme = themeMode === "system" ? getSystemTheme() : themeMode;
+
+      root.setAttribute("data-app-ready", "false");
+      root.setAttribute("data-bootstrap-transitions", "off");
+      setFontFamily(defaultFont);
+      applyTheme(resolvedTheme, themeMode);
+
+      window.__WAFAR_BOOTSTRAP__ = {
+        themeMode,
+        resolvedTheme,
+        applyTheme(nextResolvedTheme, nextThemeMode = themeMode) {
+          const safeThemeMode =
+            nextThemeMode === "light" ||
+            nextThemeMode === "dark" ||
+            nextThemeMode === "system"
+              ? nextThemeMode
+              : defaultThemeMode;
+          const safeResolvedTheme =
+            nextResolvedTheme === "light" || nextResolvedTheme === "dark"
+              ? nextResolvedTheme
+              : safeThemeMode === "system"
+                ? getSystemTheme()
+                : safeThemeMode;
+
+          this.themeMode = safeThemeMode;
+          this.resolvedTheme = safeResolvedTheme;
+          applyTheme(safeResolvedTheme, safeThemeMode);
+        },
+        setFontFamily,
+        releaseTransitions() {
+          root.removeAttribute("data-bootstrap-transitions");
+        },
+        markAppReady() {
+          root.setAttribute("data-app-ready", "true");
+          window.setTimeout(() => {
+            const shell = document.getElementById("app-bootstrap-shell");
+            if (shell) {
+              shell.remove();
+            }
+          }, 220);
+        },
+      };
+    })();
+  </script>
 </head>
-<body class="bg-gray-50 text-gray-900 overflow-x-hidden" dir="rtl">
+<body dir="rtl">
   <div id="app"></div>
+  <div id="app-bootstrap-shell" aria-hidden="true">
+    <div class="bootstrap-spinner-shell">
+      <span class="bootstrap-spinner"></span>
+    </div>
+  </div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

@@ -31,11 +31,8 @@
           :disabled="loading"
           class="px-4 py-2 bg-brand-50 dark:bg-gray-700 text-brand-700 dark:text-gray-300 rounded-lg hover:bg-brand-100 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"
         >
-          <AppIcon
-            name="Refresh"
-            size="lg"
-            :customClass="loading ? 'animate-spin' : ''"
-          />
+          <BaseSpinner v-if="loading" size="sm" usage="action" />
+          <AppIcon v-else name="Refresh" size="lg" />
           تحديث
         </button>
       </div>
@@ -299,7 +296,7 @@
 <script setup>
 import { ref } from "vue";
 import { AppIcon } from "@/components/icons";
-import { BaseToast, BaseSelect } from "@/components/base";
+import { BaseToast, BaseSelect, BaseSpinner } from "@/components/base";
 import { useAdminMonitoring } from "@/composables/useAdminMonitoring";
 import {
   formatDateTime,

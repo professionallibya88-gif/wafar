@@ -4,27 +4,21 @@
       <component :is="Component" />
     </PageTransition>
   </router-view>
+  <BaseRouteLoader :active="isRouteNavigating" />
   <BaseToast />
   <BaseConfirm />
 </template>
 
 <script setup>
-import { onMounted } from "vue";
-import { useSiteFont } from "./composables/useSiteFont";
-import { useSiteSettings } from "./composables/useSiteSettings";
-import { useThemeStore } from "./stores/theme";
-import { BaseToast, BaseConfirm } from "./components/base";
+import {
+  BaseToast,
+  BaseConfirm,
+  BaseRouteLoader,
+} from "./components/base";
 import { PageTransition } from "./components/transitions";
 import { usePageTransition } from "./composables/usePageTransition";
+import { useNavigationState } from "./composables/useNavigationState";
 
-const { loadFont } = useSiteFont();
-const { loadSettings } = useSiteSettings();
-const themeStore = useThemeStore();
-const { transitionProps } = usePageTransition();
-
-onMounted(() => {
-  themeStore.initTheme();
-  loadFont();
-  loadSettings();
-});
+const { transitionProps } = usePageTransition({ metaKey: "layoutTransition" });
+const { isRouteNavigating } = useNavigationState();
 </script>

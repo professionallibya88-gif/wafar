@@ -179,6 +179,9 @@
 
     <!-- Users Table Card -->
     <div class="panel-table mt-6">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalUsers" :totalPages="totalPages" />
+      </div>
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-brand-50 dark:bg-gray-900">
@@ -310,41 +313,15 @@
       </div>
 
       <!-- Pagination -->
-      <div
-        v-if="totalPages > 1"
-        class="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700"
-      >
-        <p class="text-sm text-gray-600 dark:text-gray-400">
-          عرض {{ (currentPage - 1) * pageSize + 1 }} إلى
-          {{ Math.min(currentPage * pageSize, totalUsers) }} من
-          {{ totalUsers }} مستخدم
-        </p>
-        <div class="flex items-center gap-2">
-          <button
-            @click="changePage(currentPage - 1)"
-            :disabled="currentPage === 1"
-            class="px-3 py-2 text-sm font-medium text-brand-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-brand-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            السابق
-          </button>
-          <span class="text-sm text-gray-600 dark:text-gray-400">
-            صفحة {{ currentPage }} م  {{ totalPages }}
-          </span>
-          <button
-            @click="changePage(currentPage + 1)"
-            :disabled="currentPage === totalPages"
-            class="px-3 py-2 text-sm font-medium text-brand-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-brand-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            التالي
-          </button>
-        </div>
+      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalUsers" :totalPages="totalPages" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import {  ref, computed, onMounted , watch } from "vue";
 import { adminAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
 import { BaseButton, BaseToast, BaseSelect } from "@/components/base";
@@ -367,9 +344,15 @@ const form = ref({
 
 // Pagination
 const currentPage = ref(1);
+watch(currentPage, () => { loadUsers(); });
 const pageSize = ref(20);
 const totalUsers = ref(0);
 const totalPages = ref(1);
+
+watch(pageSize, () => {
+  currentPage.value = 1;
+  loadUsers();
+});
 
 const activeCount = computed(
   () => users.value.filter((userItem) => userItem.is_active).length,
@@ -403,12 +386,7 @@ const { applyNow: applyUserFilters } = useAutoApplyFilters(
   },
 );
 
-const changePage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-    loadUsers();
-  }
-};
+
 
 const toggleActive = async (userItem) => {
   try {

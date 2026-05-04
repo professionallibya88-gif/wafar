@@ -1,0 +1,5 @@
+- [x] `main.css` `.dashboard-main` no longer has hardcoded `padding`.
+- [x] `main.css` `.page-shell` no longer strips horizontal padding.
+- [x] `DashboardLayout.vue` `<main>` uses `px-4 sm:px-6 lg:px-8` and properly offsets the sidebar.
+- [x] `AdminLayout.vue` `<main>` padding is consistent and unified.
+- [x] Content no longer sticks to the screen edges on desktop.

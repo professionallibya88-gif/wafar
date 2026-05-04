@@ -1,7 +1,7 @@
 <template>
   <div 
     v-if="isAuthenticated && shouldShowWidget" 
-    class="fixed z-50 support-widget" 
+    class="fixed z-[120] support-widget" 
     :class="[isOpen ? 'inset-0 sm:inset-auto' : '']"
     :style="isOpen && !isDesktop ? {} : {
       bottom: isDesktop ? `${widgetBottomDesktop}px` : `${widgetBottomMobile}px`,
@@ -11,7 +11,7 @@
     dir="rtl"
   >
     <!-- خلفية مظللة للموبايل فقط عند فتح المحادثة -->
-    <div v-if="isOpen" class="fixed inset-0 bg-black/50 sm:hidden z-40" @click="isOpen = false"></div>
+    <div v-if="isOpen" class="fixed inset-0 bg-black/50 sm:hidden z-[120]" @click="isOpen = false"></div>
 
     <!-- قائمة القنوات و التذاكر -->
     <transition
@@ -25,7 +25,7 @@
       <div
         v-if="isOpen"
         @click.stop
-        class="absolute z-50 sm:mb-2 w-full sm:w-96 bg-white dark:bg-gray-800 sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[85dvh] sm:h-[600px] bottom-0 sm:max-h-[85vh] rounded-t-3xl"
+        class="absolute z-[130] sm:mb-3 w-full sm:w-96 bg-white dark:bg-gray-800 sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[85dvh] sm:h-[600px] bottom-0 sm:max-h-[85vh] rounded-t-3xl"
         :style="isDesktop ? {
           bottom: '100%',
           left: widgetPositionX === 'left' ? '0' : 'auto',
@@ -71,7 +71,7 @@
             
             <div class="flex-1 overflow-y-auto p-3">
               <div v-if="loadingTickets" class="flex justify-center p-8">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                <BaseSpinner size="sm" />
               </div>
               <div v-else-if="!myTickets.length" class="flex flex-col items-center justify-center p-8 text-center">
                 <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
@@ -151,7 +151,7 @@
                 class="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                 :class="isMessageValid && !submittingTicket ? 'text-white bg-primary-600 hover:bg-primary-700' : 'text-gray-400 bg-gray-200 dark:bg-gray-700 cursor-not-allowed'"
               >
-                <span v-if="submittingTicket" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                <BaseSpinner v-if="submittingTicket" size="xs" color="white" />
                 <AppIcon v-else name="PaperAirplaneIcon" class="w-4 h-4 transform rotate-180" />
                 إرسال
               </button>
@@ -173,7 +173,7 @@
             
             <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900" ref="chatContainer">
               <div v-if="loadingChat" class="flex justify-center p-4">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                <BaseSpinner size="sm" />
               </div>
               <template v-else>
                 <div
@@ -212,7 +212,7 @@
                   :disabled="!replyMessage.trim() || sendingReply || activeTicket?.status === 'closed'"
                   class="p-2.5 rounded-xl bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 transition-colors shadow-sm"
                 >
-                  <span v-if="sendingReply" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white block"></span>
+                  <BaseSpinner v-if="sendingReply" size="xs" color="white" />
                   <AppIcon v-else name="PaperAirplaneIcon" class="w-5 h-5 transform rotate-180" />
                 </button>
               </form>
@@ -227,16 +227,13 @@
     <button
       v-show="!isOpen || (isOpen && isDesktop)"
       @click="toggleOpen"
-      class="fixed sm:absolute z-50 flex items-center justify-center text-white shadow-lg hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+      class="fixed sm:relative z-[130] flex items-center justify-center text-white shadow-lg hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-50"
       :class="[
         isOpen ? 'rotate-180' : '',
         widgetShape === 'square' ? 'rounded-xl' : 'rounded-full',
         widgetSizeClass
       ]"
       :style="isDesktop ? {
-        bottom: '0',
-        left: widgetPositionX === 'left' ? '0' : 'auto',
-        right: widgetPositionX === 'right' ? '0' : 'auto',
         backgroundColor: widgetBgColor, 
         color: widgetIconColor
       } : {
@@ -259,6 +256,7 @@ import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
 import { useRoute } from "vue-router";
 import { supportAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
+import BaseSpinner from "@/components/base/BaseSpinner.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useSiteSettings } from "@/composables/useSiteSettings";
 import { getSocket } from "@/services/socket";

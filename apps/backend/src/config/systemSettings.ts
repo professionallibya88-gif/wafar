@@ -36,6 +36,10 @@ export const DEFAULT_SYSTEM_SETTINGS: SettingsByCategory = {
     landing_hero_title: 'اكتشف منصة وفر لقطع الغيار',
     landing_hero_description:
       'المنصة الذكية الأولى في ليبيا للبحث المتقدم ومقارنة أسعار قطع غيار السيارات. قم بإنشاء حسابك الآن لتجربة بحث لا مثيل لها.',
+    loader_spinner_variant: 'arc-gradient',
+    loader_spinner_size: 'md',
+    loader_spinner_color: 'primary',
+    loader_spinner_speed: 'normal',
   },
   pdf_processing: {
     default_pdf_method: 'python_pypdf',
@@ -177,6 +181,10 @@ export const SETTING_DESCRIPTIONS: Record<keyof SettingsByCategory, Record<strin
     site_font_family: 'نوع خط الموقع',
     landing_hero_title: 'عنوان الصفحة الرئيسية (للزوار)',
     landing_hero_description: 'وصف الصفحة الرئيسية (للزوار)',
+    loader_spinner_variant: 'نوع مؤشر التحميل الموحد',
+    loader_spinner_size: 'حجم مؤشر التحميل الموحد',
+    loader_spinner_color: 'لون مؤشر التحميل الموحد',
+    loader_spinner_speed: 'سرعة مؤشر التحميل الموحد',
   },
   pdf_processing: {
     default_pdf_method: 'طريقة المعالجة الافتراضية',

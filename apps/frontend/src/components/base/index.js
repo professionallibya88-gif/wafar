@@ -15,4 +15,7 @@ export { default as BaseDropdown } from "./BaseDropdown.vue";
 export { default as BaseProgress } from "./BaseProgress.vue";
 export { default as BaseAvatar } from "./BaseAvatar.vue";
 export { default as BaseSelect } from "./BaseSelect.vue";
+export { default as BaseRouteLoader } from "./BaseRouteLoader.vue";
+export { default as BaseBlockingOverlay } from "./BaseBlockingOverlay.vue";
+export { default as BasePagination } from "./BasePagination.vue";
 export { default as ThemeToggle } from "./ThemeToggle.vue";

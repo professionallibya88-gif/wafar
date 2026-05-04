@@ -27,6 +27,9 @@
 
     <!-- Files Table Card -->
     <div class="panel-table">
+      <div v-if="files.length > 0" class="p-4 border-b border-neutral-200 dark:border-neutral-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalFiles" :totalPages="totalPages" />
+      </div>
       <div v-if="files.length > 0" class="overflow-x-auto custom-scrollbar">
         <table class="w-full min-w-[800px]">
           <thead class="bg-neutral-50 dark:bg-neutral-900/60">
@@ -160,6 +163,9 @@
             </TransitionGroup>
         </table>
       </div>
+      <div v-if="files.length > 0" class="p-4 border-t border-neutral-200 dark:border-neutral-700">
+        <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalFiles" :totalPages="totalPages" />
+      </div>
 
       <!-- Empty State -->
       <div v-else class="panel-empty">
@@ -236,9 +242,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { pdfAPI } from "@/services/api";
-import { BaseButton, BaseBadge, BaseModal } from "@/components/base";
+import { BaseButton, BaseBadge, BaseModal, BasePagination } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { useFeatureFlags } from "@/composables/useFeatureFlags";
 import { getFileStatusLabel, getFileStatusVariant, getProcessingMethodLabel } from "@/utils/statusLabels";
@@ -258,15 +264,29 @@ const formatSize = (b) =>
 
 const { isEnabled } = useFeatureFlags();
 const files = ref([]);
+const totalFiles = ref(0);
+const totalPages = ref(1);
+const currentPage = ref(1);
+const pageSize = ref(20);
 const showDeleteModal = ref(false);
 const fileToDelete = ref(null);
 const deleting = ref(false);
 
-onMounted(async () => {
+const loadFiles = async () => {
   try {
-    const res = await pdfAPI.getFiles({ limit: 100 });
+    const res = await pdfAPI.getFiles({ page: currentPage.value, limit: pageSize.value });
     files.value = res.data?.data?.files || [];
+    totalFiles.value = res.data?.data?.pagination?.total || 0;
+    totalPages.value = res.data?.data?.pagination?.pages || 1;
   } catch (error) { /* ignore */ }
+};
+
+onMounted(() => {
+  loadFiles();
+});
+
+watch([currentPage, pageSize], () => {
+  loadFiles();
 });
 
 const confirmDelete = (file) => {

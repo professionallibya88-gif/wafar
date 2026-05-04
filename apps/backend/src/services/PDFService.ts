@@ -179,11 +179,11 @@ export class PDFService {
   async deleteUserFile(data: { userId: string; fileId: string }): Promise<void> {
     const pdfFile = await pdfFileRepository.findByIdAndUserSimple(data.fileId, data.userId);
     if (!pdfFile) throw new NotFoundError('الملف غير موجود');
-    
+
     if (pdfFile.file_path) {
       await vercelBlobService.deleteFile(pdfFile.file_path);
     }
-    
+
     await partRepository.deleteByPDFFileId(pdfFile.id);
     await pdfFileRepository.deleteById(pdfFile.id);
   }
@@ -329,11 +329,11 @@ export class PDFService {
   async deleteAnyFile(fileId: string): Promise<void> {
     const pdfFile = await pdfFileRepository.findById(fileId);
     if (!pdfFile) throw new NotFoundError('الملف غير موجود');
-    
+
     if (pdfFile.file_path) {
       await vercelBlobService.deleteFile(pdfFile.file_path);
     }
-    
+
     await partRepository.deleteByPDFFileId(pdfFile.id);
     await pdfFileRepository.deleteById(pdfFile.id);
   }

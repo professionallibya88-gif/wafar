@@ -192,12 +192,7 @@
             :disabled="submitting || !cardNumber.trim()"
             class="w-full inline-flex items-center justify-center gap-2 bg-brand-600 text-white py-3 px-8 rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
           >
-            <AppIcon
-              v-if="submitting"
-              name="ArrowPath"
-              size="sm"
-              customClass="animate-spin"
-            />
+            <BaseSpinner v-if="submitting" size="xs" color="white" usage="action" />
             <AppIcon v-else name="PaperAirplane" size="sm" />
             {{ submitting ? "جاري الإرسال..." : "إرسال" }}
           </button>
@@ -237,12 +232,7 @@
             :disabled="submitting || !transactionRef.trim()"
             class="w-full inline-flex items-center justify-center gap-2 bg-brand-600 text-white py-3 px-8 rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
           >
-            <AppIcon
-              v-if="submitting"
-              name="ArrowPath"
-              size="sm"
-              customClass="animate-spin"
-            />
+            <BaseSpinner v-if="submitting" size="xs" color="white" usage="action" />
             <AppIcon v-else name="PaperAirplane" size="sm" />
             {{ submitting ? "جاري الإرسال..." : "إرسال" }}
           </button>
@@ -301,12 +291,7 @@
             :disabled="submitting || !transactionRef.trim()"
             class="w-full inline-flex items-center justify-center gap-2 bg-brand-600 text-white py-3 px-8 rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
           >
-            <AppIcon
-              v-if="submitting"
-              name="ArrowPath"
-              size="sm"
-              customClass="animate-spin"
-            />
+            <BaseSpinner v-if="submitting" size="xs" color="white" usage="action" />
             <AppIcon v-else name="PaperAirplane" size="sm" />
             {{ submitting ? "جاري الإرسال..." : "إرسال" }}
           </button>
@@ -390,6 +375,9 @@
       </div>
 
       <div class="p-5 sm:p-6">
+        <div v-if="filteredPayments.length > 0" class="mb-4">
+          <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalPayments" :totalPages="totalPages" />
+        </div>
         <div v-if="filteredPayments.length > 0" class="space-y-4">
           <div
             v-for="p in filteredPayments"
@@ -468,6 +456,9 @@
             </div>
           </div>
         </div>
+        <div v-if="filteredPayments.length > 0" class="mt-4">
+          <BasePagination v-model:currentPage="currentPage" v-model:pageSize="pageSize" :totalItems="totalPayments" :totalPages="totalPages" />
+        </div>
         <div v-else class="text-center py-16">
           <div
             class="w-24 h-24 bg-neutral-100 dark:bg-neutral-700 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce"
@@ -491,8 +482,8 @@
 </template>
 
 <script setup>
-import { BaseSelect } from "@/components/base";
-import { ref, onMounted, computed } from "vue";
+import { BaseSelect, BaseSpinner, BasePagination } from "@/components/base";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { paymentAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
@@ -509,6 +500,10 @@ const submitting = ref(false);
 const message = ref("");
 const messageType = ref("success");
 const payments = ref([]);
+const totalPayments = ref(0);
+const totalPages = ref(1);
+const currentPage = ref(1);
+const pageSize = ref(20);
 
 // Filter states
 const searchQuery = ref("");
@@ -539,6 +534,7 @@ useAutoApplyFilters(
   () => {
     // Local filtering is reactive via computed property `filteredPayments`.
     // Nothing more to do unless we want server-side filtering.
+    currentPage.value = 1;
   },
   { delay: 300 }
 );
@@ -556,11 +552,25 @@ const tabs = [
   { value: "money_transfer", label: "طلبات تحويل" },
 ];
 
-onMounted(async () => {
+const loadPayments = async () => {
   try {
-    const res = await paymentAPI.getMyPayments({ limit: 50 });
+    const res = await paymentAPI.getMyPayments({
+      page: currentPage.value,
+      limit: pageSize.value,
+    });
     payments.value = res.data?.data?.payments || [];
+    const meta = res.data?.meta || res.data?.data?.pagination;
+    totalPages.value = meta?.totalPages || meta?.pages || 1;
+    totalPayments.value = meta?.totalItems || meta?.total || 0;
   } catch (error) { /* ignore */ }
+};
+
+onMounted(() => {
+  loadPayments();
+});
+
+watch([currentPage, pageSize], () => {
+  loadPayments();
 });
 
 const submitRecharge = async () => {

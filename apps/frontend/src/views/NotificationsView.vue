@@ -92,11 +92,8 @@
             class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors flex items-center gap-2"
             :disabled="loading"
           >
-            <AppIcon
-              name="Refresh"
-              size="sm"
-              :class="{ 'animate-spin': loading }"
-            />
+            <BaseSpinner v-if="loading" size="xs" color="gray" usage="action" />
+            <AppIcon v-else name="Refresh" size="sm" />
           </button>
         </div>
       </div>
@@ -106,7 +103,7 @@
         v-if="loading && notifications.length === 0"
         class="flex items-center justify-center py-12"
       >
-        <BaseSpinner size="lg" />
+        <BaseSpinner size="lg" usage="section" />
       </div>
 
       <!-- قائمة الإشعارات -->
