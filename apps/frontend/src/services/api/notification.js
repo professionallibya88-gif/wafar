@@ -4,6 +4,7 @@ export const notificationAPI = {
   // مسارات المستخدمين (Auth)
   getNotifications: (params) => http.get("/notifications", { params }),
   getUnreadCount: () => http.get("/notifications/unread-count"),
+  getById: (id) => http.get(`/notifications/${id}`),
   markAsRead: (id) => http.put(`/notifications/${id}/read`),
   markAllAsRead: () => http.put("/notifications/read-all"),
   deleteNotification: (id) => http.delete(`/notifications/${id}`),

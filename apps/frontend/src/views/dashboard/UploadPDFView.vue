@@ -326,7 +326,12 @@
               </div>
 
               <div
-                v-if="!item.validationError && !item.extractingMetadata && !isItemReady(item)"
+                v-if="
+                  !item.validationError &&
+                  !item.extractingMetadata &&
+                  !item.uploaded &&
+                  !isItemReady(item)
+                "
                 class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-200"
               >
                 يجب إكمال اسم الشركة وتاريخ الملف قبل إرسال هذا العنصر.
@@ -565,7 +570,7 @@
               {{ file.original_name }}
             </p>
             <p class="text-xs text-neutral-500 dark:text-neutral-400">
-              {{ formatDate(file.createdAt) }} ⬢
+              {{ formatDate(file.createdAt || file.created_at) }} ⬢
               {{ file.parts_count || 0 }} قطعة ⬢
               {{ formatSize(file.file_size) }}
             </p>
@@ -594,7 +599,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onBeforeUnmount, onMounted } from "vue";
+import { computed, reactive, ref, onBeforeUnmount, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { pdfAPI, settingsAPI, supplierAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
@@ -606,12 +611,18 @@ const formatSize = (bytes) => {
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 };
 
-const formatDate = (d) =>
-  new Date(d).toLocaleDateString("ar-LY", {
+const formatDate = (d) => {
+  if (!d) return "-";
+  const parsedDate = new Date(d);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "-";
+  }
+  return parsedDate.toLocaleDateString("ar-LY", {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
+};
 const statusLabel = (s) =>
   ({
     pending: "قيد الانتظار",
@@ -647,6 +658,7 @@ const uploadProgress = ref(0);
 const uploadProgressMessage = ref("");
 let uploadItemCounter = 0;
 const itemPollTimers = new Map();
+let metadataExtractionChain = Promise.resolve();
 
 const methodOptions = [
   { label: "استخدام الإعداد الافتراضي", value: "" },
@@ -727,6 +739,9 @@ const erroredItemsCount = computed(() =>
 );
 
 const nextUploadItemId = () => `upload-item-${Date.now()}-${uploadItemCounter++}`;
+
+const hasUploadItem = (itemId) =>
+  uploadItems.value.some((item) => item.id === itemId);
 
 const getFileValidationError = (file) => {
   const hasPdfMime = file.type === "application/pdf";
@@ -812,14 +827,16 @@ const addFiles = async (files) => {
   uploadError.value = "";
   uploadSuccessMessage.value = "";
 
-  const items = files.map((file) => buildUploadItem(file));
+  const items = files.map((file) => reactive(buildUploadItem(file)));
   uploadItems.value = [...items, ...uploadItems.value];
 
-  await Promise.allSettled(
-    items
-      .filter((item) => !item.validationError)
-      .map((item) => extractItemMetadata(item))
-  );
+  items
+    .filter((item) => !item.validationError)
+    .forEach((item) => {
+      metadataExtractionChain = metadataExtractionChain
+        .catch(() => {})
+        .then(() => extractItemMetadata(item));
+    });
 };
 
 const findMatchingSupplier = (name) => {
@@ -1016,7 +1033,7 @@ const canRetryItem = (item) =>
   ((!!item.uploadError && !item.fileId) || item.processingStatus === "failed");
 
 const extractItemMetadata = async (item) => {
-  if (!item || item.validationError) return;
+  if (!item || item.validationError || !hasUploadItem(item.id)) return;
 
   item.extractingMetadata = true;
   item.uploadError = "";
@@ -1024,8 +1041,14 @@ const extractItemMetadata = async (item) => {
     const formData = new FormData();
     formData.append("file", item.file);
 
-    const res = await pdfAPI.extractMetadata(formData);
+    const res = await pdfAPI.extractMetadata(formData, {
+      timeout: 15000,
+    });
     const data = res.data?.data;
+
+    if (!hasUploadItem(item.id)) {
+      return;
+    }
 
     if (data) {
       if (data.documentDate) {
@@ -1044,12 +1067,19 @@ const extractItemMetadata = async (item) => {
       }
     }
   } catch (e) {
+    if (!hasUploadItem(item.id)) {
+      return;
+    }
     if (e?.response?.status !== 403) {
       item.uploadError =
-        e?.response?.data?.message || "تعذر استخراج البيانات تلقائياً لهذا الملف";
+        e?.response?.data?.message ||
+        e?.message ||
+        "تعذر استخراج البيانات تلقائياً لهذا الملف";
     }
   } finally {
-    item.extractingMetadata = false;
+    if (hasUploadItem(item.id)) {
+      item.extractingMetadata = false;
+    }
   }
 };
 

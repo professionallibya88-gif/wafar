@@ -11,6 +11,33 @@ export const useCartStore = defineStore('cart', {
   getters: {
     itemCount: (state) => state.cart?.items?.length || 0,
     totalItemsQuantity: (state) => state.cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0,
+    itemByPartId: (state) => (partId) => {
+      return state.cart?.items?.find((item) => item.part_id === partId) || null;
+    },
+    quantityByPartId: (state) => (partId) => {
+      const item = state.cart?.items?.find((item) => item.part_id === partId);
+      return item ? item.quantity : 0;
+    },
+    groupedItemsBySupplier: (state) => {
+      if (!state.cart?.items) return [];
+      const groups = {};
+      state.cart.items.forEach((item) => {
+        const supplierId = item.part?.supplier_id || 'unknown';
+        if (!groups[supplierId]) {
+          groups[supplierId] = {
+            supplier: item.part?.supplier || { id: 'unknown', name: 'غير معروف' },
+            items: [],
+            subtotal: 0,
+            totalQuantity: 0,
+          };
+        }
+        groups[supplierId].items.push(item);
+        groups[supplierId].totalQuantity += item.quantity;
+        const price = item.part?.price_cash || item.part?.price || 0;
+        groups[supplierId].subtotal += price * item.quantity;
+      });
+      return Object.values(groups);
+    },
   },
   actions: {
     async fetchCart() {

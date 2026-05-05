@@ -8,6 +8,12 @@ import { aiProviderRepository, systemSettingRepository } from '../repositories';
 const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:5051';
 const PYTHON_SERVICE_API_KEY =
   process.env.PYTHON_SERVICE_API_KEY || 'wafar_internal_secret_key_2025';
+const PYTHON_HEALTH_CACHE_TTL_MS = 30000;
+
+type PythonHealthCache = {
+  checkedAt: number;
+  isHealthy: boolean;
+};
 
 interface PythonTableOptions {
   engine?: string;
@@ -26,6 +32,34 @@ interface MetadataOptions {
 }
 
 export class PythonPDFProcessor {
+  private static healthCache: PythonHealthCache | null = null;
+
+  static async isServiceAvailable(forceRefresh = false): Promise<boolean> {
+    const now = Date.now();
+    if (
+      !forceRefresh &&
+      this.healthCache &&
+      now - this.healthCache.checkedAt < PYTHON_HEALTH_CACHE_TTL_MS
+    ) {
+      return this.healthCache.isHealthy;
+    }
+
+    const isHealthy = await this.checkHealth(PYTHON_SERVICE_URL);
+    this.healthCache = {
+      checkedAt: now,
+      isHealthy,
+    };
+
+    return isHealthy;
+  }
+
+  private static async ensureServiceAvailable(forceRefresh = false): Promise<void> {
+    const isHealthy = await this.isServiceAvailable(forceRefresh);
+    if (!isHealthy) {
+      throw new ExternalServiceError('خدمة Python لمعالجة PDF غير متاحة حالياً');
+    }
+  }
+
   private static async postFile(
     filePath: string,
     endpoint: string,
@@ -73,12 +107,13 @@ export class PythonPDFProcessor {
    */
   static async extractTables(filePath: string, options: PythonTableOptions = {}) {
     try {
+      await this.ensureServiceAvailable();
       const extraFields: Record<string, string> = {};
       if (options.engine) {
         extraFields.engine = options.engine;
       }
 
-      return await this.postFile(filePath, '/extract-tables', 180000, extraFields);
+      return await this.postFile(filePath, '/extract-tables', 45000, extraFields);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'خطأ غير معروف';
       logger.error('Table extraction error:', message);
@@ -91,6 +126,7 @@ export class PythonPDFProcessor {
    */
   static async extractMetadata(filePath: string, options: MetadataOptions = {}) {
     try {
+      await this.ensureServiceAvailable();
       const preferredProvider = await this.resolveMetadataProviderSettings(options);
       const extraFields: Record<string, string> = {};
 
@@ -125,16 +161,17 @@ export class PythonPDFProcessor {
    */
   static async process(filePath: string, options: PythonProcessOptions = {}) {
     const mode = options.mode || 'python_pypdf';
+    await this.ensureServiceAvailable();
 
     if (mode === 'python_ai') {
-      return this.postJson('/process/ai', { file_path: filePath }, 180000);
+      return this.postJson('/process/ai', { file_path: filePath }, 45000);
     }
 
     if (mode === 'enhanced') {
-      return this.postJson('/process/enhanced', { file_path: filePath }, 180000);
+      return this.postJson('/process/enhanced', { file_path: filePath }, 45000);
     }
 
-    return this.postJson('/process/pypdf', { file_path: filePath }, 180000);
+    return this.postJson('/process/pypdf', { file_path: filePath }, 45000);
   }
 
   static async checkHealth(pythonServiceUrl: string) {

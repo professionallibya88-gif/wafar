@@ -154,6 +154,11 @@ export const useDashboardMenu = () => {
       items = items.filter((item) => item.path !== '/supplier-orders');
     }
 
+    // Hide retailer specific items (cart, my-orders) if not retailer
+    if (authStore.userRole !== 'retailer') {
+      items = items.filter((item) => item.path !== '/cart' && item.path !== '/my-orders');
+    }
+
     if (authStore.isAdmin) {
       items.push({
         path: "/admin",

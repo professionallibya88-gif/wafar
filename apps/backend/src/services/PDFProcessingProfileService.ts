@@ -1,4 +1,5 @@
 import { systemSettingRepository } from '../repositories';
+import { PythonPDFProcessor } from './PythonPDFProcessor';
 
 export const PDF_METHODS = [
   'node_pdf',
@@ -72,6 +73,9 @@ const parseFallbackChain = (value: unknown, requestedMethod: PdfMethod): PdfMeth
   return PDF_METHODS.filter((method) => method !== requestedMethod);
 };
 
+const isPythonMethod = (method: PdfMethod): boolean =>
+  method === 'python_pypdf' || method === 'python_ai';
+
 export class PDFProcessingProfileService {
   async getProfile(requestedMethod?: string): Promise<PDFProcessingProfile> {
     const [
@@ -97,13 +101,36 @@ export class PDFProcessingProfileService {
     ]);
 
     const normalizedDefaultMethod = normalizeMethod(defaultMethod, 'python_pypdf');
-    const normalizedRequestedMethod = normalizeMethod(requestedMethod, normalizedDefaultMethod);
+    let normalizedRequestedMethod = normalizeMethod(requestedMethod, normalizedDefaultMethod);
+    let effectiveDefaultMethod = normalizedDefaultMethod;
+    let effectiveFallbackChain = parseFallbackChain(fallbackChain, normalizedRequestedMethod);
+
+    const shouldCheckPythonAvailability =
+      isPythonMethod(normalizedRequestedMethod) ||
+      isPythonMethod(normalizedDefaultMethod) ||
+      effectiveFallbackChain.some((method) => isPythonMethod(method));
+
+    if (shouldCheckPythonAvailability) {
+      const pythonAvailable = await PythonPDFProcessor.isServiceAvailable();
+
+      if (!pythonAvailable) {
+        if (isPythonMethod(normalizedRequestedMethod)) {
+          normalizedRequestedMethod = 'node_pdf';
+        }
+
+        if (isPythonMethod(effectiveDefaultMethod)) {
+          effectiveDefaultMethod = 'node_pdf';
+        }
+
+        effectiveFallbackChain = effectiveFallbackChain.filter((method) => !isPythonMethod(method));
+      }
+    }
 
     return {
       requestedMethod: normalizedRequestedMethod,
-      defaultMethod: normalizedDefaultMethod,
+      defaultMethod: effectiveDefaultMethod,
       tableEngine: normalizeTableEngine(tableEngine, 'auto'),
-      fallbackChain: parseFallbackChain(fallbackChain, normalizedRequestedMethod),
+      fallbackChain: effectiveFallbackChain,
       enableAutoFallback: parseBool(enableAutoFallback, true),
       enableAiMetadata: parseBool(enableAiMetadata, true),
       enableAiEnrichment: parseBool(enableAiEnrichment, false),

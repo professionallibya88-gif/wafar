@@ -59,6 +59,8 @@
 
           <ThemeToggle />
 
+          <NotificationBell />
+
           <div class="relative overflow-visible" ref="adminDropdownRef">
             <button
               @click="isAdminDropdownOpen = !isAdminDropdownOpen"
@@ -123,6 +125,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { AppIcon } from "@/components/icons";
 import { ThemeToggle } from "@/components/base";
+import NotificationBell from "@/components/NotificationBell.vue";
 import { useAdminMenu } from "@/composables/useAdminMenu";
 
 defineProps({

@@ -37,7 +37,7 @@ export const useNotificationStore = defineStore("notification", {
       this.loading = true;
       this.error = null;
       try {
-        const response = await notificationAPI.getAll(params);
+        const response = await notificationAPI.getNotifications(params);
         const items = Array.isArray(response.data.data) ? response.data.data : [];
         const { append = false } = options;
 
@@ -157,7 +157,7 @@ export const useNotificationStore = defineStore("notification", {
     async deleteNotification(id) {
       try {
         const deletedNotification = this.notifications.find((n) => n.id === id);
-        await notificationAPI.delete(id);
+        await notificationAPI.deleteNotification(id);
 
         // حذف الإشعار من القائمة
         this.notifications = this.notifications.filter((n) => n.id !== id);

@@ -307,7 +307,7 @@
                 مصرف / جملة
               </th>
               <th
-                v-if="isEnabled('cart')"
+                v-if="isEnabled('cart') && authStore.userRole === 'retailer'"
                 class="px-3 xs:px-4 py-3 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider"
               >
                 <!-- إجراءات السلة -->
@@ -398,17 +398,46 @@
                   <span v-if="!part.price_bank && !part.price_wholesale" class="text-neutral-400">-</span>
                 </div>
               </td>
-              <td v-if="isEnabled('cart')" class="px-3 xs:px-4 py-3 xs:py-4">
-                <BaseButton
-                  v-if="part.part_id"
-                  @click="addToCart(part.part_id)"
-                  variant="success"
-                  size="sm"
-                  class="rounded-full !p-2"
-                  title="إضافة للسلة"
-                >
-                  <AppIcon name="Plus" size="sm" />
-                </BaseButton>
+              <td v-if="isEnabled('cart') && authStore.userRole === 'retailer'" class="px-3 xs:px-4 py-3 xs:py-4 w-24">
+                <div v-if="part.part_id" class="flex items-center justify-center">
+                  <template v-if="cartStore.quantityByPartId(part.part_id) > 0">
+                    <div class="flex items-center bg-brand-50 dark:bg-neutral-800 rounded-full p-1 border border-brand-100 dark:border-neutral-700">
+                      <BaseButton
+                        @click="updateCartQuantity(part.part_id, -1)"
+                        variant="ghost"
+                        size="sm"
+                        class="!p-1 text-brand-600 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-neutral-700 rounded-full"
+                        :disabled="cartStore.loading"
+                      >
+                        <AppIcon name="Minus" size="xs" />
+                      </BaseButton>
+                      <span class="w-6 text-center text-sm font-bold text-neutral-900 dark:text-white">
+                        {{ cartStore.quantityByPartId(part.part_id) }}
+                      </span>
+                      <BaseButton
+                        @click="updateCartQuantity(part.part_id, 1)"
+                        variant="ghost"
+                        size="sm"
+                        class="!p-1 text-brand-600 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-neutral-700 rounded-full"
+                        :disabled="cartStore.loading"
+                      >
+                        <AppIcon name="Plus" size="xs" />
+                      </BaseButton>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <BaseButton
+                      @click="addToCart(part.part_id)"
+                      variant="success"
+                      size="sm"
+                      class="rounded-full !p-2 transition-transform hover:scale-105"
+                      title="إضافة للسلة"
+                      :disabled="cartStore.loading"
+                    >
+                      <AppIcon name="Plus" size="sm" />
+                    </BaseButton>
+                  </template>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -479,10 +508,13 @@ import { useFeatureFlags } from "@/composables/useFeatureFlags";
 import { vClickOutside } from "@/utils/directives";
 import { useCartStore } from "@/stores/cart";
 
+import { useAuthStore } from "@/stores/auth";
+
 const route = useRoute();
 const router = useRouter();
 const { isEnabled } = useFeatureFlags();
 const cartStore = useCartStore();
+const authStore = useAuthStore();
 
 const searchQuery = ref(route.query.q || "");
 const loading = ref(false);
@@ -597,6 +629,10 @@ onMounted(() => {
   loadFiles();
   if (route.query.q) {
     doSearch();
+  }
+  
+  if (isEnabled('cart') && authStore.userRole === 'retailer') {
+    cartStore.fetchCart();
   }
 });
 
@@ -748,8 +784,23 @@ const compareSelected = () => {
 };
 
 const addToCart = async (partId) => {
-  if (!isEnabled('cart')) return;
+  if (!isEnabled('cart') || authStore.userRole !== 'retailer') return;
   await cartStore.addItem(partId, 1);
+};
+
+const updateCartQuantity = async (partId, change) => {
+  if (!isEnabled('cart') || authStore.userRole !== 'retailer') return;
+  const currentQty = cartStore.quantityByPartId(partId);
+  const newQty = currentQty + change;
+  const item = cartStore.itemByPartId(partId);
+  
+  if (!item) return;
+  
+  if (newQty > 0) {
+    await cartStore.updateQuantity(item.id, newQty);
+  } else {
+    await cartStore.removeItem(item.id);
+  }
 };
 
 const exportResults = async () => {

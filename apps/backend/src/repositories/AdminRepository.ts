@@ -80,6 +80,13 @@ export class AdminRepository extends BaseRepository<Admin> {
     }
   }
 
+  async findAllActive(): Promise<Admin[]> {
+    return this.model.findAll({
+      where: { is_active: true },
+      order: [['created_at', 'ASC']],
+    });
+  }
+
   async enforceSingleAdmin(
     password: string,
     options: { transaction?: unknown } = {}

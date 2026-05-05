@@ -143,7 +143,7 @@
                   }}
                 </td>
                 <td class="table-cell text-neutral-500 dark:text-neutral-400">
-                  {{ formatDate(file.createdAt) }}
+                  {{ formatDate(file.createdAt || file.created_at) }}
                 </td>
                 <td class="px-4 py-4">
                   <span
@@ -264,12 +264,18 @@ import { useFeatureFlags } from "@/composables/useFeatureFlags";
 import { getFileStatusLabel, getFileStatusVariant, getProcessingMethodLabel } from "@/utils/statusLabels";
 
 // Helper functions - تعريف الدوال المساعدة في البداية
-const formatDate = (d) =>
-  new Date(d).toLocaleDateString("ar-LY", {
+const formatDate = (d) => {
+  if (!d) return "-";
+  const parsedDate = new Date(d);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "-";
+  }
+  return parsedDate.toLocaleDateString("ar-LY", {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
+};
 const formatSize = (b) =>
   b < 1024 * 1024
     ? (b / 1024).toFixed(1) + " KB"

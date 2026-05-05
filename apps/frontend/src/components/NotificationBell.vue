@@ -4,17 +4,26 @@
     <button
       ref="buttonRef"
       @click="toggleNotifications"
-      class="relative p-2 rounded-lg hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors duration-200"
-      :class="{ 'text-brand-600 dark:text-neutral-400': hasUnread }"
+      :class="[
+        'relative p-2 sm:p-2.5 rounded-xl transition-all duration-200',
+        'bg-brand-50 dark:bg-neutral-800 hover:bg-brand-100 dark:hover:bg-neutral-700',
+        'border border-brand-200 dark:border-neutral-700',
+        'hover:shadow-sm dark:hover:shadow-none',
+        hasUnread ? 'text-brand-700 dark:text-brand-400' : 'text-brand-700 dark:text-neutral-200'
+      ]"
     >
       <!-- أيقونة الجرس -->
-      <AppIcon name="Bell" size="md" :color="hasUnread ? 'brand' : 'gray'" />
+      <AppIcon 
+        name="Bell" 
+        size="sm" 
+        customClass="w-5 h-5 sm:w-6 sm:h-6" 
+      />
 
-      <!-- شارة عدد الإشعارات غير المءة -->
+      <!-- شارة عدد الإشعارات غير المقروءة -->
       <BaseBadge
         v-if="unreadCount > 0"
         :value="unreadCount > 99 ? '99+' : unreadCount"
-        class="absolute -top-1 -right-1"
+        class="absolute -top-1.5 -right-1.5 border-2 border-white dark:border-neutral-900"
       />
     </button>
 

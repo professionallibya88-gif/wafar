@@ -1,0 +1,5 @@
+- [x] مكون `BaseSpinner.vue` يعرض تصميم "نقاط تتابعية" فقط (4 نقاط).
+- [x] تمت إزالة المتغيرات والأنواع (variants) القديمة من `BaseSpinner.vue`.
+- [x] ملف `SpinnerSystemSettings.vue` محذوف نهائياً.
+- [x] تمت إزالة قسم إعدادات السبينر من صفحة `AdminSettingsView.vue`.
+- [x] المكونات مثل `BaseRouteLoader` و `BaseBlockingOverlay` تظهر الشعار المتحرك بوضوح ونظافة بدون خلفيات غير مرغوبة.
