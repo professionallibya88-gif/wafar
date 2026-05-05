@@ -11,6 +11,8 @@
     "dev:all": "concurrently \"npm run dev\" \"npm run python\"",
     "db:migrate": "tsx src/database/migrate.ts",
     "db:seed": "tsx src/database/seed.ts",
+    "db:migrate:prod": "node dist/database/migrate.js",
+    "db:seed:prod": "node dist/database/seed.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint \"src/**/*.ts\"",
