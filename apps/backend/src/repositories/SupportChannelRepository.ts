@@ -1,5 +1,11 @@
 import { BaseRepository } from './BaseRepository';
-import { SupportChannel } from '../database/models/SupportChannel';
+import {
+  SupportChannel,
+  SupportChannelAttributes,
+  SupportChannelCreationAttributes,
+} from '../database/models/SupportChannel';
+
+export type { SupportChannelAttributes, SupportChannelCreationAttributes };
 
 export class SupportChannelRepository extends BaseRepository<SupportChannel> {
   constructor() {

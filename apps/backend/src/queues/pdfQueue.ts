@@ -5,7 +5,7 @@ import { PDFProcessor } from '../services/pdfProcessor';
 import logger from '../config/logger';
 import { pdfFileRepository } from '../repositories';
 import fs from 'fs';
-import { NotFoundError, ValidationError } from '../errors';
+import { BusinessError, NotFoundError, ValidationError } from '../errors';
 import { resolveRedisUrl } from '../config/redis';
 
 type LocalJobState = 'waiting' | 'active' | 'completed' | 'failed';
@@ -26,6 +26,7 @@ interface LocalJobRecord {
 }
 
 const localJobs = new Map<string, LocalJobRecord>();
+const allowLocalQueueFallback = process.env.NODE_ENV !== 'production';
 
 const createQueueRedisConnection = () => {
   const redisUrl = resolveRedisUrl();
@@ -299,6 +300,12 @@ export const addPDFProcessingJob = async (
     return job;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
+
+    if (!allowLocalQueueFallback) {
+      logger.error('تعذر إضافة مهمة PDF إلى Redis في بيئة الإنتاج:', message);
+      throw new BusinessError('تعذر إضافة مهمة المعالجة لأن Redis غير متاح');
+    }
+
     logger.warn('تعذر إضافة مهمة PDF إلى Redis، سيتم استخدام المعالجة المحلية:', message);
     return scheduleLocalPDFProcessingJob(pdfFileId, filePath, method);
   }

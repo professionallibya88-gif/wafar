@@ -63,6 +63,19 @@ export const useThemeStore = defineStore("theme", () => {
     return null;
   };
 
+  const getPlatformDefaultThemeMode = () => {
+    if (typeof window === "undefined") return DEFAULT_THEME_MODE;
+    try {
+      const storedDefault = themeStorage.getDefaultTheme();
+      if (VALID_THEME_MODES.includes(storedDefault)) {
+        return storedDefault;
+      }
+    } catch {
+      return DEFAULT_THEME_MODE;
+    }
+    return DEFAULT_THEME_MODE;
+  };
+
   const getBootstrapThemeState = () => {
     if (typeof document === "undefined") return null;
 
@@ -104,7 +117,7 @@ export const useThemeStore = defineStore("theme", () => {
     const initialMode =
       stored ||
       bootstrapState?.themeMode ||
-      DEFAULT_THEME_MODE;
+      getPlatformDefaultThemeMode();
 
     themeMode.value = initialMode;
     resolvedTheme.value =
@@ -140,6 +153,16 @@ export const useThemeStore = defineStore("theme", () => {
     applyTheme(newResolved, mode);
   };
 
+  const updateDefaultTheme = (mode) => {
+    if (!VALID_THEME_MODES.includes(mode)) return;
+    if (getStoredTheme()) return;
+
+    themeMode.value = mode;
+    const newResolved = resolveTheme(mode);
+    resolvedTheme.value = newResolved;
+    applyTheme(newResolved, mode);
+  };
+
   // تبديل الوضع
   const toggleTheme = () => {
     if (resolvedTheme.value === "light") {
@@ -166,6 +189,7 @@ export const useThemeStore = defineStore("theme", () => {
     theme: resolvedTheme,
     themeMode,
     setTheme,
+    updateDefaultTheme,
     toggleTheme,
     isDark,
     initTheme,

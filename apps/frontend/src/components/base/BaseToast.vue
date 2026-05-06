@@ -3,7 +3,7 @@
     <TransitionGroup
       name="toast"
       tag="div"
-      class="fixed top-4 left-1/2 -translate-x-1/2 z-[160] flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none"
+      class="fixed top-4 left-1/2 -translate-x-1/2 z-toast flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none"
     >
       <div
         v-for="toast in toasts"

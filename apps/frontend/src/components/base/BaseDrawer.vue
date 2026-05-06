@@ -3,7 +3,7 @@
     <Transition name="drawer-fade">
       <div
         v-if="show"
-        class="fixed inset-0 z-[140] bg-black/40 backdrop-blur-[1px]"
+        class="fixed inset-0 z-modal bg-black/40 backdrop-blur-[1px]"
         @click="close"
       />
     </Transition>
@@ -12,7 +12,7 @@
       <aside
         v-if="show"
         :class="panelClass"
-        class="fixed inset-y-0 left-0 z-[150] flex w-full flex-col overflow-hidden bg-white shadow-2xl dark:bg-neutral-900"
+        class="fixed inset-y-0 left-0 z-drawer flex w-full flex-col overflow-hidden bg-white shadow-2xl dark:bg-neutral-900"
         dir="rtl"
       >
         <header class="flex items-center justify-between border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">

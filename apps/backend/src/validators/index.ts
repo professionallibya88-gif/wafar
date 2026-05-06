@@ -12,6 +12,9 @@ import * as auth from './authValidator';
 import * as cart from './cartValidator';
 import * as settings from './settingsValidator';
 import * as aiProvider from './aiProviderValidator';
+import * as supportTicket from './supportTicketValidator';
+import * as queue from './queueValidator';
+import * as processing from './processingValidator';
 
 export {
   admin,
@@ -25,4 +28,7 @@ export {
   cart,
   settings,
   aiProvider,
+  supportTicket,
+  queue,
+  processing,
 };

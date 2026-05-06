@@ -19,7 +19,7 @@
       <div
         v-if="showMobileSidebar"
         @click="closeMobileSidebar"
-        class="fixed inset-0 bg-black/50 z-[100] lg:hidden animate-fade-in"
+        class="fixed inset-0 bg-black/50 z-sidebar-backdrop lg:hidden animate-fade-in"
       />
 
       <!-- الشريط الجانبي -->

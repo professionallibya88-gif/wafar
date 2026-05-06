@@ -39,7 +39,7 @@
       >
         <div
           v-if="isOpen"
-          class="fixed z-[130] w-[90%] sm:w-96 md:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
+          class="fixed z-popover w-[90%] sm:w-96 md:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
           :style="dropdownStyle"
           dir="rtl"
         >

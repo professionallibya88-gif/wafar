@@ -2,7 +2,7 @@
   <transition name="route-loader-fade">
     <div
       v-if="visible"
-      class="pointer-events-none fixed inset-0 z-[155] flex items-center justify-center"
+      class="pointer-events-none fixed inset-0 z-loader flex items-center justify-center"
       aria-label="جاري تجهيز الصفحة"
     >
       <div class="route-loader-shell" role="status" aria-live="polite">

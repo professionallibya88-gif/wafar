@@ -4,8 +4,7 @@ dotenv.config();
 import logger from './config/logger';
 import { validateAuthConfig } from './config/auth';
 import { createApp } from './app';
-import { testConnection, syncDatabase } from './database';
-import { migrateAdminsPhone } from './database/migrate_admins_phone';
+import { initializeModels, testConnection } from './database';
 import { initRateLimiters } from './middleware/rateLimiter';
 import { initializeServices } from './bootstrap/services';
 import { setupGracefulShutdown } from './bootstrap/gracefulShutdown';
@@ -22,27 +21,21 @@ const startServer = async () => {
 
     // قاعدة البيانات (يجب الاتصال بها أولاً لأن rate limiters وغيرها قد تعتمد عليها)
     try {
+      await initializeModels();
       await testConnection();
-      await syncDatabase();
-      await migrateAdminsPhone();
     } catch (dbError) {
       const message = dbError instanceof Error ? dbError.message : String(dbError);
       logger.error('فشل تهيئة قاعدة البيانات، سيتم إيقاف التشغيل:', message);
       throw dbError;
     }
 
-    // بيانات تلقائية (حساب المدير فقط)
-    try {
-      const { seedAdmin } = await import('./database/seed');
-      await seedAdmin();
-    } catch (seedError) {
-      logger.warn('Failed to seed admin:', seedError);
-    }
-
     // تهيئة rate limiters قبل ربط المسارات فعلياً (rateLimiter يقرأ Redis)
     try {
       await initRateLimiters();
     } catch (rateLimitError) {
+      if (process.env.NODE_ENV === 'production') {
+        throw rateLimitError;
+      }
       logger.warn('Failed to init rate limiters:', rateLimitError);
     }
 
@@ -53,6 +46,9 @@ const startServer = async () => {
     try {
       await initializeServices();
     } catch (servicesError) {
+      if (process.env.NODE_ENV === 'production') {
+        throw servicesError;
+      }
       logger.warn('Failed to initialize extra services:', servicesError);
     }
 

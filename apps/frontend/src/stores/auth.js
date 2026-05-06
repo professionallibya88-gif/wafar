@@ -6,6 +6,9 @@ import { getUserRoleLabel } from "@/utils/roleLabels";
 
 let bootstrapPromise = null;
 
+const getProfileApi = (authStore) =>
+  authStore.isAdmin ? adminAuthAPI.getMe : userAPI.getProfile;
+
 const extractApiErrorMessage = (error, fallback) => {
   return (
     error?.response?.data?.message ||
@@ -48,14 +51,7 @@ export const useAuthStore = defineStore("auth", {
 
       bootstrapPromise = (async () => {
         try {
-          const apiToCall = this.isAdmin ? adminAuthAPI.getMe : userAPI.getProfile;
-          const res = await apiToCall();
-          const userData = res.data?.data;
-          
-          if (userData) {
-            this.user = userData;
-            authStorage.setUser(userData, authStorage.isRemembered());
-          }
+          await this.fetchProfile();
         } catch (error) {
           console.warn("Failed to initialize auth session", error);
           this.clearSession(true);
@@ -149,7 +145,6 @@ export const useAuthStore = defineStore("auth", {
         console.warn("Logout request failed", e);
       } finally {
         this.clearSession(true);
-        window.location.href = "/login";
       }
     },
 
@@ -193,6 +188,34 @@ export const useAuthStore = defineStore("auth", {
         return true;
       } catch (error) {
         this.error = extractApiErrorMessage(error, "فشل تغيير كلمة المرور");
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchProfile() {
+      const res = await getProfileApi(this)();
+      const userData = res.data?.data;
+
+      if (userData) {
+        this.user = userData;
+        authStorage.setUser(userData, authStorage.isRemembered());
+      }
+
+      return userData || null;
+    },
+
+    async uploadAvatar(formData) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        await userAPI.uploadAvatar(formData);
+        await this.fetchProfile();
+        return true;
+      } catch (error) {
+        this.error = extractApiErrorMessage(error, "فشل تحديث الصورة الشخصية");
         return false;
       } finally {
         this.loading = false;

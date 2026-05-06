@@ -367,7 +367,6 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
-import { userAPI } from "@/services/api";
 import { BaseButton, BaseBadge } from "@/components/base";
 import { AppIcon } from "@/components/icons";
 import { useFeatureFlags } from "@/composables/useFeatureFlags";
@@ -446,9 +445,11 @@ const handleAvatarUpload = async (event) => {
 
   try {
     showMessage("جاري رفع الصورة...", "success");
-    await userAPI.uploadAvatar(formData);
-    await authStore.fetchProfile();
-    showMessage("تم تحديث الصورة الشخصية بنجاح");
+    const updated = await authStore.uploadAvatar(formData);
+    showMessage(
+      updated ? "تم تحديث الصورة الشخصية بنجاح" : authStore.error || "خطأ في رفع الصورة",
+      updated ? "success" : "error",
+    );
   } catch (e) {
     showMessage("خطأ في رفع الصورة", "error");
   } finally {
@@ -459,9 +460,11 @@ const handleAvatarUpload = async (event) => {
 const updateProfile = async () => {
   updating.value = true;
   try {
-    await userAPI.updateProfile({ full_name: form.value.full_name });
-    await authStore.fetchProfile();
-    showMessage("تم تحديث البيانات بنجاح");
+    const updated = await authStore.updateProfile({ full_name: form.value.full_name });
+    showMessage(
+      updated ? "تم تحديث البيانات بنجاح" : authStore.error || "خطأ في التحديث",
+      updated ? "success" : "error",
+    );
   } catch (e) {
     showMessage("خطأ في التحديث", "error");
   } finally {
@@ -472,9 +475,14 @@ const updateProfile = async () => {
 const changePassword = async () => {
   changingPassword.value = true;
   try {
-    await userAPI.changePassword(passwordForm.value);
-    showMessage("تم تغيير كلمة المرور بنجاح");
-    passwordForm.value = { current_password: "", new_password: "" };
+    const changed = await authStore.updatePassword(passwordForm.value);
+    showMessage(
+      changed ? "تم تغيير كلمة المرور بنجاح" : authStore.error || "خطأ",
+      changed ? "success" : "error",
+    );
+    if (changed) {
+      passwordForm.value = { current_password: "", new_password: "" };
+    }
   } catch (e) {
     showMessage(e.response?.data?.message || "خطأ", "error");
   } finally {

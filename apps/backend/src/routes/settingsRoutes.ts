@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router } from 'express';
 import {
   getAllSettings,
   getPublicSettings,
@@ -7,13 +7,10 @@ import {
   resetToDefaults,
   updateSetting,
   testEmailSettings,
+  uploadSettingImage,
 } from '../controllers/settingsController';
 import { adminAuth, adminOnly } from '../middleware/auth';
 import { uploadImage } from '../middleware/upload';
-import { asyncHandler } from '../utils/asyncHandler';
-import { success } from '../utils/ApiResponse';
-import { ValidationError } from '../errors';
-import { AuthenticatedRequest } from '../types';
 import { runValidators } from '../utils/validate';
 import {
   createSettingRules,
@@ -32,18 +29,6 @@ router.post('/test-email', adminAuth, adminOnly, testEmailSettings);
 router.put('/:key', adminAuth, adminOnly, runValidators(updateSettingRules), updateSetting);
 
 // مسار رفع الصور للإعدادات (شعار، أيقونة، الخ)
-router.post(
-  '/upload-image',
-  adminAuth,
-  adminOnly,
-  uploadImage.single('image'),
-  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-    if (!req.file) {
-      throw new ValidationError('الرجاء رفع صورة');
-    }
-    const url = `/uploads/${req.file.filename}`;
-    return success(res, { data: { url }, message: 'تم رفع الصورة بنجاح' });
-  })
-);
+router.post('/upload-image', adminAuth, adminOnly, uploadImage.single('image'), uploadSettingImage);
 
 export default router;

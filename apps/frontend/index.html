@@ -157,6 +157,7 @@
     (() => {
       const root = document.documentElement;
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      const siteThemeDefaultStorageKey = "site_theme_default";
       const defaultThemeMode = "dark";
       const defaultTheme = "dark";
       const defaultFont =
@@ -170,6 +171,15 @@
           const storedTheme = window.localStorage.getItem("theme");
           if (storedTheme === "light" || storedTheme === "dark" || storedTheme === "system") {
             return storedTheme;
+          }
+
+          const siteDefaultTheme = window.localStorage.getItem(siteThemeDefaultStorageKey);
+          if (
+            siteDefaultTheme === "light" ||
+            siteDefaultTheme === "dark" ||
+            siteDefaultTheme === "system"
+          ) {
+            return siteDefaultTheme;
           }
         } catch (error) {
           return defaultThemeMode;

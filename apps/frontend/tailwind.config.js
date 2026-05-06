@@ -169,6 +169,18 @@ export default {
         '2xl': '1.5rem',
         '3xl': '2rem',
       },
+      zIndex: {
+        'dropdown': '80',
+        'sidebar-backdrop': '100',
+        'sidebar': '110',
+        'widget': '120',
+        'popover': '130',
+        'modal': '140',
+        'drawer': '150',
+        'loader': '155',
+        'toast': '160',
+        'tooltip': '170',
+      },
       boxShadow: {
         'xs': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
         'sm': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',

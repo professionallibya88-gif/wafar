@@ -11,9 +11,8 @@ import {} from // Removed single admin configs
 '../repositories/AdminRepository';
 import { BusinessError, NotFoundError } from '../errors';
 import bcrypt from 'bcryptjs';
-import type { AdminAttributes } from '../database/models/Admin';
 
-type AdminRole = AdminAttributes['role'];
+type AdminRole = 'super_admin' | 'admin' | 'editor' | 'viewer';
 
 type CreateAdminPayload = {
   full_name: string;

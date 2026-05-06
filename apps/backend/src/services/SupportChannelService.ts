@@ -1,6 +1,6 @@
 import { supportChannelRepository } from '../repositories';
 import { NotFoundError } from '../errors';
-import { SupportChannelAttributes } from '../database/models/SupportChannel';
+import type { SupportChannelAttributes } from '../repositories/SupportChannelRepository';
 
 export class SupportChannelService {
   async getAllChannels(): Promise<SupportChannelAttributes[]> {

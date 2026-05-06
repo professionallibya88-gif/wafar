@@ -10,7 +10,7 @@ import { pdfProcessingProfileService } from './PDFProcessingProfileService';
 import { vercelBlobService } from './VercelBlobService';
 import { promises as fs } from 'fs';
 import logger from '../config/logger';
-import type { PartCreationAttributes } from '../database/models/Part';
+import type { PartCreationAttributes } from '../repositories/PartRepository';
 
 type ExtractedTable = {
   headers?: unknown[];

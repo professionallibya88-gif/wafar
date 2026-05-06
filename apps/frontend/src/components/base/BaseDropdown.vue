@@ -23,7 +23,7 @@
       <div
         v-if="isOpen"
         :class="menuClass"
-        class="absolute z-[80] mt-2 min-w-[200px] rounded-xl shadow-xl border overflow-hidden border-gray-200 dark:border-gray-800"
+        class="absolute z-dropdown mt-2 min-w-[200px] rounded-xl shadow-xl border overflow-hidden border-gray-200 dark:border-gray-800"
       >
         <!-- Search Input (optional) -->
         <div

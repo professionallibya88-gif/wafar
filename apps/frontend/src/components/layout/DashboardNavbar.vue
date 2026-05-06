@@ -59,7 +59,7 @@
         </div>
 
         <!-- أزرار التحكم -->
-        <div class="flex items-center gap-2 md:gap-5 flex-shrink-0 relative z-[70]">
+        <div class="flex items-center gap-2 md:gap-5 flex-shrink-0 relative z-50">
           <ThemeToggle />
           <NotificationBell v-if="isAuthenticated" />
 
@@ -101,7 +101,7 @@
               >
                 <div
                   v-if="uiState.isUserDropdownOpen"
-                  class="fixed z-[130] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
+                  class="fixed z-popover overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900"
                   :style="userDropdownStyle"
                   @click.stop
                 >

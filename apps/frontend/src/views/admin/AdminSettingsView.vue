@@ -71,6 +71,46 @@
           الإعدادات العامة
         </h2>
 
+        <!-- إعدادات المظهر -->
+        <div class="p-6 bg-gray-50/50 dark:bg-gray-800/30 rounded-2xl border border-gray-200 dark:border-gray-700">
+          <h3 class="text-md font-medium text-gray-900 dark:text-white mb-4">
+            إعدادات المظهر
+          </h3>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- الوضع الافتراضي -->
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                الوضع الافتراضي للمنصة
+              </label>
+              <BaseSelect
+                v-model="settings.general.theme_default_mode"
+                select-class="form-select"
+                :options="[
+                  { label: 'الوضع المظلم (Dark)', value: 'dark' },
+                  { label: 'الوضع الفاتح (Light)', value: 'light' },
+                  { label: 'حسب نظام المستخدم', value: 'system' }
+                ]"
+              />
+            </div>
+            <!-- إظهار زر التبديل -->
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                زر تبديل المظهر
+              </label>
+              <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto mt-2">
+                <input
+                  type="checkbox"
+                  v-model="settings.general.theme_show_switcher"
+                  class="w-5 h-5 text-brand-600 rounded focus:ring-brand-500"
+                />
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                  السماح للمستخدمين بتغيير المظهر
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- اسم الموقع -->
           <div class="space-y-2">
@@ -2035,6 +2075,8 @@ const loadSettings = async () => {
         loader_spinner_size: data.general?.loader_spinner_size || "md",
         loader_spinner_color: data.general?.loader_spinner_color || "primary",
         loader_spinner_speed: data.general?.loader_spinner_speed || "normal",
+        theme_default_mode: data.general?.theme_default_mode || "dark",
+        theme_show_switcher: parseBool(data.general?.theme_show_switcher ?? true),
       },
       pdf_processing: {
         default_pdf_method:

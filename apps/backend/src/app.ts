@@ -19,8 +19,12 @@ const createApp = async () => {
   try {
     const sessionMiddleware = await createSessionMiddleware();
     app.use(sessionMiddleware);
-  } catch {
-    // تجاهل فشل الجلسات حتى لا يتوقف الإقلاع في البيئات التي لا تتوفر فيها Redis
+  } catch (error) {
+    if (process.env.NODE_ENV === 'production') {
+      throw error;
+    }
+
+    // في التطوير فقط نسمح بالإقلاع بدون جلسات Redis لتسهيل التشخيص المحلي
   }
 
   applyRoutes(app);

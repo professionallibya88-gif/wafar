@@ -3,7 +3,7 @@ builder = "RAILPACK"
 buildCommand = "if [ -f apps/backend/package.json ]; then npm install && npm run build:backend; else npm install && npm run build; fi"
 
 [deploy]
-startCommand = "if [ -f apps/backend/dist/server.js ]; then node apps/backend/dist/server.js; else node dist/server.js; fi"
+startCommand = "if [ -f apps/backend/package.json ]; then cd apps/backend && npm start; else npm start; fi"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"

@@ -40,6 +40,8 @@ export const DEFAULT_SYSTEM_SETTINGS: SettingsByCategory = {
     loader_spinner_size: 'md',
     loader_spinner_color: 'primary',
     loader_spinner_speed: 'normal',
+    theme_default_mode: 'dark',
+    theme_show_switcher: 'true',
   },
   pdf_processing: {
     default_pdf_method: 'python_pypdf',
@@ -185,6 +187,8 @@ export const SETTING_DESCRIPTIONS: Record<keyof SettingsByCategory, Record<strin
     loader_spinner_size: 'حجم مؤشر التحميل الموحد',
     loader_spinner_color: 'لون مؤشر التحميل الموحد',
     loader_spinner_speed: 'سرعة مؤشر التحميل الموحد',
+    theme_default_mode: 'الوضع الافتراضي للمظهر (مظلم/فاتح/نظام)',
+    theme_show_switcher: 'إظهار زر تبديل المظهر للمستخدمين',
   },
   pdf_processing: {
     default_pdf_method: 'طريقة المعالجة الافتراضية',

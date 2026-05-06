@@ -1,24 +1,30 @@
 import { io } from 'socket.io-client';
-import { useAuthStore } from '@/stores/auth';
 
 let socket = null;
+
+const resolveSocketServerUrl = () => {
+  const rawApiUrl = import.meta.env.VITE_API_URL || '/api';
+
+  if (rawApiUrl.startsWith('/')) {
+    return window.location.origin;
+  }
+
+  try {
+    const url = new URL(rawApiUrl);
+    url.pathname = url.pathname.replace(/\/api(?:\/v\d+)?\/?$/, '') || '/';
+    return url.toString().replace(/\/$/, '');
+  } catch {
+    return rawApiUrl.replace(/\/api(?:\/v\d+)?\/?$/, '');
+  }
+};
 
 export const initSocket = () => {
   if (socket) return socket;
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5050';
-  const serverUrl = apiUrl.replace('/api/v1', '');
+  const serverUrl = resolveSocketServerUrl();
 
   socket = io(serverUrl, {
     withCredentials: true,
-  });
-
-  socket.on('connect', () => {
-    // Join user room if authenticated
-    const authStore = useAuthStore();
-    if (authStore.isAuthenticated && authStore.user?.id) {
-      socket.emit('join_user', authStore.user.id);
-    }
   });
 
   socket.on('disconnect', () => {

@@ -1,7 +1,6 @@
 import ExcelJS from 'exceljs';
 import { partRepository, searchHistoryRepository } from '../repositories';
 import { SmartSearch } from './SmartSearch';
-import { Part } from '../database/models/Part';
 
 export interface SearchFilters {
   q?: string;
@@ -36,7 +35,28 @@ export interface HistorySearchParams {
   offset: number;
 }
 
-export interface ExportPart extends Part {
+interface SearchPartRecord {
+  part_code?: string | null;
+  part_name?: string | null;
+  part_name_en?: string | null;
+  category?: string | null;
+  brand?: string | null;
+  origin_country?: string | null;
+  quality_grade?: string | null;
+  price?: number | string | null;
+  currency?: string | null;
+  in_stock?: boolean | null;
+}
+
+interface DistinctCategoryRecord {
+  category?: string | null;
+}
+
+interface DistinctBrandRecord {
+  brand?: string | null;
+}
+
+export interface ExportPart extends SearchPartRecord {
   supplier?: {
     name: string;
   };
@@ -116,7 +136,9 @@ class SearchService {
    */
   async getCategories() {
     const records = await partRepository.findDistinctCategories();
-    return records.map((r: Part) => r.category);
+    return records
+      .map((record) => (record as DistinctCategoryRecord).category)
+      .filter((category): category is string => Boolean(category));
   }
 
   /**
@@ -124,7 +146,9 @@ class SearchService {
    */
   async getBrands() {
     const records = await partRepository.findDistinctBrands();
-    return records.map((r: Part) => r.brand);
+    return records
+      .map((record) => (record as DistinctBrandRecord).brand)
+      .filter((brand): brand is string => Boolean(brand));
   }
 
   /**

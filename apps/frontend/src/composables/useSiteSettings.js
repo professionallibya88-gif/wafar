@@ -1,9 +1,11 @@
 import { ref } from 'vue';
 import { settingsAPI } from '@/services/api';
 import { applyFont, DEFAULT_FONT_KEY } from './useSiteFont';
-import { preferenceStorage } from '@/services/storage';
+import { preferenceStorage, themeStorage } from '@/services/storage';
+import { useThemeStore } from '@/stores/theme';
 
 const SPINNER_STORAGE_KEY = 'spinner-settings';
+const VALID_THEME_MODES = ['light', 'dark', 'system'];
 
 const defaultSiteSettings = {
   site_name: 'منصة وفر',
@@ -26,11 +28,23 @@ const defaultSiteSettings = {
   loader_spinner_size: 'md',
   loader_spinner_color: 'primary',
   loader_spinner_speed: 'normal',
+  theme_default_mode: 'dark',
+  theme_show_switcher: true,
 };
 
 const siteSettings = ref({ ...defaultSiteSettings });
 const settingsLoaded = ref(false);
 let publicSettingsPromise = null;
+
+const parseBoolean = (value, fallback = true) => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value === 'true' || value === '1';
+  if (value === undefined || value === null) return fallback;
+  return Boolean(value);
+};
+
+const sanitizeThemeMode = (mode) =>
+  VALID_THEME_MODES.includes(mode) ? mode : defaultSiteSettings.theme_default_mode;
 
 const sanitizeSpinnerSettings = (settings = {}) => ({
   loader_spinner_variant: settings.loader_spinner_variant || defaultSiteSettings.loader_spinner_variant,
@@ -61,6 +75,8 @@ const normalizeSettingsPayload = (payload = {}) => {
     ...widgetSettings,
     ...authVisualSettings,
     ...sanitizeSpinnerSettings(generalSettings),
+    theme_default_mode: sanitizeThemeMode(generalSettings.theme_default_mode),
+    theme_show_switcher: parseBoolean(generalSettings.theme_show_switcher, true),
     site_font_family:
       generalSettings.site_font_family ||
       payload.site_font_family ||
@@ -120,6 +136,15 @@ const applyCriticalSettings = (settings) => {
   if (settings.site_name) {
     document.title = settings.site_name;
   }
+
+  try {
+    themeStorage.setDefaultTheme(sanitizeThemeMode(settings.theme_default_mode));
+  } catch {
+    // تجاهل مشاكل التخزين حتى لا تتعطل الواجهة.
+  }
+
+  const themeStore = useThemeStore();
+  themeStore.updateDefaultTheme?.(sanitizeThemeMode(settings.theme_default_mode));
 
   applyFont(settings.site_font_family || DEFAULT_FONT_KEY);
   persistSpinnerSettings(settings);

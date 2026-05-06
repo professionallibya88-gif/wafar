@@ -1,7 +1,7 @@
 <template>
-  <div 
-    v-if="isAuthenticated && shouldShowWidget" 
-    class="fixed z-[120] support-widget" 
+  <div
+    v-if="isAuthenticated && shouldShowWidget"
+    class="fixed z-widget support-widget"
     :class="[isOpen ? 'inset-0 sm:inset-auto' : '']"
     :style="isOpen && !isDesktop ? {} : {
       bottom: isDesktop ? `${widgetBottomDesktop}px` : `${widgetBottomMobile}px`,
@@ -11,7 +11,7 @@
     dir="rtl"
   >
     <!-- خلفية مظللة للموبايل فقط عند فتح المحادثة -->
-    <div v-if="isOpen" class="fixed inset-0 bg-black/50 sm:hidden z-[120]" @click="isOpen = false"></div>
+    <div v-if="isOpen" class="fixed inset-0 bg-black/50 sm:hidden z-widget" @click="isOpen = false"></div>
 
     <!-- قائمة القنوات و التذاكر -->
     <transition
@@ -25,7 +25,7 @@
       <div
         v-if="isOpen"
         @click.stop
-        class="absolute z-[130] sm:mb-3 w-full sm:w-96 bg-white dark:bg-gray-800 sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[85dvh] sm:h-[600px] bottom-0 sm:max-h-[85vh] rounded-t-3xl"
+        class="absolute z-popover sm:mb-3 w-full sm:w-96 bg-white dark:bg-gray-800 sm:rounded-2xl shadow-2xl border-t sm:border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[85dvh] sm:h-[600px] bottom-0 sm:max-h-[85vh] rounded-t-3xl"
         :style="isDesktop ? {
           bottom: '100%',
           left: widgetPositionX === 'left' ? '0' : 'auto',
@@ -33,13 +33,13 @@
           touchAction: 'manipulation'
         } : { left: '0', touchAction: 'manipulation' }"
       >
-        <div 
+        <div
           class="p-4 text-center shrink-0 relative sm:pt-4"
           :style="{ backgroundColor: widgetBgColor, color: widgetIconColor }"
         >
           <!-- مؤشر السحب (Drag Handle) للموبايل -->
           <div class="sm:hidden absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-full bg-white/40"></div>
-          
+
           <!-- زر إغلاق للموبايل -->
           <button @click="isOpen = false" class="absolute top-4 left-4 sm:hidden p-1 bg-black/10 rounded-full hover:bg-black/20 transition-colors">
             <AppIcon name="xmark" class="w-5 h-5" />
@@ -68,7 +68,7 @@
                 <AppIcon name="PlusIcon" class="w-5 h-5" />
               </button>
             </div>
-            
+
             <div class="flex-1 overflow-y-auto p-3">
               <div v-if="loadingTickets" class="flex justify-center p-8">
                 <BaseSpinner size="sm" />
@@ -170,7 +170,7 @@
               </div>
               <div class="w-8"></div>
             </div>
-            
+
             <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900" ref="chatContainer">
               <div v-if="loadingChat" class="flex justify-center p-4">
                 <BaseSpinner size="sm" />
@@ -184,8 +184,8 @@
                 >
                   <div
                     class="px-4 py-2.5 max-w-[85%] text-sm shadow-sm"
-                    :class="msg.sender_type === 'user' 
-                      ? 'bg-primary-600 text-white rounded-2xl rounded-tr-sm' 
+                    :class="msg.sender_type === 'user'
+                      ? 'bg-primary-600 text-white rounded-2xl rounded-tr-sm'
                       : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-900 dark:text-white rounded-2xl rounded-tl-sm'"
                   >
                     <p class="whitespace-pre-wrap leading-relaxed">{{ getMessageText(msg) }}</p>
@@ -197,7 +197,7 @@
                 </div>
               </template>
             </div>
-            
+
             <div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
               <form @submit.prevent="sendReply" class="flex items-center gap-2">
                 <input
@@ -227,20 +227,20 @@
     <button
       v-show="!isOpen || (isOpen && isDesktop)"
       @click="toggleOpen"
-      class="fixed sm:relative z-[130] flex items-center justify-center text-white shadow-lg hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+      class="fixed sm:relative z-popover flex items-center justify-center text-white shadow-lg hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-50"
       :class="[
         isOpen ? 'rotate-180' : '',
         widgetShape === 'square' ? 'rounded-xl' : 'rounded-full',
         widgetSizeClass
       ]"
       :style="isDesktop ? {
-        backgroundColor: widgetBgColor, 
+        backgroundColor: widgetBgColor,
         color: widgetIconColor
       } : {
         bottom: isOpen ? '24px' : `${widgetBottomMobile}px`,
         left: widgetPositionX === 'left' ? '16px' : 'auto',
         right: widgetPositionX === 'right' ? '16px' : 'auto',
-        backgroundColor: widgetBgColor, 
+        backgroundColor: widgetBgColor,
         color: widgetIconColor
       }"
       aria-label="تواصل معنا"
@@ -252,377 +252,49 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
-import { useRoute } from "vue-router";
-import { supportAPI } from "@/services/api";
 import { AppIcon } from "@/components/icons";
 import BaseSpinner from "@/components/base/BaseSpinner.vue";
-import { useAuthStore } from "@/stores/auth";
-import { useSiteSettings } from "@/composables/useSiteSettings";
-import { getSocket } from "@/services/socket";
-import { preferenceStorage } from "@/services/storage";
+import { useSupportWidget } from "@/composables/useSupportWidget";
 
-const route = useRoute();
-const authStore = useAuthStore();
-const { siteSettings } = useSiteSettings();
-
-const isAuthenticated = computed(() => authStore.isAuthenticated);
-
-// Show widget only on specific pages
-const allowedRoutes = ['Home', 'Profile', 'Subscriptions', 'Payments', 'Contact', 'About', 'Settings', 'Privacy', 'Terms', 'AdminSettings'];
-const shouldShowWidget = computed(() => {
-  return route.name && allowedRoutes.includes(route.name);
-});
-
-watch(shouldShowWidget, (newVal) => {
-  if (!newVal && isOpen.value) {
-    isOpen.value = false;
-  }
-});
-
-// Check if desktop to manage floating button visibility on mobile when open
-const isDesktop = ref(window.innerWidth >= 640);
-const updateDesktopState = () => {
-  isDesktop.value = window.innerWidth >= 640;
-};
-
-// Settings Defaults
-const widgetBgColor = computed(() => siteSettings.value.widget_bg_color || '#2563eb');
-const widgetIconColor = computed(() => siteSettings.value.widget_icon_color || '#ffffff');
-const widgetShape = computed(() => siteSettings.value.widget_shape || 'circle');
-const widgetSize = computed(() => siteSettings.value.widget_size || 'medium');
-const widgetPositionX = computed(() => siteSettings.value.widget_position_x || 'left');
-const widgetBottomDesktop = computed(() => siteSettings.value.widget_bottom_desktop || 24);
-const widgetBottomMobile = computed(() => siteSettings.value.widget_bottom_mobile || 112);
-const widgetIcon = computed(() => siteSettings.value.widget_icon || 'chat-bubble-left-right');
-
-const widgetSizeClass = computed(() => {
-  switch(widgetSize.value) {
-    case 'small': return 'w-10 h-10 sm:w-12 sm:h-12';
-    case 'large': return 'w-14 h-14 sm:w-16 sm:h-16';
-    case 'medium':
-    default: return 'w-12 h-12 sm:w-14 sm:h-14';
-  }
-});
-
-const widgetIconSize = computed(() => {
-  switch(widgetSize.value) {
-    case 'small': return 'md';
-    case 'large': return 'xl';
-    case 'medium':
-    default: return 'lg';
-  }
-});
-
-// Main State
-const isOpen = ref(false);
-const channels = ref([]);
-
-// View State: 'tickets' | 'new_ticket' | 'chat'
-const currentView = ref('tickets');
-
-// Tickets State
-const myTickets = ref([]);
-const loadingTickets = ref(false);
-const newTicketForm = ref({ subject: '', message: '' });
-const submittingTicket = ref(false);
-
-// Computed validation for new ticket
-const isMessageValid = computed(() => {
-  return newTicketForm.value.message && newTicketForm.value.message.trim().length >= 10;
-});
-
-// Chat State
-const activeTicket = ref(null);
-const activeTicketDetails = ref(null);
-const loadingChat = ref(false);
-const replyMessage = ref('');
-const sendingReply = ref(false);
-const chatContainer = ref(null);
-const isMuted = ref(false);
-
-let socketClient = null;
-let openWidgetHandler = null;
-
-const fetchChannels = async () => {
-  try {
-    const response = await supportAPI.getActiveChannels();
-    if (response.success || response.data?.success) {
-      channels.value = response.data?.data || response.data || [];
-    }
-  } catch (error) {
-    console.error("Error fetching support channels:", error);
-  }
-};
-
-const getMuteStorageKey = () => {
-  const userId = authStore.user?.id || 'guest';
-  return `support_widget_muted_${userId}`;
-};
-
-const loadMutePreference = () => {
-  isMuted.value = preferenceStorage.getItem(getMuteStorageKey(), false) === true;
-};
-
-const toggleMute = () => {
-  isMuted.value = !isMuted.value;
-  preferenceStorage.setItem(getMuteStorageKey(), isMuted.value);
-};
-
-const playNotificationSound = () => {
-  if (isMuted.value) return;
-  try {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    gainNode.gain.setValueAtTime(0.12, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.25);
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.25);
-  } catch {
-    // تجاهل أخطاء الصوت في المتصفحات المقيدة
-  }
-};
-
-const toggleOpen = () => {
-  isOpen.value = !isOpen.value;
-  if (isOpen.value && isAuthenticated.value) {
-    openTicketsList();
-  } else if (!isOpen.value) {
-    // Reset view when closing
-    setTimeout(() => {
-      currentView.value = 'tickets';
-    }, 300);
-  }
-};
-
-const closeMenu = (e) => {
-  if (isOpen.value) {
-    if (!isDesktop.value) return; // On mobile, overlay click handles closing
-
-    const path = e.composedPath ? e.composedPath() : [];
-    const isInsideWidget = path.some(el => el.classList && el.classList.contains('support-widget'));
-    
-    if (!isInsideWidget) {
-      isOpen.value = false;
-      setTimeout(() => {
-        currentView.value = 'tickets';
-      }, 300);
-    }
-  }
-};
-
-const getMessageText = (msg) => {
-  return msg?.message || msg?.content || '';
-};
-
-const connectRealtime = () => {
-  if (!isAuthenticated.value) return;
-  socketClient = getSocket();
-  socketClient.emit('join_user', authStore.user?.id);
-
-  socketClient.on('ticket_reply', async (messageData) => {
-    if (!messageData?.ticket_id) return;
-
-    if (messageData.sender_type === 'admin') {
-      playNotificationSound();
-    }
-
-    const ticketId = messageData.ticket_id;
-    const activeTicketId = activeTicket.value?.id;
-    if (activeTicketId && activeTicketId === ticketId && activeTicketDetails.value?.messages) {
-      const alreadyExists = activeTicketDetails.value.messages.some((item) => item.id === messageData.id);
-      if (!alreadyExists) {
-        activeTicketDetails.value.messages.push(messageData);
-        await scrollToBottom();
-      }
-    }
-
-    await openTicketsList();
-  });
-
-  socketClient.on('ticket_status_changed', async (payload) => {
-    if (!payload?.ticket_id) return;
-    if (activeTicket.value?.id === payload.ticket_id) {
-      activeTicket.value = {
-        ...activeTicket.value,
-        status: payload.status,
-      };
-    }
-    await openTicketsList();
-  });
-};
-
-const disconnectRealtime = () => {
-  if (!socketClient) return;
-  socketClient.off('ticket_reply');
-  socketClient.off('ticket_status_changed');
-};
-
-onMounted(() => {
-  loadMutePreference();
-  fetchChannels();
-  document.addEventListener("click", closeMenu);
-  window.addEventListener('resize', updateDesktopState);
-
-  connectRealtime();
-
-  openWidgetHandler = (e) => {
-    if (!isOpen.value) {
-      toggleOpen();
-    }
-    if (e.detail && e.detail.ticket) {
-      setTimeout(() => {
-        openTicketChat(e.detail.ticket);
-      }, 300);
-    }
-  };
-  document.addEventListener('open-support-widget', openWidgetHandler);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("click", closeMenu);
-  window.removeEventListener('resize', updateDesktopState);
-  if (openWidgetHandler) {
-    document.removeEventListener('open-support-widget', openWidgetHandler);
-  }
-  disconnectRealtime();
-});
-
-const getIconName = (type) => {
-  switch (type) {
-    case "whatsapp":
-      return "chat-bubble-left-right";
-    case "phone":
-      return "phone";
-    case "email":
-      return "envelope";
-    default:
-      return "Globe";
-  }
-};
-
-const getChannelLink = (channel) => {
-  if (channel.type === "whatsapp") {
-    const cleanNumber = channel.value.replace(/\D/g, "");
-    return `https://wa.me/${cleanNumber}`;
-  } else if (channel.type === "phone") {
-    return `tel:${channel.value}`;
-  } else if (channel.type === "email") {
-    return `mailto:${channel.value}`;
-  }
-  return channel.value;
-};
-
-// --- Ticketing Logic ---
-
-const openTicketsList = async () => {
-  currentView.value = 'tickets';
-  loadingTickets.value = true;
-  try {
-    const res = await supportAPI.getMyTickets();
-    myTickets.value = res.data?.data || [];
-  } catch (err) {
-    console.error('Failed to fetch tickets', err);
-  } finally {
-    loadingTickets.value = false;
-  }
-};
-
-const submitNewTicket = async () => {
-  if (!newTicketForm.value.message.trim()) return;
-  submittingTicket.value = true;
-  try {
-    const res = await supportAPI.createTicket({
-      subject: `استفسار دعم فني - ${new Date().toLocaleDateString('ar-LY')}`,
-      message: newTicketForm.value.message,
-    });
-    const createdTicket = res.data?.data?.ticket || res.data?.data || null;
-    newTicketForm.value = { subject: '', message: '' };
-    // Open the new ticket chat
-    if (createdTicket?.id) {
-      await openTicketChat(createdTicket);
-    } else {
-      openTicketsList();
-    }
-  } catch (err) {
-    console.error('Failed to create ticket', err);
-  } finally {
-    submittingTicket.value = false;
-  }
-};
-
-const openTicketChat = async (ticket) => {
-  activeTicket.value = ticket;
-  currentView.value = 'chat';
-  loadingChat.value = true;
-  try {
-    const res = await supportAPI.getMyTicketDetails(ticket.id);
-    activeTicketDetails.value = res.data?.data || null;
-    scrollToBottom();
-  } catch (err) {
-    console.error('Failed to fetch ticket details', err);
-  } finally {
-    loadingChat.value = false;
-  }
-};
-
-const sendReply = async () => {
-  if (!replyMessage.value.trim() || !activeTicket.value) return;
-  sendingReply.value = true;
-  try {
-    await supportAPI.replyToMyTicket(activeTicket.value.id, {
-      message: replyMessage.value.trim()
-    });
-    replyMessage.value = '';
-    // Refresh chat
-    await openTicketChat(activeTicket.value);
-  } catch (err) {
-    console.error('Failed to send reply', err);
-  } finally {
-    sendingReply.value = false;
-  }
-};
-
-const scrollToBottom = async () => {
-  await nextTick();
-  if (chatContainer.value) {
-    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
-  }
-};
-
-const getStatusLabel = (status) => {
-  const map = {
-    open: 'مفتوحة',
-    resolved: 'تم الحل',
-    closed: 'مغلقة',
-  };
-  return map[status] || status;
-};
-
-const getStatusClass = (status) => {
-  const map = {
-    open: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-    resolved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-    closed: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-  };
-  return map[status] || 'bg-gray-100 text-gray-800';
-};
-
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ar-LY', { year: 'numeric', month: 'short', day: 'numeric' });
-};
-
-const formatTime = (dateString) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleTimeString('ar-LY', { hour: '2-digit', minute: '2-digit' });
-};
+const {
+  activeTicket,
+  activeTicketDetails,
+  channels,
+  chatContainer,
+  currentView,
+  formatDate,
+  formatTime,
+  getChannelLink,
+  getIconName,
+  getMessageText,
+  getStatusClass,
+  getStatusLabel,
+  isAuthenticated,
+  isDesktop,
+  isMessageValid,
+  isMuted,
+  isOpen,
+  loadingChat,
+  loadingTickets,
+  myTickets,
+  newTicketForm,
+  openTicketChat,
+  replyMessage,
+  sendReply,
+  sendingReply,
+  shouldShowWidget,
+  submitNewTicket,
+  submittingTicket,
+  toggleMute,
+  toggleOpen,
+  widgetBgColor,
+  widgetBottomDesktop,
+  widgetBottomMobile,
+  widgetIcon,
+  widgetIconColor,
+  widgetIconSize,
+  widgetPositionX,
+  widgetShape,
+  widgetSizeClass,
+} = useSupportWidget();
 </script>

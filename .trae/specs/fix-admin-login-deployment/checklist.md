@@ -1,0 +1,3 @@
+- [x] `SINGLE_ADMIN_PASSWORD` in `AdminRepository.ts` reads from `process.env.ADMIN_PASSWORD`.
+- [x] `apps/backend/package.json` has `npm run db:migrate:prod && npm run db:seed:prod && node dist/server.js` as its `start` script.
+- [x] `railway.toml` correctly delegates the `startCommand` to `npm start`.

@@ -13,7 +13,7 @@
       <div
         v-if="show"
         :class="tooltipClass"
-        class="absolute z-[70] px-3 py-2 text-sm rounded-lg shadow-lg whitespace-nowrap"
+        class="absolute z-tooltip px-3 py-2 text-sm rounded-lg shadow-lg whitespace-nowrap"
       >
         <slot name="content">{{ content }}</slot>
 

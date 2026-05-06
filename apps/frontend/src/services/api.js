@@ -19,6 +19,7 @@ export {
   supportAPI,
   cartAPI,
   orderAPI,
+  masterDataAPI,
 } from "./api/index";
 
 export default http;

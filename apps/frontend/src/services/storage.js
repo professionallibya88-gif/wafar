@@ -94,6 +94,8 @@ const authStorage = {
 const themeStorage = {
   getTheme: () => localStorage.getItem(STORAGE_KEYS.THEME),
   setTheme: (theme) => localStorage.setItem(STORAGE_KEYS.THEME, theme),
+  getDefaultTheme: () => localStorage.getItem('site_theme_default'),
+  setDefaultTheme: (theme) => localStorage.setItem('site_theme_default', theme),
 };
 
 const preferenceStorage = {

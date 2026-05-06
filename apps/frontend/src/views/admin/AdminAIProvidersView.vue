@@ -157,7 +157,7 @@
     <Teleport to="body">
       <div
         v-if="showAddModal || showEditModal"
-        class="fixed inset-0 z-[140] flex items-center justify-center overflow-y-auto bg-black/50 p-4 sm:p-6"
+        class="fixed inset-0 z-modal flex items-center justify-center overflow-y-auto bg-black/50 p-4 sm:p-6"
       >
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl max-h-[90dvh] overflow-y-auto">
           <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">

@@ -21,7 +21,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "echo 'No tests configured for frontend'",
+        "command": "npm run test",
         "cwd": "apps/frontend"
       }
     },

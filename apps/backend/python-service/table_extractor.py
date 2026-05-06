@@ -68,11 +68,13 @@ class TableExtractor:
         }]
 
     def extract(self, pdf_path):
+        doc = None
         try:
             all_data = []
             headers = None
 
-            with fitz.open(pdf_path) as doc:
+            doc = fitz.open(pdf_path)
+            try:
                 for page_num, page in enumerate(doc, start=1):
                     tables = page.find_tables()
                     if not tables:
@@ -110,6 +112,10 @@ class TableExtractor:
                             all_data.extend(cleaned[header_idx + 1:])
                         else:
                             all_data.extend(cleaned)
+            finally:
+                close_method = getattr(doc, 'close', None)
+                if callable(close_method):
+                    close_method()
 
             if not all_data or not headers:
                 return []

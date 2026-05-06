@@ -68,7 +68,7 @@
         <Transition name="filter-transition">
           <div
             v-if="showFilters"
-            class="fixed inset-0 z-[140] flex flex-col justify-end md:static md:z-auto md:block md:justify-start"
+            class="fixed inset-0 z-modal flex flex-col justify-end md:static md:z-auto md:block md:justify-start"
           >
             <!-- Mobile Backdrop -->
             <div
@@ -122,7 +122,7 @@
                   </button>
                 </div>
                 
-                <div v-if="showBrandDropdown" class="absolute z-[80] w-full mt-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar">
+                <div v-if="showBrandDropdown" class="absolute z-dropdown w-full mt-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar">
                   <div v-if="filteredBrands.length === 0" class="p-4 text-sm text-neutral-500 dark:text-neutral-400 text-center">لا توجد نتائج مطابقة</div>
                   <button
                     v-for="brand in filteredBrands"
@@ -499,7 +499,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { formatCurrency } from "@/utils/currency";
-import { searchAPI, pdfAPI } from "@/services/api";
+import { searchAPI, pdfAPI, masterDataAPI } from "@/services/api";
 import { BaseButton, BaseBadge,  BaseSelect, BasePagination } from "@/components/base";
 import BaseSkeleton from "@/components/base/BaseSkeleton.vue";
 import { AppIcon } from "@/components/icons";
@@ -606,8 +606,26 @@ useAutoApplyFilters(
 
 const loadBrands = async () => {
   try {
-    const res = await searchAPI.getBrands();
-    availableBrands.value = res.data?.data || [];
+    const [masterDataRes, dynamicBrandsRes] = await Promise.allSettled([
+      masterDataAPI.getMasterData(),
+      searchAPI.getBrands(),
+    ]);
+
+    const masterDataBrands =
+      masterDataRes.status === "fulfilled"
+        ? masterDataRes.value?.data?.data?.makers || []
+        : [];
+
+    const dynamicBrands =
+      dynamicBrandsRes.status === "fulfilled"
+        ? dynamicBrandsRes.value?.data?.data || []
+        : [];
+
+    const mergedBrands = [...masterDataBrands, ...dynamicBrands]
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+
+    availableBrands.value = Array.from(new Set(mergedBrands));
   } catch (error) {
     console.error("Failed to load brands:", error);
   }

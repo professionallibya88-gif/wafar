@@ -57,6 +57,17 @@ export const sequelize = process.env.DATABASE_URL
       sequelizeOptions
     );
 
+let modelsInitialized = false;
+
+export const initializeModels = async () => {
+  if (modelsInitialized) {
+    return;
+  }
+
+  await import('./models/index');
+  modelsInitialized = true;
+};
+
 export const testConnection = async () => {
   try {
     await sequelize.authenticate();
@@ -70,8 +81,7 @@ export const testConnection = async () => {
 
 export const syncDatabase = async () => {
   try {
-    // تحميل النماذج والعلاقات
-    await import('./models/index');
+    await initializeModels();
 
     const shouldAlter =
       process.env.NODE_ENV === 'development' && process.env.DB_AUTO_ALTER === 'true';

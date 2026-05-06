@@ -1,4 +1,4 @@
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 
 /**
  * قواعد التحقق لمصادقة المديرين
@@ -289,3 +289,5 @@ export const updatePartRules = [
     .isInt({ min: 0 })
     .withMessage('الكمية المتاحة غير صالحة'),
 ];
+
+export const resourceIdRules = [param('id').isUUID().withMessage('المعرف غير صالح')];

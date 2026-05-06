@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { success, created } from '../utils/ApiResponse';
 import { settingsService } from '../services/SettingsService';
+import { ValidationError } from '../errors';
+import { AuthenticatedRequest } from '../types';
 
 export const getAllSettings = asyncHandler(async (req: Request, res: Response) => {
   const data = await settingsService.getAllSettings();
@@ -42,4 +44,13 @@ export const testEmailSettings = asyncHandler(async (req: Request, res: Response
     : 'SMTP غير مفعّل حالياً، يرجى التفعيل قبل الإرسال';
 
   return success(res, { data, message });
+});
+
+export const uploadSettingImage = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.file) {
+    throw new ValidationError('الرجاء رفع صورة');
+  }
+
+  const url = `/uploads/${req.file.filename}`;
+  return success(res, { data: { url }, message: 'تم رفع الصورة بنجاح' });
 });

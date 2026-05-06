@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="sidebar-menu dashboard-sidebar overflow-hidden flex flex-col fixed inset-y-0 right-0 z-[110] transition-transform duration-300 lg:inset-y-3 lg:right-3 lg:rounded-[1.75rem]"
+    class="sidebar-menu dashboard-sidebar overflow-hidden flex flex-col fixed inset-y-0 right-0 z-sidebar transition-transform duration-300 lg:inset-y-3 lg:right-3 lg:rounded-[1.75rem]"
     :class="[
       showMobileSidebar ? 'translate-x-0' : 'translate-x-full lg:translate-x-0',
       sidebarCollapsed ? 'lg:w-24' : 'lg:w-[19rem]',

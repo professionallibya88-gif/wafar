@@ -1,7 +1,9 @@
-import * as carModels from '../config/car_models.json';
-import * as partTypes from '../config/part_types.json';
-import * as makerKeywords from '../config/maker_keywords.json';
 import type { HeaderMapping, HeaderMappingEntry } from './HeaderMapper';
+import {
+  carModelsByMakerData,
+  makerKeywordsByMakerData,
+  partTypeKeywordsByTypeData,
+} from '../master-data';
 
 type DerivedInfo = {
   year?: number;
@@ -50,9 +52,9 @@ type RowValidationInput = Partial<
   >
 >;
 
-const partTypesMap = partTypes as Record<string, unknown>;
-const makerKeywordsMap = makerKeywords as Record<string, unknown>;
-const carModelsMap = carModels as Record<string, unknown>;
+const partTypesMap = partTypeKeywordsByTypeData as unknown as Record<string, unknown>;
+const makerKeywordsMap = makerKeywordsByMakerData as unknown as Record<string, unknown>;
+const carModelsMap = carModelsByMakerData as unknown as Record<string, unknown>;
 
 const toStringArray = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];

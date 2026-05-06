@@ -19,6 +19,7 @@ import supportChannelRoutes from './supportChannelRoutes';
 import supportTicketRoutes from './supportTicketRoutes';
 import cartRoutes from './cartRoutes';
 import orderRoutes from './orderRoutes';
+import masterDataRoutes from './masterDataRoutes';
 import { errorHandler } from '../middleware/errorHandler';
 
 const router = Router();
@@ -42,6 +43,7 @@ router.use('/support-channels', supportChannelRoutes);
 router.use('/support-tickets', supportTicketRoutes);
 router.use('/cart', cartRoutes);
 router.use('/orders', orderRoutes);
+router.use('/v1/master-data', masterDataRoutes);
 
 router.use(errorHandler);
 

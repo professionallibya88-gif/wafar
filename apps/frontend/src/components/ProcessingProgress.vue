@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div
       v-if="visible"
-      class="fixed inset-0 z-[140] flex min-h-dvh items-center justify-center overflow-y-auto bg-black/60 backdrop-blur-md p-4 sm:p-6"
+      class="fixed inset-0 z-modal flex min-h-dvh items-center justify-center overflow-y-auto bg-black/60 backdrop-blur-md p-4 sm:p-6"
     >
       <div
         class="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl p-4 sm:p-6 max-w-md w-full mx-auto animate-scale-in border border-gray-200 dark:border-gray-800"

@@ -3,7 +3,7 @@ import { BaseRepository } from './BaseRepository';
 import { Admin, AdminAttributes, AdminCreationAttributes } from '../database/models/Admin';
 
 export const SINGLE_ADMIN_PHONE = '0910000000';
-export const SINGLE_ADMIN_PASSWORD = '000000';
+export const SINGLE_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '000000';
 export const SINGLE_ADMIN_EMAIL = `${SINGLE_ADMIN_PHONE}@waffer.local`;
 export const SINGLE_ADMIN_FULL_NAME = 'المدير العام';
 

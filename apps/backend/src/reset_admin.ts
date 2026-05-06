@@ -1,4 +1,4 @@
-import './database/models/index';
+// Scripts that require DB connection should initialize the repository layer
 import { adminRepository } from './repositories/index';
 import * as bcrypt from 'bcryptjs';
 import { SINGLE_ADMIN_PASSWORD } from './repositories/AdminRepository';

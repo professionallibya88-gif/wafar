@@ -1,8 +1,10 @@
 <script setup>
 import { useThemeStore } from "@/stores/theme";
 import { AppIcon } from "@/icons";
+import { useSiteSettings } from "@/composables/useSiteSettings";
 
 const themeStore = useThemeStore();
+const { siteSettings } = useSiteSettings();
 
 const cycleTheme = () => {
   if (themeStore.themeMode === "light") {
@@ -23,6 +25,7 @@ const getThemeTitle = () => {
 
 <template>
   <button
+    v-if="siteSettings.theme_show_switcher !== false"
     @click="cycleTheme"
     :class="[
       'p-2 sm:p-2.5 rounded-xl transition-all duration-200',
